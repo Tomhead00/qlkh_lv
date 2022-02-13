@@ -1,0 +1,371 @@
+<div class="mt-3 ml-4 mr-4">
+    <div class="row">
+        <div class="col-xl-8">
+            <div id="player"></div>
+            <div class="mt-2" style="color: black;">
+                <h3><b class="title">N/A</b></h3>
+                <p class="description mb-4">N/A</p>
+            </div>
+            <div class="row">
+                <div class="page-header">
+                    <h4><small id="totalComment" class="pull-right mb-4">N/A comments</small> <b>Bình luận</b> </h4>
+                </div>
+
+                <form class="border-0" style="background-color: #f8f9fa;">
+                    <div class="d-flex flex-start w-100">
+                        <img
+                            class="rounded-circle shadow-1-strong me-3"
+                            src="{{username.user.image}}"
+                            alt="avatar"
+                            width="40"
+                            height="40"
+                        />
+                        <div class="form-outline w-100">
+                            <textarea
+                            class="form-control"
+                            id="textAreaExample"
+                            rows="3"
+                            style="background: #fff;"
+                            required></textarea>
+                            <label class="form-label" for="textAreaExample">Message</label>
+                        </div>
+                    </div>
+                    <div class="float-end mt-2 pt-1">
+                        <button type="submit" class="btn btn-primary btn-sm">Post comment</button>
+                        <button type="reset" class="btn btn-outline-primary btn-sm">Cancel</button>
+                    </div>
+                </form>
+
+                <div class="comments-list" id="comments-list"></div>
+
+                <div class="mb-5 pb-5"></div>
+            </div>
+
+        </div>
+        <div class="col-xl-4">
+            <div class="list-group">
+                <div class="list-group-item list-group-item-dark" aria-current="true">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h4 class="mb-1"><b>{{course.name}}</b></h4>
+                    </div>
+                    <p class="mb-1">
+                        <p class="mb-1 mt">{{course.mieuta}}</p>
+                    </p>
+                </div>
+                <div class="list-group-item list-group-item-action">
+                    {{#each course.video}}
+                        <div class="row pb-3 pt-1 course lockCourse">
+                            <div class="col-sm-1 imgCenter status text-center">
+                                <i class="fas fa-lock"></i>
+                            </div>
+                            <div class="col-sm-3 imgCenter">
+                                <img src="http://img.youtube.com/vi/{{this.videoID}}/default.jpg" alt="{{this.image}}" class="img-responsive center-block d-block mx-auto">
+                            </div>
+                            <div class="col-sm-8 pl-0">
+                                <h5 class="mb-1 text2line"><b>{{this.name}}</b></h5>
+                                <p class="mb-0 text2line mt">{{this.mieuta}}</p>
+                                <p class="mb-0 text2line mt id" style="display: none;">{{this._id}}</p>
+                                <small class="text-muted time">{{this.updatedAt}}</small>
+                            </div>
+                        </div>
+                    {{else}}
+                        <div class="row mt-3 mb-3">
+                            <h5 class="mb-0 text-center">Không có video nào cho khóa học này!</h5>
+                            <a href="javascript:history.back()" class="mb-0 text-center"><i class="fas fa-arrow-left"></i> Quay lại</a>
+                        </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{!--  JS --}}
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.6.0/mdb.min.js"></script>
+{{!-- moment --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+<script>
+    // Khai bao
+    var videoPlaying = 0;
+    var videoIDs = null;
+    var firstLoading = true;
+
+    // 2. This code loads the IFrame Player API code asynchronously.
+    var tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    // 3. This function creates an <iframe> (and YouTube player)
+    //    after the API code downloads.
+    var player;
+    function onYouTubeIframeAPIReady() {
+    player = new YT.Player('player', {
+        height: '720',
+        width: '100%',
+        videoId: '',
+        playerVars: {
+        'playsinline': 1
+        },
+        events: {
+        'onReady': onPlayerReady,
+        'onStateChange': onPlayerStateChange
+        }
+    });
+    }
+    // 4. The API will call this function when the video player is ready.
+    function onPlayerReady(event) {
+        event.target.playVideo();
+        // status = true;
+        unlockVideoServer(0);
+        // console.log(new Date());
+
+    }
+    // 5. The API calls this function when the player's state changes.
+    //    The function indicates that when playing a video (state=1),
+    //    the player should play for six seconds and then stop.
+    var done = false;
+    function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.ENDED && !done) {
+            nextVideo();
+        }
+    }
+
+    var cancelForm = $(".btn.btn-danger.cancel.float-right");
+    // change videoID embed
+    var selectList = $(".course");
+    var embed = $("#embed");
+
+    // Xai moment change time
+    function updateTime() {
+        $(".time").map(function() {
+            // console.log($(this).text());
+            $(this).text(moment($(this).text()).fromNow());
+        }).get();
+    }
+    function updateTimeComments() {
+        $(".timeComments").map(function() {
+            // console.log($(this).text());
+            $(this).text(moment($(this).text()).fromNow());
+        }).get();
+    }
+
+    // change videoID embed
+    // console.log(selectList);
+    selectList.on("click", function() {
+        // console.log($(this).hasClass("lockCourse"));
+        if ($(this).hasClass("lockCourse")) return true;
+        else {
+            // chut css cho the ko bi khoa
+            var link = $(this).find("img").attr("src");
+            // console.log(link);
+            var videoID = link.substring(link.indexOf("vi/")+3, link.indexOf("vi/")+14)
+            videoIDs = videoID;
+            // console.log(videoID);
+            selectList.find(".fas").removeClass("fa-play").attr("style",false);
+            selectList.attr("style",false);
+            $(this).find(".fas").addClass("fa-play").attr("style","color: #8a038c");
+            $(this).attr("style","background-color: hsl(240, 0%, 75%)");
+            player.cueVideoById({'videoId': videoID});
+            // get name va description
+            var title = $(this).find(".mb-1.text2line").text();
+            var description = $(this).find(".mb-0.text2line").html();
+            $(".title").text(title);
+            $(".description").html(description);
+
+            var i = selectList.index($(this));
+            videoPlaying = i;
+            // console.log(videoPlaying);
+            autoCheckUnlock();
+            refreshComment(videoIDs);
+        }
+    })
+
+    // Unlock video
+    function unlockVideo(i) {
+        $(selectList[i]).removeClass("lockCourse");
+        $(selectList[i]).addClass("readyCourse");
+        $(selectList[i]).find(".fa-lock").removeClass("fa-lock");
+    }
+
+    // lock course
+    function checkUnlockCourse(i) {
+        // console.log($(selectList[i]))
+        var _id = $(selectList[i]).find(".mb-0.text2line.mt.id").text();
+
+        $.ajax({
+            url: '/courses/checkUnlock',
+            type: 'POST',
+            data: {
+                _id: _id,
+            }
+        }).done(function(ketqua) {
+            //console.log(ketqua);
+            // console.log($(selectList).length);
+            if (ketqua == "true") {
+                unlockVideo(i);
+            }
+            if(i < $(selectList).length-1) {
+                checkUnlockCourse(i+1);
+            }
+            if (i == $(selectList).length-1 && firstLoading == true) {
+                // console.log(i);
+                runLastVideoUnlock();
+                firstLoading = false;
+            }
+        });
+    };
+
+    // unlock first video
+    function unlockVideoServer(i) {
+        var _id = $(selectList[i]).find(".mb-0.text2line.mt.id").text();
+        // console.log(id);
+        var a = $.ajax({
+            url: '/courses/unlockVideo',
+            type: 'POST',
+            data: {
+                _id: _id,
+            }
+        })
+        $.when(a).done(function() {
+            checkUnlockCourse(i);
+        });
+
+    };
+
+    // run last video unlock
+    function runLastVideoUnlock() {
+        // console.log(selectList);
+        for(var i = selectList.length-1; i >= 0; i--) {
+            // console.log($(selectList[i]));
+            // console.log($(selectList[i]).hasClass("lockCourse"));
+            if($(selectList[i]).hasClass("lockCourse")) {
+                continue;
+            } else {
+                /* myVar = setInterval(function() { 
+                    // console.log(status);
+                    if (status == "true") {
+                        $(selectList[i]).click();
+                        clearTimeout(myVar);
+                    }
+                }, 200) */
+                $(selectList[i]).click();
+                break;
+            }
+        }
+        updateTime();
+        // refreshComment();
+    }
+    
+    function nextVideo() {
+        // console.log($(selectList[videoPlaying+1]).hasClass("lockCourse"));
+        if($(selectList[videoPlaying+1]).hasClass("lockCourse")) return;
+        else {
+            $(selectList[videoPlaying+1]).click();
+        }
+    }
+
+    function autoCheckUnlock() {
+        myVar = setInterval(function() { 
+            // console.log(player.getDuration());
+            // console.log(player.getCurrentTime());
+            var totalVideo = player.getDuration();
+            var currentVideo = player.getCurrentTime();
+            if (currentVideo >= (2/3)*totalVideo) {
+                // console.log("right");
+                if (videoPlaying != $(selectList).length-1) {
+                    unlockVideoServer(videoPlaying+1);
+                }
+                clearTimeout(myVar);
+            }
+        }, 2000)
+    }
+
+    function checkJoinCourse() {
+        // check join khoa hoc
+        $.ajax({
+            url: '/courses/checkThamgia',
+            type: 'POST',
+            data: {
+                slug: `{{course.slug}}`,
+            }
+        }).done(function(ketqua) {
+            // console.log(ketqua);
+            if (ketqua == 0) {
+                $.ajax({
+                    url: '/courses/thamGia/' + `{{course.slug}}`,
+                    type: 'POST',
+                })                    
+                // joinCourseForm.action = "/courses/thamGia/" + slugCourse;
+            }
+        });
+    }
+    checkJoinCourse();
+
+    // Comment
+    var btnSubComment = $(".btn.btn-primary.btn-sm");
+    var btnCancel = $(".btn.btn-outline-primary.btn-sm");
+    var textArea = $("#textAreaExample");
+    var totalComment = $("#totalComment");
+    // console.log(courseID);
+
+    // list comment
+    var listComment = $("#comments-list");
+
+    function refreshComment(videoID) {
+        $.ajax({
+            url: '/courses/refreshComment',
+            type: 'POST',
+            data: {
+                videoID: videoID,
+            }
+        })
+        .done(function(ketqua) {
+            var allCommnet = "";
+            ketqua.forEach(element => {
+                // console.log(element);
+                var content = element.content;
+                var contentProcess = content.replace(/\n/g, "<br/>");
+                allCommnet += (`
+                    <div class='media'>
+                        <img class='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src='` + element.actor.image + `' alt='' width="40" height="40">
+                        <div class='media-body mt-2 mb-2 pt-2 pb-2'>
+                            <h5 class='mt-0 mb-0'><b>`+ element.actor.username +`</b> <small class="timeComments">`+ element.createdAt +`</small></h5>
+                            <p class='mb-0'>`+ contentProcess +`</p>
+                        </div>
+                    </div>
+                `)
+            });
+            listComment.html(allCommnet);
+
+            // console.log(ketqua.length + " comments");
+            totalComment.text(ketqua.length + " comments");
+
+            updateTimeComments();
+        });
+    }
+
+    btnSubComment.on("click", function (e) {
+        // console.log(textArea.val());
+        // console.log(videoIDs);
+        content = textArea.val();
+        if (content != "") {
+            e.preventDefault();
+            $.ajax({
+                url: '/courses/addComment',
+                type: 'POST',
+                data: {
+                    content: content,
+                    videoID: videoIDs,
+                }
+            })
+            .done(function(ketqua) {
+                // console.log(ketqua);
+            });
+            btnCancel.click();
+            refreshComment(videoIDs);
+        }
+    })
+</script>

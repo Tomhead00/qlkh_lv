@@ -1,0 +1,330 @@
+<div class="container">
+    <div style="position: relative;">
+        <div class="row mt-4">
+            <form class="input-group d-flex justify-content-end" id="formSearch">
+                <div class="form-outline">
+                    <input id="search-input" type="search" id="form1" class="form-control" style="width: 300px;"  autocomplete="off" />
+                    <label class="form-label" for="form1">Search</label>
+                </div>
+                <button id="close-button" type="button" class="btn btn-danger">
+                    <i class="fas fa-close"></i>
+                </button>
+            </form>
+        </div>
+
+        <div class="list-group" id="resultSearch"></div>
+    </div>
+
+    <!-- Sidenav-->
+
+    <div class="mt-4">
+        <div class="row">
+            <h3 class="mb-0 col-sm-4"><b>Các khóa học đã tham gia:</b></h3>
+        </div>
+        <div class="row">
+            {{#each courses}}
+            <div class="col-sm-3 col-lg-3 card-deck mt-4">
+                <div class="card card-course-item">
+                    <a href="/courses/show/{{this.slug}}">
+                        <img class="card-img-top" src="{{this.image}}" alt="{{this.image}}">
+                    </a>
+
+                    <div class="card-body">
+                        <a href="/courses/show/{{this.slug}}">
+                            <h5 class="card-title">{{this.name}}</h5>
+                        </a>
+                        <p class="card-text mt">{{this.mieuta}}</p>
+                        <p><img src="{{this.actor.image}}" alt="" class="user-avatar"><b>{{this.actor.username}}</b></p>
+                        <div class="card-footer d-flex">
+                            <small class="text-muted time">{{this.updatedAt}}</small>
+                            <small class="text-muted ml-auto"><i class="fas fa-users"> {{this.studentCount}}</i> </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <div class="row mt-3 mb-5">
+                <h5 class="mb-0 text-center">Không có khóa học phù hợp cho chủ đề này (-.-)!</h5>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+
+    <div class="mt-4">
+        <div class="row">
+            <h3 class="mb-0 col-sm-4"><b>Các khóa học vừa cập nhật:</b></h3>
+            <a class="col-sm-8 text-right" href="/courses/courseNew">Xem tất cả <i class="fas fa-angle-double-right"></i></a>
+        </div>
+        <div class="row">
+            {{#each coursesNew}}
+            <div class="col-sm-3 col-lg-3 card-deck mt-4">
+                <div class="card card-course-item">
+                    <a href="/courses/show/{{this.slug}}">
+                        <img class="card-img-top" src="{{this.image}}" alt="{{this.image}}">
+                    </a>
+
+                    <div class="card-body">
+                            <a href="/courses/show/{{this.slug}}">
+                                <h5 class="card-title">{{this.name}}</h5>
+                            </a>
+                        <p class="card-text mt">{{this.mieuta}}</p>
+                        <p><img src={{this.actor.image}} alt="" class="user-avatar"><b>{{this.actor.username}}</b></p>
+                        <div class="card-footer d-flex">
+                            <small class="text-muted time">{{this.updatedAt}}</small>
+                            <small class="text-muted ml-auto"><i class="fas fa-users"></i> {{this.studentCount}}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <div class="row mt-3 mb-5">
+                <h5 class="mb-0 text-center">Không có khóa học phù hợp cho chủ đề này (-.-)!</h5>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div class="row">
+            <h3 class="mb-0 col-sm-4"><b>Các khóa học phổ biến:</b></h3>
+            <a class="col-sm-8 text-right" href="/courses/coursePopular">Xem tất cả <i class="fas fa-angle-double-right"></i></a>
+        </div>
+        <div class="row">
+            {{#each courseFA}}
+            <div class="col-sm-3 col-lg-3 card-deck mt-4">
+                <div class="card card-course-item">
+                    <a href="/courses/show/{{this.slug}}">
+                        <img class="card-img-top" src="{{this.image}}" alt="{{this.image}}">
+                    </a>
+
+                    <div class="card-body">
+                            <a href="/courses/show/{{this.slug}}">
+                                <h5 class="card-title">{{this.name}}</h5>
+                            </a>
+                        <p class="card-text mt">{{this.mieuta}}</p>
+                        <p><img src={{this.actor.image}} alt="" class="user-avatar"><b>{{this.actor.username}}</b></p>
+                        <div class="card-footer d-flex">
+                            <small class="text-muted time">{{this.updatedAt}}</small>
+                            <small class="text-muted ml-auto"><i class="fas fa-users"></i> {{this.studentCount}}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <div class="row mt-3 mb-5">
+                <h5 class="mb-0 text-center">Không có khóa học phù hợp cho chủ đề này (-.-)!</h5>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div class="row">
+            <h3 class="mb-0 col-sm-4"><b>Các khóa học khác:</b></h3>
+        </div>
+        <div class="row">
+            {{#each coursesAnother}}
+            <div class="col-sm-3 col-lg-3 card-deck mt-4">
+                <div class="card card-course-item">
+                    <a href="/courses/show/{{this.slug}}">
+                        <img class="card-img-top" src="{{this.image}}" alt="{{this.image}}">
+                    </a>
+
+                    <div class="card-body">
+                            <a href="/courses/show/{{this.slug}}">
+                                <h5 class="card-title">{{this.name}}</h5>
+                            </a>
+                        <p class="card-text mt">{{this.mieuta}}</p>
+                        <p><img src={{this.actor.image}} alt="" class="user-avatar"><b>{{this.actor.username}}</b></p>
+                        <div class="card-footer d-flex">
+                            <small class="text-muted time">{{this.updatedAt}}</small>
+                            <small class="text-muted ml-auto"><i class="fas fa-users"></i> {{this.studentCount}}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{else}}
+            <div class="row mt-3 mb-5">
+                <h5 class="mb-0 text-center">Không có khóa học phù hợp cho chủ đề này (-.-)!</h5>
+            </div>
+            {{/each}}
+        </div>
+        <div class="row" style="height: 50px;"></div>
+    </div>
+</div>
+
+{{!-- Modal ques join courses --}}
+<div id="ques-course-model" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Tham gia khóa học?</h5>
+        <button type="button" class="close close-ques" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Bạn chưa tham gia khóa học này. Bạn có muốn tham gia?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary close-ques" data-dismiss="modal">Hủy</button>
+        <button id="btn-thamgia-course" type="button" class="btn btn-danger">Tham gia</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form method="POST" name="join-course-form"></form>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var card = $(".card.card-course-item");
+    var closeQues = $(".close-ques");
+    var btnThamgia = $("#btn-thamgia-course");
+    var joinCourseForm = document.forms['join-course-form'];
+    
+    // format time
+    var time = $(".time").map(function() {
+        $(this).text(moment($(this).text()).fromNow());
+    }).get();
+
+    // check tham gia khoa hoc
+    card.on("click", function (e) {
+        e.preventDefault();
+        var link = $(this).children("a").attr('href');
+        //console.log(link);
+        var slugCourse = link.substring(link.lastIndexOf("/")+1, link.length);
+        //console.log(slugCourse);
+
+        $.ajax({
+            url: '/courses/checkThamgia',
+            type: 'POST',
+            data: {
+                slug: slugCourse
+            }
+        }).done(function(ketqua) {
+            // console.log(ketqua);
+            if (ketqua == 0) {
+                $("#ques-course-model").modal("show");
+                btnThamgia.on('click', function thamGia() {
+                    joinCourseForm.action = "/courses/thamGia/" + slugCourse;
+                    joinCourseForm.submit();
+                })
+            }
+            else {
+                window.location.href = link;
+            }
+        });
+    })
+    {{!-- // get number join courses
+    $(function() {
+        $.each(card, function(index, value) {
+            // console.log(value);
+
+            var link = $(value).children("a").attr('href');
+            // console.log(link);
+            var slugCourse = link.substring(link.lastIndexOf("/")+1, link.length);
+            // console.log(slugCourse);
+
+            $.ajax({
+                url: '/courses/getNumUser',
+                type: 'POST',
+                data: {
+                    slug: slugCourse
+                }
+            }).done(function(ketqua) {
+                // console.log(ketqua);
+                var numUser = $(value).find(".text-muted.ml-auto").html("<i class='fas fa-users'></i> " +  ketqua);
+                // console.log(numUser.text());
+            });
+        })
+    }) --}}
+
+    // button tham gia
+    btnThamgia.on('click', function thamGia(link) {
+        window.location.href = "course/";
+    })
+
+    // close modal ques
+    closeQues.on("click", function() {
+        $("#ques-course-model").modal("hide");
+    })
+    // search
+    const closeButton = $('#close-button');
+    const searchInput = $('#search-input');
+    const formSearch = $('#formSearch');
+    const resultSearch = $('#resultSearch');
+
+    formSearch.submit((e) => {
+        e.preventDefault();
+    })
+
+    function updateTimeSearch() {
+        $(".timeSearch").map(function() {
+            // console.log($(this).text());
+            $(this).text(moment($(this).text()).fromNow());
+        }).get();
+    }
+
+    searchInput.on('keyup', () => {
+        const inputValue = searchInput.val();
+        // console.log(inputValue);
+
+        if (inputValue == "") {
+            resultSearch.html("");
+        }
+        else {
+            $.ajax({
+                url: '/courses/search',
+                type: 'POST',
+                data: {
+                    name: inputValue,
+                }
+            })
+            .done(function(ketqua) {
+                // console.log(ketqua);
+                let allSearch = "";
+                if (ketqua.length == 0) {
+                    allSearch = `<p class="text-center list-group-item list-group-item-action"><i class="fas fa-search"></i> Không có kết quả cho từ khóa <b>`+ inputValue +`</b></p>`
+                }
+                else {
+                    ketqua.forEach(element => {
+                        // console.log(element);
+                        // name.replace(/\n/g, "<br/>");
+                        var regex = new RegExp(inputValue, "gi");
+                        // console.log(regex);
+                        name = "<span class='highlight'>"+element.name+"</span>";
+                        mieuta = "<span class='highlight'>"+element.mieuta+"</span>";
+                        if (!/[`~.<>;':"/[\]|{}()=_+-]/.test(inputValue)) {
+                            var name = element.name.replace(regex, "<span class='highlight'>"+element.name.match(regex)[0]+"</span>");
+                            var mieuta = element.mieuta.replace(regex, "<span class='highlight'>"+element.name.match(regex)[0]+"</span>");
+                        }
+
+                        allSearch += (`
+                            <a href="courses/show/` + element.slug + `" class="list-group-item list-group-item-action" aria-current="true">
+                                <div class="row">
+                                        <h5 class="mb-1 text2line col-sm-9"><b>` + name + `</b></h5>
+                                        <small class="timeSearch col-sm-3 text-right">` + element.updatedAt + `</small>
+                                </div>
+                                <p class="mb-1 text2line">
+                                    ` + mieuta + `
+                                </p>
+                                <p><img src="` + element.actor.image + `" alt="" class="user-avatar"><b>` + element.actor.username + `</b></p>
+                            </a>
+                        `)
+                    });
+                }
+                resultSearch.html(allSearch);
+                updateTimeSearch();
+            });
+        }
+    });
+
+    closeButton.on("click", () => {
+        formSearch[0].reset();
+        resultSearch.html("");
+    })
+
+  })
+</script>

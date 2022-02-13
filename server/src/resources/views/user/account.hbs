@@ -1,0 +1,151 @@
+<div id="logreg-forms">
+    <form class="form-signin" method="POST" action="/account/login">
+        <h1 class="h3 mb-3 font-weight-normal" style="text-align: center"> Đăng nhập</h1>
+        <div class="social-login">
+            <button class="btn facebook-btn social-btn logincss" type="button"><span><i class="fab fa-facebook-f"></i> Đăng nhập với Facebook</span> </button>
+            <button class="btn google-btn social-btn logincss" type="button"><span><i class="fab fa-google-plus-g"></i> Đăng nhập với Google+</span> </button>
+        </div>
+        <p id="alertfb" style="display: block; color: red; text-align: center">{{alert1}}</p>
+        <p style="text-align:center"> Hoặc  </p>
+        <div class="input-group">
+            <input type="email" id="inputEmail" class="form-control" name="email" placeholder="Email address" required="" autofocus="" value="{{email}}">
+        </div>
+
+        <div class="input-group">
+            <input type="password" id="inputPassword" class="form-control" name="password" placeholder="Password" required="">
+        </div>
+        <p id="alert-login" style="display: block; color: red; text-align: center">{{alert}}</p>
+
+        <div class="input-group">
+            <button class="btn btn-md btn-rounded btn-block form-control submit" type="submit"><i class="fas fa-sign-in-alt"></i> Đăng nhập</button>
+        </div>
+
+        <a href="#" id="forgot_pswd">Quên mật khẩu</a>
+        <hr>
+        <!-- <p>Don't have an account!</p>  -->
+        <button class="btn btn-primary btn-block" type="button" id="btn-signup"><i class="fas fa-user-plus"></i> Tạo tài khoản mới</button>
+    </form>
+
+    <form action="/account/passwordReset" class="form-reset" method="POST">
+        <input type="email" id="resetEmail" name="email" class="form-control" placeholder="Email address" required="" autofocus="">
+        <button class="btn btn-primary btn-block" type="submit">Khôi phục mật khẩu</button>
+        <a href="#" id="cancel_reset"><i class="fas fa-angle-left"></i> Quay lại</a>
+    </form>
+
+    <form method="POST" action="/account/create" class="form-signup">
+        <div class="social-login">
+            <button class="btn facebook-btn social-btn" type="button"><span><i class="fab fa-facebook-f"></i> Đăng nhập với Facebook</span> </button>
+            <button class="btn google-btn social-btn" type="button"><span><i class="fab fa-google-plus-g"></i> Đăng nhập với Google+</span> </button>
+        </div>
+
+        <p style="text-align:center">Hoặc</p>
+
+        <input type="text" name="username" id="user-name" class="form-control" placeholder="Full name" required="" autofocus="">
+        <input type="email" name="email" id="user-email" class="form-control" placeholder="Email address" required autofocus="">
+        <p id="alert-email" style="display: none">Email đã được đăng ký! Vui lòng thử lại!</p>
+        <input type="password" name="password" id="user-pass" class="form-control" placeholder="Password" required autofocus="">
+        <input type="password" name="passwordConfirmation" id="user-repeatpass" class="form-control" placeholder="Confirm Password" required autofocus="">
+        <p id="alert-password" style="display: none">Mật khẩu nhập lại không đúng! Vui lòng nhập lại!</p>
+        <div class="input-group">
+        <button class="btn btn-md btn-block submit register" type="submit"><i class="fas fa-user-plus"></i> Đăng ký</button>
+        </div>
+
+        <a href="#" id="cancel_signup"><i class="fa fa-angle-left"></i> Quay lại</a>
+    </form>
+    <br>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var password = $("#user-pass");
+        var repassword = $("#user-repeatpass");
+        var alert_password = $("#alert-password");
+        var alert_email = $("#alert-email");
+        var email = $("#user-email");
+
+        //register
+        var formRegister = $(".form-signup")
+        var btnFormRegister = $('.btn.btn-md.btn-block.submit.register');
+
+
+        // login
+        var emailInput = $("#inputEmail");
+        var passwordInput = $("#inputPassword");
+
+        function toggleResetPswd(e){
+            e.preventDefault();
+            $('#logreg-forms .form-signin').toggle() // display:block or none
+            $('#logreg-forms .form-reset').toggle() // display:block or none
+        }
+
+        function toggleSignUp(e){
+            e.preventDefault();
+            $('#logreg-forms .form-signin').toggle(); // display:block or none
+            $('#logreg-forms .form-signup').toggle(); // display:block or none
+        }
+
+        $(()=>{
+            // Login Register Form
+            $('#logreg-forms #forgot_pswd').click(toggleResetPswd);
+            $('#logreg-forms #cancel_reset').click(toggleResetPswd);
+            $('#logreg-forms #btn-signup').click(toggleSignUp);
+            $('#logreg-forms #cancel_signup').click(toggleSignUp);
+        })
+
+        // Check password
+        $("#user-pass,#user-repeatpass").keyup(function checkpassword() {
+            if(password.val() == repassword.val()) {
+                alert_password.attr('style', 'display: none');
+                repassword.attr('style', false);
+            } else {
+                repassword.attr('style', 'border-color: red');
+                alert_password.attr('style', 'display: inline; color: red');
+            }
+        });
+
+        // Check email
+        email.keyup(function checkemail() {
+            $.ajax({
+                url: '/account/check_email',
+                type: 'POST',
+                data: {
+                    email: email.val()
+                }
+            }).done(function(ketqua) {
+                if (ketqua == 1) {
+                    alert_email.attr('style', 'display: inline; color: red');
+                    email.attr('style', 'border-color: red');
+
+                } else {
+                    alert_email.attr('style', 'display: none');
+                    email.attr('style', false);
+                }
+            });
+        });
+
+        //submit create account
+        formRegister.submit(function(e) {
+            e.preventDefault();
+            var check = formRegister.find("input[style='border-color: red']").length;
+            console.log(check);
+            if(check == 0) {
+                formRegister.unbind().submit();
+            }
+        })
+
+        // set email when login
+        if(emailInput.val().length > 1) {
+            passwordInput.attr('style','border-color: red');
+            passwordInput.focus();
+        }
+        
+        //login with facebook
+        $('.btn.facebook-btn.social-btn').click(function(e) {
+            window.location="/auth/facebook"
+        })
+        //login with gg
+        $('.btn.google-btn.social-btn').click(function(e) {
+            window.location="/auth/google"
+        })
+    })
+</script>
