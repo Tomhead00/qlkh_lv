@@ -19,90 +19,95 @@ function array_move(arr, old_index, new_index) {
 class MeController {
     // GET /me/stored/Courses
     storeCourses(req, res, next) {
-        let courseQuery = Course.find({ actor: req.session.passport.user._id });
-
-        if (req.query.hasOwnProperty('_sort')) {
-            courseQuery = courseQuery.sort({
-                [req.query.column]: req.query.type,
+        try {
+            let courseQuery = Course.find({
+                actor: req.session.passport.user._id,
             });
-        }
+    
+            if (req.query.hasOwnProperty('_sort')) {
+                courseQuery = courseQuery.sort({
+                    [req.query.column]: req.query.type,
+                });
+            }
+            Promise.all([courseQuery]).then(
+                (courses) =>
+                    res.send(courses),
+            );
+        } catch (err) {}
+    }
 
-        Promise.all([
-            courseQuery,
+    // GET /me/stored/deletedCount
+    deletedCount(req, res, next) {
+        try {
             Course.countDocumentsDeleted({
                 actor: req.session.passport.user._id,
-            }),
-        ])
-            .then(([courses, deletedCount]) =>
-                res.render('me/stored-courses', {
-                    title: 'Khóa học của tôi',
-                    username: req.session.passport,
-                    deletedCount,
-                    courses: multipleMongooseToObject(courses),
-                }),
-            )
-            .catch(next);
+            })
+            .then(deletedCount => {
+                res.send(deletedCount.toString())
+            })
+            .catch(next)
+        } catch(err){}
     }
+
+    
+
     // GET /me/trash/Courses
     trashCourses(req, res, next) {
-        let courseQuery = Course.findDeleted({
-            actor: req.session.passport.user._id,
-        });
-
-        if (req.query.hasOwnProperty('_sort')) {
-            courseQuery = courseQuery.sort({
-                [req.query.column]: req.query.type,
+        try {
+            let courseQuery = Course.findDeleted({
+                actor: req.session.passport.user._id,
             });
-        }
-
-        Promise.all([courseQuery, Course.countDocumentsDeleted()]).then(
-            ([courses, deletedCount]) =>
-                res.render('me/trash-courses', {
-                    title: 'Xóa khóa học',
-                    username: req.session.passport,
-                    deletedCount,
-                    courses: multipleMongooseToObject(courses),
-                }),
-        );
+    
+            if (req.query.hasOwnProperty('_sort')) {
+                courseQuery = courseQuery.sort({
+                    [req.query.column]: req.query.type,
+                });
+            }
+            Promise.all([courseQuery]).then(
+                (courses) =>
+                    res.send(courses),
+            );
+        } catch (err) {}
     }
 
-    // GET /me/stored/:id/edit
-    edit(req, res, next) {
-        Course.findById(req.params.id)
+    // GET /me/stored/:id/editCourse
+    async edit(req, res, next) {
+        try {
+            const course = await Course.findById(req.params.id)
             .populate('video')
             .populate({ modal: 'user', path: 'actor' })
-            .then(async (course) => {
-                // res.json(course);
-                // console.log(course.actor.email);
-                try {
-                    if (
-                        req.session.passport.user.email == course.actor.email ||
-                        req.session.passport.user.role == 'admin'
-                    ) {
-                        var countDel;
-                        await Course.findById(req.params.id).then(
-                            async (course1) => {
-                                // console.log(course1.video)
-                                countDel = await Video.countDocumentsDeleted({
-                                    _id: course1.video,
-                                });
-                            },
-                        );
-                        res.render('me/edit', {
-                            title: 'Tùy chỉnh khóa học',
-                            username: req.session.passport,
-                            countDel,
-                            course: mongooseToObject(course),
-                        });
-                    } else {
-                        return res.redirect('/me/stored/courses');
-                    }
-                } catch (next) {
-                    return res.redirect('/me/stored/courses');
-                }
-            })
-            .catch(next);
+            if  (
+                    req.session.passport.user.email == course.actor.email ||
+                    req.session.passport.user.role == 'admin'
+                )
+                res.send(course)
+            else res.send(false)  
+        } catch(err) {
+            res.send(false)
+        }
     }
+    // GET /me/stored/:id/editCourse/countDeleteVideo
+    async countDeleteVideo(req, res, next) {
+        try {
+            const course = await Course.findById(req.params.id)
+            .populate({ modal: 'user', path: 'actor' })
+            if  (
+                    req.session.passport.user.email == course.actor.email ||
+                    req.session.passport.user.role == 'admin'
+                ) {
+                    Video.countDocumentsDeleted({_id: course.video})
+                    .then((num) => {
+                        res.send(num.toString())
+                    })
+                }
+            else {
+                res.send(false) 
+            } 
+        } catch(err) {
+            res.send(false)
+        }
+    }
+        
     // GET /me/stored/:id/edit/addVideo
     addVideo(req, res, next) {
         Course.findById(req.params.id)
@@ -119,88 +124,89 @@ class MeController {
     // POST /me/stored/:id/edit/:_id/:action
     actionVideo(req, res, next) {
         // res.json(req.params);
-        switch (req.params.action) {
-            case 'preview':
-                Course.findById({ _id: req.params.id })
-                    .then((course) => {
-                        var arr = course.video;
-                        var pos = arr.indexOf(req.params._id);
-                        var pos1 = pos - 1;
-                        if (pos == 0) {
-                            pos1 = arr.length - 1;
-                        }
-                        arr = array_move(arr, pos, pos1);
-                        // console.log(arr, pos, pos1);
-                        Course.findOneAndUpdate(
-                            { _id: req.params.id },
-                            { $pullAll: { video: arr } },
-                        );
-                        Course.findOneAndUpdate(
-                            { _id: req.params.id },
-                            { video: arr },
-                        )
-                            .then(() => {
-                                res.redirect('back');
-                            })
-                            .catch(next);
-                    })
-                    .catch(next);
-                break;
-            case 'setting':
-                res.redirect('update');
-                break;
-            case 'delete':
-                Video.delete({ _id: req.params._id })
-                    .then(() => {
-                        res.redirect('/me/stored/' + req.params.id + '/edit/');
-                    })
-                    .catch(next);
-                break;
-            case 'next':
-                Course.findById({ _id: req.params.id })
-                    .then((course) => {
-                        var arr = course.video;
-                        var pos = arr.indexOf(req.params._id);
-                        var pos1 = pos + 1;
-                        if (pos == arr.length - 1) {
-                            pos1 = 0;
-                        }
-                        arr = array_move(arr, pos, pos1);
-                        // console.log(arr, pos, pos1);
-                        Course.findOneAndUpdate(
-                            { _id: req.params.id },
-                            { $pullAll: { video: arr } },
-                        );
-                        Course.findOneAndUpdate(
-                            { _id: req.params.id },
-                            { video: arr },
-                        )
-                            .then(() => {
-                                res.redirect('back');
-                            })
-                            .catch(next);
-                    })
-                    .catch(next);
-                break;
-            default:
-                res.redirect('back');
+        try {
+            switch (req.params.action) {
+                case 'preview':
+                    Course.findById({ _id: req.params.id })
+                        .then((course) => {
+                            var arr = course.video;
+                            var pos = arr.indexOf(req.params._id);
+                            var pos1 = pos - 1;
+                            if (pos == 0) {
+                                pos1 = arr.length - 1;
+                            }
+                            arr = array_move(arr, pos, pos1);
+                            // console.log(arr, pos, pos1);
+                            Course.findOneAndUpdate(
+                                { _id: req.params.id },
+                                { $pullAll: { video: arr } },
+                            );
+                            Course.findOneAndUpdate(
+                                { _id: req.params.id },
+                                { video: arr },
+                            )
+                                .then(() => {
+                                    res.send(true);
+                                })
+                                .catch(next);
+                        })
+                        .catch(next);
+                    break;
+                case 'delete':
+                    Video.delete({ _id: req.params._id })
+                        .then(() => {
+                            res.send(true);
+                        })
+                        .catch(next);
+                    break;
+                case 'next':
+                    Course.findById({ _id: req.params.id })
+                        .then((course) => {
+                            var arr = course.video;
+                            var pos = arr.indexOf(req.params._id);
+                            var pos1 = pos + 1;
+                            if (pos == arr.length - 1) {
+                                pos1 = 0;
+                            }
+                            arr = array_move(arr, pos, pos1);
+                            // console.log(arr, pos, pos1);
+                            Course.findOneAndUpdate(
+                                { _id: req.params.id },
+                                { $pullAll: { video: arr } },
+                            );
+                            Course.findOneAndUpdate(
+                                { _id: req.params.id },
+                                { video: arr },
+                            )
+                                .then(() => {
+                                    res.send(true);
+                                })
+                                .catch(next);
+                        })
+                        .catch(next);
+                    break;
+                default:
+                    res.send(false);
+            }
+        } catch(err) {
+            res.send(false)
         }
     }
 
-    // GET /me/stored/:id/edit/:_id/update
-    async updateVideo(req, res, next) {
-        const course = await Course.findById(req.params.id);
-        Video.findById(req.params._id)
-            .then((video) =>
-                res.render('me/updateVideo', {
-                    title: 'Cập nhật video khóa học',
-                    username: req.session.passport,
-                    video: mongooseToObject(video),
-                    course: mongooseToObject(course),
-                }),
-            )
-            .catch(next);
-    }
+    // // GET /me/stored/:id/edit/:_id/update
+    // async updateVideo(req, res, next) {
+    //     const course = await Course.findById(req.params.id);
+    //     Video.findById(req.params._id)
+    //         .then((video) =>
+    //             res.render('me/updateVideo', {
+    //                 title: 'Cập nhật video khóa học',
+    //                 username: req.session.passport,
+    //                 video: mongooseToObject(video),
+    //                 course: mongooseToObject(course),
+    //             }),
+    //         )
+    //         .catch(next);
+    // }
 
     // GET /me/trash/:id
     showTrashVideo(req, res, next) {
@@ -221,76 +227,74 @@ class MeController {
                                 [req.query.column]: req.query.type,
                             });
                         }
+                        Promise.all([videoQuery]).then(
+                            (video) =>
+                                res.send(video),
+                        );
 
-                        videoQuery.then((videos) =>
-                            res.render('me/trashId', {
-                                title: 'Video đã xóa',
-                                username: req.session.passport,
-                                videos: multipleMongooseToObject(videos),
-                                idCourse: req.params.id,
-                                nameCourse: course.name,
-                            }),
-                        );
                     } else {
-                        console.log(
-                            req.session.passport.user.email,
-                            course.actor.email,
-                            req.session.passport.user.role,
-                        );
-                        return res.redirect('/me/stored/courses');
+                        return res.send(false);
                     }
                 } catch (next) {
-                    return res.redirect('/me/stored/courses');
+                    return res.send(false);
                 }
             })
-            .catch(next);
+            .catch(next => {
+                res.send(false)
+            });
     }
 
     // PUT /me/stored/:id/edit/:_id/update
     putUpdateVideo(req, res, next) {
-        // res.json(req.body)
-        Video.findByIdAndUpdate(req.params._id, {
-            name: req.body.name,
-            mieuta: req.body.mieuta,
-            videoID: req.body.videoID,
+        // console.log(req.body.video, typeof(req.body.video))
+        Video.findByIdAndUpdate({_id: req.params._id}, {
+            name: req.body.video.name,
+            description: req.body.video.description,
+            videoID: req.body.video.videoID,
             image:
                 'https://img.youtube.com/vi/' +
-                req.body.videoID +
+                req.body.video.videoID +
                 '/sddefault.jpg',
         })
-            .then(() => {
-                // res.json(req.body)
-                res.redirect('/me/stored/' + req.params.id + '/edit/');
-            })
-            .catch(next);
+        .then(video => {
+            // console.log(video);
+            res.send(true);
+        })
+        .catch(next);
     }
 
     // PUT /me/stored/:id
     async storeVideo(req, res, next) {
         // res.json(req.body)
-        const course = await Course.findById({ _id: req.params.id });
-        // console.log(typeof(course._id))
-        req.body.image = `https://img.youtube.com/vi/${req.body.videoID}/sddefault.jpg`;
-        const video = new Video(req.body);
-        video
-            .save()
-            .then(
-                (video) =>
-                    Course.findByIdAndUpdate(
-                        req.params.id,
-                        { $push: { video: video._id } },
-                        { new: true, useFindAndModify: false },
-                    ),
-                // console.log(video),
-                res.redirect('/me/stored/' + req.params.id + '/edit'),
-            )
-            .catch(next);
+        try {
+            const course = await Course.findById({ _id: req.params.id });
+            // console.log(typeof(course._id))
+            req.body.image = `https://img.youtube.com/vi/${req.body.videoID}/sddefault.jpg`;
+            const video = new Video(req.body);
+            video
+                .save()
+                .then(
+                    (video) =>
+                        Course.findByIdAndUpdate(
+                            req.params.id,
+                            { $addToSet: { video: video._id } },
+                            { new: true, useFindAndModify: false },
+                        ),
+                    // console.log(video),
+                    res.send(true),
+                )
+                .catch(next => {
+                    res,send(false)
+                });
+        } catch {
+            res.send(false)
+        }
     }
 
     // PATCH /me/trash/:_id/restore/:id
     restoreVideo(req, res, next) {
         Video.restore({ _id: req.params.id })
-            .then(() => res.redirect('back'))
+            .then(() => res.send(true))
             .catch(next);
     }
 
@@ -304,15 +308,14 @@ class MeController {
         ).catch(next);
 
         Video.deleteOne({ _id: req.params.id })
-            .then(() => res.redirect('back'))
+            .then(() => res.send(true))
             .catch(next);
     }
 
     // POST /me/trash/:_id/handle-form-actions-trash
     handleFormTrashVideoActions(req, res, next) {
-        // res.json(req.body);
         switch (req.body.action) {
-            case 'deletes':
+            case 'delete':
                 for (const _id of req.body.videoIDs) {
                     Course.updateMany(
                         { _id: req.params._id },
@@ -322,16 +325,16 @@ class MeController {
 
                     Video.deleteOne({ _id: _id }).catch(next);
                 }
-                res.redirect('back');
+                res.send(true);
                 break;
             case 'restores':
                 for (const _id of req.body.videoIDs) {
                     Video.restore({ _id: _id }).catch(next);
                 }
-                res.redirect('back');
+                res.send(true);
                 break;
             default:
-                res.json({ message: 'Action is invalid!' });
+                res.send(false);
         }
     }
 }

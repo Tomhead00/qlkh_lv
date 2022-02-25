@@ -12,6 +12,9 @@ const Course = new Schema(
         description: { type: String, default: '' },
         image: { type: String, default: '' },
         slug: { type: String, slug: 'name', unique: true },
+        level: { type: String, default: ''},
+        req: { type: String, default: ''},
+        result: { type: String, default: ''},
         actor: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'user',

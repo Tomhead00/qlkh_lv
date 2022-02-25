@@ -1,4 +1,4 @@
-import { useNavigate, useLocation, Link } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect } from "react"
@@ -9,11 +9,13 @@ const {REACT_APP_SERVER} = process.env
 
 function Courses() {
     document.title = "Khóa học"
+    const navigate = useNavigate()
 
     const [cJoin, setCJoin] = useState([]);
     const [cUpdate, setCUpdate] = useState([]);
     const [cPopular, setCPopular] = useState([]);
     const [cAnother, setCAnother] = useState([]);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         // Cac khoa hoc da tham gia
@@ -55,6 +57,95 @@ function Courses() {
         return () => {};
     },[])
 
+    const searchCourses = (e) => {
+        setSearch(e.target.value)
+        console.log();
+        axios({
+            method: "post",
+            withCredentials: true,
+            data: {
+                name: e.target.value
+            },
+            url: `${REACT_APP_SERVER}/courses/search`
+        })
+        .then(ketqua => {
+            // console.log(ketqua.data, e.target.value, ketqua.data.length);
+            let allSearch = "";
+            if (ketqua.data.length === 0 && e.target.value !== '') {
+                allSearch = `<p class="text-center list-group-item list-group-item-action"><i class="fas fa-search"></i> Không có kết quả cho từ khóa <b>`+ e.target.value +`</b></p>`
+            }
+            else {
+                ketqua.data.map(element => {
+                    // name.replace(/\n/g, "<br/>");
+                    var regex = new RegExp(e.target.value, "g");
+                    if (!/[`~.<>;':"/[\]|{}()=_+-]/.test(e.target.value)) {
+                        var name = element.name.replace(regex, "<span class='highlight'>"+e.target.value+"</span>");
+                        var mieuta = element.description.replace(regex, "<span class='highlight'>"+e.target.value+"</span>");
+
+
+                    }
+                    allSearch += (`
+                        <a href="courses/show/` + element.slug + `" class="list-group-item list-group-item-action" aria-current="true">
+                            <div class="row">
+                                    <h5 class="mb-1 text2line col-sm-9"><b>` + name + `</b></h5>
+                                    <small class="timeSearch col-sm-3 text-right">` + moment(element.updatedAt).fromNow() + `</small>
+                            </div>
+                            <p class="mb-1 text2line">
+                                ` + mieuta + `
+                            </p>
+                            <p><img src="` + (isValidHttpUrl(element.actor.image) ? element.actor.image : `${REACT_APP_SERVER + element.actor.image}`) + `" alt="" class="user-avatar"><b>` + element.actor.username + `</b></p>
+                        </a>
+                    `)
+                });
+            }
+            $("#resultSearch").html(allSearch);
+        })
+    }
+    
+    const closeSearch = () => {
+        setSearch('');
+        $("#resultSearch").html('');
+    }
+
+    const navi = (string) => (e) => {
+        e.preventDefault()
+        axios({
+            method: "post",
+            withCredentials: true,
+            data: {
+                slug: string
+            },
+            url: `${REACT_APP_SERVER}/courses/checkThamgia`
+        })
+        .then(ketqua => {
+            // console.log(ketqua.data);
+            if (ketqua.data === 0) {
+                window.$("#ques-course-model").modal("toggle");
+                $("#btn-thamgia-course").on('click', function thamGia() {
+                    axios({
+                        method: "post",
+                        withCredentials: true,
+                        url: `${REACT_APP_SERVER}/courses/thamGia/${string}`
+                    })
+                    .then(ketqua => {
+                        if(ketqua.data) {
+                            console.log(ketqua.data)
+                            window.$("#ques-course-model").modal("toggle");
+                            navigate(`/courses/show/${string}`)
+                        }
+                    })
+                })
+            }
+            else {
+                navigate(`/courses/show/${string}`)
+            }
+        })
+    }
+
+    const closeModal = () => {
+        window.$("#ques-course-model").modal("toggle");
+    }
+
 
     return (
         <div>
@@ -63,10 +154,8 @@ function Courses() {
                     <div className="row mt-4">
                         <form className="input-group d-flex justify-content-end" id="formSearch">
                             <div className="form-outline">
-                                <input id="search-input form1" type="search" className="form-control" style={{width: "300px", border: "solid 1px"}}  autoComplete="off" />
-                                <label className="form-label" htmlFor="form1">Search</label>
-                            </div>
-                            <button id="close-button" type="button" className="btn btn-danger">
+                                <input id="search-input form1" type="search" autoComplete="off" placeholder="Search..." style={{height: "35.44px"}} onChange={searchCourses} value={search}/>                            </div>
+                            <button id="close-button" type="button" className="btn btn-danger" onClick={closeSearch}>
                                 <i className="fas fa-close"></i>
                             </button>
                         </form>
@@ -83,16 +172,19 @@ function Courses() {
                             cJoin.map((cjoin, index) => (
                                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                                         <div className="card card-course-item">
-                                            <Link to={`/courses/show/${cjoin.slug}`}>
+                                            <Link to={`/courses/show/${cjoin.slug}`} onClick={navi(`${cjoin.slug}`)}>
                                                 <img className="card-img-top" src={cjoin.image} alt={cjoin.name} />
                                             </Link>
 
                                             <div className="card-body">
-                                                <Link to={`/courses/show/${cjoin.slug}`}>
+                                                <Link to={`/courses/show/${cjoin.slug}`} onClick={navi(`${cjoin.slug}`)}>
                                                     <h5 className="card-title">{cjoin.name}</h5>
                                                 </Link>
-                                                <p className="card-text mt">{cjoin.description}</p>
-                                                <p className="mb-3 text-right"><i className="fas fa-clock"></i> 1000 phút</p>
+                                                <div className="card-text mt mb-3">{
+                                                    cjoin.description.split('\n').map(
+                                                        (str,index) => <div key={index}>{str}</div>)
+                                                }</div>
+                                                <p className="mb-3"><i className="far fa-clock"></i> 1000 phút</p>
                                                 <p><img src={isValidHttpUrl(cjoin.actor.image) ? cjoin.actor.image : `${REACT_APP_SERVER + cjoin.actor.image}`} className="user-avatar" /><b>{cjoin.actor.username}</b></p>
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cjoin.updatedAt).fromNow()}</small>                                                    
@@ -114,23 +206,26 @@ function Courses() {
                 <div className="mt-4">
                     <div className="row">
                         <h3 className="mb-0 col-sm-4"><b>Các khóa học vừa cập nhật:</b></h3>
-                        <a className="col-sm-8 text-right" href="/courses/courseNew">Xem tất cả <i className="fas fa-angle-double-right"></i></a>
+                        <Link className="col-sm-8 text-right" to="/courses/CoursesNew">Xem tất cả <i className="fas fa-angle-double-right"></i></Link>
                     </div>
                     <div className="row">
                         {cUpdate.toString() ? 
-                            cUpdate.slice(0, 3).map((cupdate, index) => (
+                            cUpdate.slice(0, 4).map((cupdate, index) => (
                                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                                         <div className="card card-course-item">
-                                            <Link to={`/courses/show/${cupdate.slug}`}>
+                                            <Link to={`/courses/show/${cupdate.slug}`} onClick={navi(`${cupdate.slug}`)}>
                                                 <img className="card-img-top" src={cupdate.image} alt={cupdate.name} />
                                             </Link>
 
                                             <div className="card-body">
-                                                <Link to={`/courses/show/${cupdate.slug}`}>
+                                                <Link to={`/courses/show/${cupdate.slug}`} onClick={navi(`${cupdate.slug}`)}>
                                                     <h5 className="card-title">{cupdate.name}</h5>
                                                 </Link>
-                                                <p className="card-text mt">{cupdate.description}</p>
-                                                <p className="mb-3 text-right"><i className="fas fa-clock"></i> 1000 phút</p>
+                                                <div className="card-text mt mb-3">{
+                                                    cupdate.description.split('\n').map(
+                                                        (str,index) => <div key={index}>{str}</div>)
+                                                }</div>
+                                                <p className="mb-3"><i className="fas fa-clock"></i> 1000 phút</p>
                                                 <p><img src={isValidHttpUrl(cupdate.actor.image) ? cupdate.actor.image : `${REACT_APP_SERVER + cupdate.actor.image}`} className="user-avatar" /><b>{cupdate.actor.username}</b></p>
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cupdate.updatedAt).fromNow()}</small>                                                    
@@ -151,23 +246,26 @@ function Courses() {
                 <div className="mt-4">
                     <div className="row">
                         <h3 className="mb-0 col-sm-4"><b>Các khóa học phổ biến:</b></h3>
-                        <a className="col-sm-8 text-right" href="/courses/coursePopular">Xem tất cả <i className="fas fa-angle-double-right"></i></a>
+                        <Link className="col-sm-8 text-right" to="/courses/CoursesPopular">Xem tất cả <i className="fas fa-angle-double-right"></i></Link>
                     </div>
                     <div className="row">
                         {cPopular.toString() ? 
-                            cPopular.slice(0, 3).map((cpopular, index) => (
+                            cPopular.slice(0, 4).map((cpopular, index) => (
                                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                                         <div className="card card-course-item">
-                                            <Link to={`/courses/show/${cpopular.slug}`}>
+                                            <Link to={`/courses/show/${cpopular.slug}`} onClick={navi(`${cpopular.slug}`)}>
                                                 <img className="card-img-top" src={cpopular.image} alt={cpopular.name} />
                                             </Link>
 
                                             <div className="card-body">
-                                                <Link to={`/courses/show/${cpopular.slug}`}>
+                                                <Link to={`/courses/show/${cpopular.slug}`} onClick={navi(`${cpopular.slug}`)}>
                                                     <h5 className="card-title">{cpopular.name}</h5>
                                                 </Link>
-                                                <p className="card-text mt">{cpopular.description}</p>
-                                                <p className="mb-3 text-right"><i className="fas fa-clock"></i> 1000 phút</p>
+                                                <div className="card-text mt mb-3">{
+                                                    cpopular.description.split('\n').map(
+                                                        (str,index) => <div key={index}>{str}</div>)
+                                                }</div>
+                                                <p className="mb-3"><i className="fas fa-clock"></i> 1000 phút</p>
                                                 <p><img src={isValidHttpUrl(cpopular.actor.image) ? cpopular.actor.image : `${REACT_APP_SERVER + cpopular.actor.image}`} className="user-avatar" /><b>{cpopular.actor.username}</b></p>
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cpopular.updatedAt).fromNow()}</small>                                                    
@@ -194,16 +292,19 @@ function Courses() {
                             cAnother.map((canother, index) => (
                                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                                         <div className="card card-course-item">
-                                            <Link to={`/courses/show/${canother.slug}`}>
+                                            <Link to={`/courses/show/${canother.slug}`} onClick={navi(`${canother.slug}`)}>
                                                 <img className="card-img-top" src={canother.image} alt={canother.name} />
                                             </Link>
 
                                             <div className="card-body">
-                                                <Link to={`/courses/show/${canother.slug}`}>
+                                                <Link to={`/courses/show/${canother.slug}`} onClick={navi(`${canother.slug}`)}>
                                                     <h5 className="card-title">{canother.name}</h5>
                                                 </Link>
-                                                <p className="card-text mt">{canother.description}</p>
-                                                <p className="mb-3 text-right"><i className="fas fa-clock"></i> 1000 phút</p>
+                                                <div className="card-text mt mb-3">{
+                                                    canother.description.split('\n').map(
+                                                        (str,index) => <div key={index}>{str}</div>)
+                                                }</div>
+                                                <p className="mb-3"><i className="fas fa-clock"></i> 1000 phút</p>
                                                 <p><img src={isValidHttpUrl(canother.actor.image) ? canother.actor.image : `${REACT_APP_SERVER + canother.actor.image}`} className="user-avatar" /><b>{canother.actor.username}</b></p>
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(canother.updatedAt).fromNow()}</small>                                                    
@@ -228,7 +329,7 @@ function Courses() {
                     <div className="modal-content">
                     <div className="modal-header">
                         <h5 className="modal-title">Tham gia khóa học?</h5>
-                        <button type="button" className="close close-ques" data-dismiss="modal" aria-label="Close">
+                        <button type="button" className="close close-ques" data-dismiss="modal" aria-label="Close" onClick={closeModal}>
                         <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -236,7 +337,7 @@ function Courses() {
                         <p>Bạn chưa tham gia khóa học này. Bạn có muốn tham gia?</p>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary close-ques" data-dismiss="modal">Hủy</button>
+                        <button type="button" className="btn btn-secondary close-ques" data-dismiss="modal" onClick={closeModal}>Hủy</button>
                         <button id="btn-thamgia-course" type="button" className="btn btn-danger">Tham gia</button>
                     </div>
                     </div>
@@ -247,159 +348,3 @@ function Courses() {
 }
 
 export default Courses
-
-{/*
-
-<form method="POST" name="join-course-form"></form>
-
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    var card = $(".card.card-course-item");
-    var closeQues = $(".close-ques");
-    var btnThamgia = $("#btn-thamgia-course");
-    var joinCourseForm = document.forms['join-course-form'];
-    
-    // format time
-    var time = $(".time").map(function() {
-        $(this).text(moment($(this).text()).fromNow());
-    }).get();
-
-    // check tham gia khoa hoc
-    card.on("click", function (e) {
-        e.preventDefault();
-        var link = $(this).children("a").attr('href');
-        //console.log(link);
-        var slugCourse = link.substring(link.lastIndexOf("/")+1, link.length);
-        //console.log(slugCourse);
-
-        $.ajax({
-            url: '/courses/checkThamgia',
-            type: 'POST',
-            data: {
-                slug: slugCourse
-            }
-        }).done(function(ketqua) {
-            // console.log(ketqua);
-            if (ketqua == 0) {
-                $("#ques-course-model").modal("show");
-                btnThamgia.on('click', function thamGia() {
-                    joinCourseForm.action = "/courses/thamGia/" + slugCourse;
-                    joinCourseForm.submit();
-                })
-            }
-            else {
-                window.location.href = link;
-            }
-        });
-    })
-    {{!-- // get number join courses
-    $(function() {
-        $.each(card, function(index, value) {
-            // console.log(value);
-
-            var link = $(value).children("a").attr('href');
-            // console.log(link);
-            var slugCourse = link.substring(link.lastIndexOf("/")+1, link.length);
-            // console.log(slugCourse);
-
-            $.ajax({
-                url: '/courses/getNumUser',
-                type: 'POST',
-                data: {
-                    slug: slugCourse
-                }
-            }).done(function(ketqua) {
-                // console.log(ketqua);
-                var numUser = $(value).find(".text-muted.ml-auto").html("<i className='fas fa-users'></i> " +  ketqua);
-                // console.log(numUser.text());
-            });
-        })
-    }) --}}
-
-    // button tham gia
-    btnThamgia.on('click', function thamGia(link) {
-        window.location.href = "course/";
-    })
-
-    // close modal ques
-    closeQues.on("click", function() {
-        $("#ques-course-model").modal("hide");
-    })
-    // search
-    const closeButton = $('#close-button');
-    const searchInput = $('#search-input');
-    const formSearch = $('#formSearch');
-    const resultSearch = $('#resultSearch');
-
-    formSearch.submit((e) => {
-        e.preventDefault();
-    })
-
-    function updateTimeSearch() {
-        $(".timeSearch").map(function() {
-            // console.log($(this).text());
-            $(this).text(moment($(this).text()).fromNow());
-        }).get();
-    }
-
-    searchInput.on('keyup', () => {
-        const inputValue = searchInput.val();
-        // console.log(inputValue);
-
-        if (inputValue == "") {
-            resultSearch.html("");
-        }
-        else {
-            $.ajax({
-                url: '/courses/search',
-                type: 'POST',
-                data: {
-                    name: inputValue,
-                }
-            })
-            .done(function(ketqua) {
-                // console.log(ketqua);
-                let allSearch = "";
-                if (ketqua.length == 0) {
-                    allSearch = `<p className="text-center list-group-item list-group-item-action"><i className="fas fa-search"></i> Không có kết quả cho từ khóa <b>`+ inputValue +`</b></p>`
-                }
-                else {
-                    ketqua.forEach(element => {
-                        // console.log(element);
-                        // name.replace(/\n/g, "<br/>");
-                        var regex = new RegExp(inputValue, "gi");
-                        // console.log(regex);
-                        name = "<span className='highlight'>"+element.name+"</span>";
-                        mieuta = "<span className='highlight'>"+element.mieuta+"</span>";
-                        if (!/[`~.<>;':"/[\]|{}()=_+-]/.test(inputValue)) {
-                            var name = element.name.replace(regex, "<span className='highlight'>"+element.name.match(regex)[0]+"</span>");
-                            var mieuta = element.mieuta.replace(regex, "<span className='highlight'>"+element.name.match(regex)[0]+"</span>");
-                        }
-
-                        allSearch += (`
-                            <a href="courses/show/` + element.slug + `" className="list-group-item list-group-item-action" aria-current="true">
-                                <div className="row">
-                                        <h5 className="mb-1 text2line col-sm-9"><b>` + name + `</b></h5>
-                                        <small className="timeSearch col-sm-3 text-right">` + element.updatedAt + `</small>
-                                </div>
-                                <p className="mb-1 text2line">
-                                    ` + mieuta + `
-                                </p>
-                                <p><img src="` + element.actor.image + `" alt="" className="user-avatar"><b>` + element.actor.username + `</b></p>
-                            </a>
-                        `)
-                    });
-                }
-                resultSearch.html(allSearch);
-                updateTimeSearch();
-            });
-        }
-    });
-
-    closeButton.on("click", () => {
-        formSearch[0].reset();
-        resultSearch.html("");
-    })
-
-  })
-</script> */}

@@ -1,22 +1,27 @@
 import logo from './logo.svg';
 import './App.scss';
-import {Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import {Routes, Route, Navigate } from 'react-router-dom'
 import Nav from './components/nav/Nav'
 import Account from './resources/user/Account';
 import ResetPass from './resources/user/ResetPass';
 import Edit from './resources/user/Edit';
 import Courses from './resources/courses/Courses';
+import CoursesNew from './resources/courses/CoursesNew';
+import CoursesPopular from './resources/courses/CoursesPopular';
+import Show from './resources/courses/Show';
+import StoredCourses from './resources/me/StoredCourses';
+import TrashCourses from './resources/me/TrashCourses';
+import EditCourse from './resources/me/EditCourse';
+import AddVideo from './resources/me/AddVideo';
+import UpdateVideo from './resources/me/UpdateVideo';
+import TrashVideo from './resources/me/TrashVideo';
 import { useEffect, useRef, useState } from 'react';
 import axios from "axios"
 
+
 const {REACT_APP_SERVER} = process.env
 
-console.log("app");
-
 function App() {
-  // const location = useLocation()
-  // console.log(location.pathname);
-
   const [check, setCheck] = useState(true);
 
   useEffect( () => {
@@ -47,7 +52,25 @@ function App() {
         <Route path="/account/*" element={<Account />} />
 
         {/* Khóa học */}
+        <Route path="/courses/show/:slug" element={check ? <Show />:<Navigate to="/account"/>} />
+        <Route path="/courses/CoursesNew" element={check ? <CoursesNew />:<Navigate to="/account"/>} />
+        <Route path="/courses/CoursesPopular" element={check ? <CoursesPopular />:<Navigate to="/account"/>} />
         <Route path="/courses/*" element={check ? <Courses />:<Navigate to="/account"/>} />
+
+        {/* me */}
+        {/* store course */}
+        <Route path="/me/stored/courses" element={check ? <StoredCourses />:<Navigate to="/account"/>} />
+        {/* trash course */}
+        <Route path="/me/trash/courses" element={check ? <TrashCourses />:<Navigate to="/account"/>} />
+        {/* Edit Course */}
+        <Route path="/me/stored/:id/EditCourse" element={check ? <EditCourse />:<Navigate to="/account"/>} />
+        {/* Add Video */}
+        <Route path="/me/stored/:id/EditCourse/AddVideo" element={check ? <AddVideo />:<Navigate to="/account"/>}/>
+        {/* Update Video */}
+        <Route path="/me/stored/:id/EditCourse/:_id/update" element={check ? <UpdateVideo />:<Navigate to="/account"/>}/>
+        {/* Trash video */}
+        <Route path="/me/trash/:id" element={check ? <TrashVideo />:<Navigate to="/account"/>}/>
+
       </Routes>
     </div>
   );

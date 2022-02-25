@@ -99,9 +99,6 @@ class CourseController {
                 {
                     $sort: { studentCount: -1 },
                 },
-                {
-                    $limit: 4,
-                },
             ]).catch(next);
             await Course.populate(courseFA, { modal: 'user', path: 'actor' }).catch(
                 next,
@@ -191,7 +188,7 @@ class CourseController {
 
     // POST /courses/store
     store(req, res, next) {
-        // res.json(req.body)
+        // console.log(req.body)
         var array = [
             '?technology',
             '?nature',
@@ -210,23 +207,25 @@ class CourseController {
         course.actor = req.session.passport.user._id;
         course
             .save()
-            .then(
-                () =>
-                    User.findOneAndUpdate(
-                        { _id: req.session.passport.user._id },
-                        { $push: { khoahoc: course._id } },
-                        { new: true, useFindAndModify: false },
-                    ),
-                res.redirect('/me/stored/courses'),
-            )
-            .catch(next);
+            .then(() => {
+                // console.log(course._id);
+                User.findOneAndUpdate(
+                    { _id: req.session.passport.user._id },
+                    { $addToSet: { joined: course._id } },
+                    { new: true, useFindAndModify: false },
+                )
+                .then()
+                res.send(true)
+            })
+            .catch(MongoError => {
+                res.send("Khóa học đã tồn tại trong thùng rác! Vui lòng xóa trước khi tạo lại!")
+            });
     }
 
     // PUT /courses/:id
     update(req, res, next) {
-        // res.json(req.body)
-        Course.updateOne({ _id: req.params.id }, req.body)
-            .then(() => res.redirect('/me/stored/courses'))
+        Course.updateOne({ _id: req.params.id }, req.body.course)
+            .then(() => res.send(true))
             .catch(next);
     }
 
@@ -234,22 +233,28 @@ class CourseController {
     delete(req, res, next) {
         // res.json(req.body)
         Course.delete({ _id: req.params.id })
-            .then((course) => res.redirect('back'))
+            .then((course) => res.send(true))
             .catch(next);
     }
 
     // PATCH /courses/:id/restore
     restore(req, res, next) {
-        Course.restore({ _id: req.params.id })
-            .then(() => res.redirect('back'))
-            .catch(next);
+        try {
+            Course.restore({ _id: req.params.id })
+            .then(() => res.send(true))
+            .catch(next => {
+                res.send(false)
+            });
+        } catch (err) {
+            res.send(false)
+        }
     }
     // DELETE /courses/:id/forceDelete
     forceDelete(req, res, next) {
         //res.json(req.params)
         User.updateMany(
             {},
-            { $pull: { khoahoc: req.params.id } },
+            { $pull: { joined: req.params.id } },
             { new: true, useFindAndModify: false },
         ).catch(next);
 
@@ -265,7 +270,7 @@ class CourseController {
             .catch(next);
 
         Course.deleteOne({ _id: req.params.id })
-            .then(() => res.redirect('back'))
+            .then(() => res.send(true))
             .catch(next);
     }
     // POST /courses/handle-form-actions
@@ -273,11 +278,11 @@ class CourseController {
         switch (req.body.action) {
             case 'delete':
                 Course.delete({ _id: { $in: req.body.courseIds } })
-                    .then(() => res.redirect('back'))
+                    .then(() => res.send(true))
                     .catch(next);
                 break;
             default:
-                res.json({ message: 'Action is invalid!' });
+                res.send('Action is invalid!');
         }
     }
 
@@ -289,7 +294,7 @@ class CourseController {
                 for (const _id of req.body.courseIds) {
                     User.updateMany(
                         {},
-                        { $pull: { khoahoc: _id } },
+                        { $pull: { joined: _id } },
                         { new: true, useFindAndModify: false },
                     ).catch(next);
 
@@ -304,26 +309,27 @@ class CourseController {
 
                     Course.deleteOne({ _id: _id }).catch(next);
                 }
-                res.redirect('back');
+                res.send(true);
                 break;
             case 'restores':
                 for (const _id of req.body.courseIds) {
                     Course.restore({ _id: _id }).catch(next);
                 }
-                res.redirect('back');
+                res.send(true);
                 break;
             default:
-                res.json({ message: 'Action is invalid!' });
+                res.send('Action is invalid!');
         }
     }
 
     // POST /courses/checkThamgia
     async checkThamgia(req, res, next) {
         await User.findById({ _id: req.session.passport.user._id })
-            .populate({ modal: 'course', path: 'khoahoc' })
+            .populate({ modal: 'course', path: 'joined' })
             .then((user) => {
+                // console.log(user);
                 var check = 0;
-                user.khoahoc.forEach(function (element, index) {
+                user.joined.forEach(function (element, index) {
                     // Do your thing, then:
                     if (element.slug == req.body.slug) {
                         return (check = 1);
@@ -336,32 +342,27 @@ class CourseController {
 
     // POST /courses/thamGia
     async thamGia(req, res, next) {
-        const course = await Course.find({ slug: req.params.slug });
+        const course = await Course.find({ slug: req.params.slug })
         // console.log(course);
         // console.log(course[0]._id);
-        User.findOneAndUpdate(
-            { _id: req.session.passport.user._id },
-            { $push: { khoahoc: course[0]._id } },
-            { new: true, useFindAndModify: false },
-        )
-            .then(() => {
-                res.redirect('/courses/show/' + req.params.slug);
-            })
-            .catch(next);
+        // const id = course[0]._id
+        try {
+            // console.log(req.session.passport.user.joined);
+            User.findOneAndUpdate(
+                { _id: req.session.passport.user._id},
+                { $addToSet: { joined: course[0]._id } },
+                { new: true, useFindAndModify: false },
+            )
+                .then(() => {
+                    res.send("true");
+                })
+                .catch(next => {
+                    res.send("false");
+                });
+        }catch (UnhandledPromiseRejectionWarning) {
+            res.send("false");
+        }
     }
-
-    // // POST /courses/getNumUser <AJAX>
-    // getNumUser(req, res, next) {
-    //     // console.log(req.body);
-    //     Course.findOne(req.body)
-    //         .then((course) => {
-    //             // console.log(course._id)
-    //             User.countDocuments({ khoahoc: course }).then((count) => {
-    //                 res.send(count.toString());
-    //             });
-    //         })
-    //         .catch(next);
-    // }
 
     // POST /checkUnlock <AJAX>
     checkUnlock(req, res, next) {
@@ -419,12 +420,16 @@ class CourseController {
             res.send([]);
         } else {
             // console.log(req.body.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-            Course.find({
-                name: new RegExp(
+            Course.find({ $or: [
+                {'name': new RegExp(
                     `${req.body.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
                     'i',
-                ),
-            })
+                )},
+                {'description': new RegExp(
+                    `${req.body.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+                    'i',
+                )},
+            ]})
                 .populate({ modal: 'user', path: 'actor' })
                 .then((courses) => {
                     res.send(courses);

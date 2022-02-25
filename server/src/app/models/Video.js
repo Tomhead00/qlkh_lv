@@ -9,7 +9,7 @@ const Video = new Schema(
     {
         _id: { type: Number },
         name: { type: String, default: '' },
-        mieuta: { type: String, default: '' },
+        description: { type: String, default: '' },
         image: { type: String, default: '' },
         slug: { type: String, slug: 'name', unique: true },
         videoID: { type: String, default: '' },

@@ -1,90 +1,147 @@
-<div class="mt-3 ml-4 mr-4">
-    <div class="row">
-        <div class="col-xl-8">
-            <div id="player"></div>
-            <div class="mt-2" style="color: black;">
-                <h3><b class="title">N/A</b></h3>
-                <p class="description mb-4">N/A</p>
-            </div>
-            <div class="row">
-                <div class="page-header">
-                    <h4><small id="totalComment" class="pull-right mb-4">N/A comments</small> <b>Bình luận</b> </h4>
-                </div>
+import { useNavigate, Link, useLocation } from "react-router-dom"
+import $ from 'jquery'
+import axios from "axios"
+import { useState, useEffect, useRef } from "react"
+import {isValidHttpUrl} from "../../components/nav/Func"
+import moment from "moment"
+import YouTube from 'react-youtube';
 
-                <form class="border-0" style="background-color: #f8f9fa;">
-                    <div class="d-flex flex-start w-100">
-                        <img
-                            class="rounded-circle shadow-1-strong me-3"
-                            src="{{username.user.image}}"
-                            alt="avatar"
-                            width="40"
-                            height="40"
-                        />
-                        <div class="form-outline w-100">
-                            <textarea
-                            class="form-control"
-                            id="textAreaExample"
-                            rows="3"
-                            style="background: #fff;"
-                            required></textarea>
-                            <label class="form-label" for="textAreaExample">Message</label>
+const {REACT_APP_SERVER} = process.env
+
+function Show() {
+    // Khai bao
+    const navigate = useNavigate()
+    const location = useLocation()
+    const [course, setCourse] = useState([]);
+    const string = useRef("")
+    string.current = location.pathname.substring(14, location.pathname.length)
+    const opts = {
+        height: '720',
+        width: '100%',
+    };
+
+    document.title = string.current
+
+    useEffect(() => {
+        axios({
+            method: "post",
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/courses/thamGia/${string.current}`
+        })
+    }, [])
+
+    
+
+    return (
+        <div className="mt-3 ml-4 mr-4">
+            <div className="row">
+                <div className="col-xl-8">
+                    <YouTube 
+                    videoId="e3rybHc5Of4"                  // defaults -> null
+                    id="player"                      // defaults -> null
+                    className="player"               // defaults -> null
+                    // containerClassName={string}       // defaults -> ''
+                    // title={string}                    // defaults -> null
+                    opts={opts}                       // defaults -> {}
+                    // onReady={func}                    // defaults -> noop
+                    // onPlay={func}                     // defaults -> noop
+                    // onPause={func}                    // defaults -> noop
+                    // onEnd={func}                      // defaults -> noop
+                    // onError={func}                    // defaults -> noop
+                    // onStateChange={func}              // defaults -> noop
+                    // onPlaybackRateChange={func}       // defaults -> noop
+                    // onPlaybackQualityChange={func}    // defaults -> noop
+                    />
+                    <div className="mt-2" style={{color: "black"}}>
+                        <h3><b className="title">N/A</b></h3>
+                        <p className="description mb-4">N/A</p>
+                    </div>
+                    <div className="row">
+                        <div className="page-header">
+                            <h4><small id="totalComment" className="pull-right mb-4">N/A comments</small> <b>Bình luận</b> </h4>
+                        </div>
+
+                        <form className="border-0" style={{backgroundColor: "#f8f9fa"}}>
+                            <div className="d-flex flex-start w-100">
+                                <img
+                                    className="rounded-circle shadow-1-strong me-3"
+                                    src="'username.user.image'"
+                                    alt="avatar"
+                                    width="40"
+                                    height="40"
+                                />
+                                <div className="form-outline w-100">
+                                    <textarea
+                                    className="form-control"
+                                    id="textAreaExample"
+                                    rows="3"
+                                    style={{background: "#fff"}}
+                                    required></textarea>
+                                    <label className="form-label" htmlFor="textAreaExample">Message</label>
+                                </div>
+                            </div>
+                            <div className="float-end mt-2 pt-1">
+                                <button type="submit" className="btn btn-primary btn-sm">Post comment</button>
+                                <button type="reset" className="btn btn-outline-primary btn-sm">Cancel</button>
+                            </div>
+                        </form>
+
+                        <div className="comments-list" id="comments-list"></div>
+
+                        <div className="mb-5 pb-5"></div>
+                    </div>
+
+                </div>
+                <div className="col-xl-4">
+                    <div className="list-group">
+                        <div className="list-group-item list-group-item-dark" aria-current="true">
+                            <div className="d-flex w-100 justify-content-between">
+                                <h4 className="mb-1"><b>'course.name'</b></h4>
+                            </div>
+                            <div className="mb-1">
+                                <p className="mb-1 mt">'course.mieuta'</p>
+                            </div>
+                        </div>
+                        <div className="list-group-item list-group-item-action">
+                            '#each course.video'
+                                <div className="row pb-3 pt-1 course lockCourse">
+                                    <div className="col-sm-1 imgCenter status text-center">
+                                        <i className="fas fa-lock"></i>
+                                    </div>
+                                    <div className="col-sm-3 imgCenter">
+                                        <img src="http://img.youtube.com/vi/'this.videoID'/default.jpg" alt="'this.image'" className="img-responsive center-block d-block mx-auto" />
+                                    </div>
+                                    <div className="col-sm-8 pl-0">
+                                        <h5 className="mb-1 text2line"><b>'this.name'</b></h5>
+                                        <p className="mb-0 text2line mt">'this.mieuta'</p>
+                                        <p className="mb-0 text2line mt id" style={{display: "none"}}>'this._id'</p>
+                                        <small className="text-muted time">'this.updatedAt'</small>
+                                    </div>
+                                </div>
+                            'else'
+                                <div className="row mt-3 mb-3">
+                                    <h5 className="mb-0 text-center">Không có video nào cho khóa học này!</h5>
+                                    <a href="/back" className="mb-0 text-center"><i className="fas fa-arrow-left"></i> Quay lại</a>
+                                </div>
+                            '/each'
                         </div>
                     </div>
-                    <div class="float-end mt-2 pt-1">
-                        <button type="submit" class="btn btn-primary btn-sm">Post comment</button>
-                        <button type="reset" class="btn btn-outline-primary btn-sm">Cancel</button>
-                    </div>
-                </form>
-
-                <div class="comments-list" id="comments-list"></div>
-
-                <div class="mb-5 pb-5"></div>
+                </div>
             </div>
-
         </div>
-        <div class="col-xl-4">
-            <div class="list-group">
-                <div class="list-group-item list-group-item-dark" aria-current="true">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h4 class="mb-1"><b>{{course.name}}</b></h4>
-                    </div>
-                    <p class="mb-1">
-                        <p class="mb-1 mt">{{course.mieuta}}</p>
-                    </p>
-                </div>
-                <div class="list-group-item list-group-item-action">
-                    {{#each course.video}}
-                        <div class="row pb-3 pt-1 course lockCourse">
-                            <div class="col-sm-1 imgCenter status text-center">
-                                <i class="fas fa-lock"></i>
-                            </div>
-                            <div class="col-sm-3 imgCenter">
-                                <img src="http://img.youtube.com/vi/{{this.videoID}}/default.jpg" alt="{{this.image}}" class="img-responsive center-block d-block mx-auto">
-                            </div>
-                            <div class="col-sm-8 pl-0">
-                                <h5 class="mb-1 text2line"><b>{{this.name}}</b></h5>
-                                <p class="mb-0 text2line mt">{{this.mieuta}}</p>
-                                <p class="mb-0 text2line mt id" style="display: none;">{{this._id}}</p>
-                                <small class="text-muted time">{{this.updatedAt}}</small>
-                            </div>
-                        </div>
-                    {{else}}
-                        <div class="row mt-3 mb-3">
-                            <h5 class="mb-0 text-center">Không có video nào cho khóa học này!</h5>
-                            <a href="javascript:history.back()" class="mb-0 text-center"><i class="fas fa-arrow-left"></i> Quay lại</a>
-                        </div>
-                    {{/each}}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+    )
+}
 
-{{!--  JS --}}
+export default Show
+
+
+{/* 
+
+'!--  JS --'
 <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.6.0/mdb.min.js"></script>
-{{!-- moment --}}
+'!-- moment --'
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
 <script>
@@ -155,8 +212,8 @@
     // change videoID embed
     // console.log(selectList);
     selectList.on("click", function() {
-        // console.log($(this).hasClass("lockCourse"));
-        if ($(this).hasClass("lockCourse")) return true;
+        // console.log($(this).hasClassName("lockCourse"));
+        if ($(this).hasClassName("lockCourse")) return true;
         else {
             // chut css cho the ko bi khoa
             var link = $(this).find("img").attr("src");
@@ -164,9 +221,9 @@
             var videoID = link.substring(link.indexOf("vi/")+3, link.indexOf("vi/")+14)
             videoIDs = videoID;
             // console.log(videoID);
-            selectList.find(".fas").removeClass("fa-play").attr("style",false);
+            selectList.find(".fas").removeClassName("fa-play").attr("style",false);
             selectList.attr("style",false);
-            $(this).find(".fas").addClass("fa-play").attr("style","color: #8a038c");
+            $(this).find(".fas").addClassName("fa-play").attr("style","color: #8a038c");
             $(this).attr("style","background-color: hsl(240, 0%, 75%)");
             player.cueVideoById({'videoId': videoID});
             // get name va description
@@ -185,9 +242,9 @@
 
     // Unlock video
     function unlockVideo(i) {
-        $(selectList[i]).removeClass("lockCourse");
-        $(selectList[i]).addClass("readyCourse");
-        $(selectList[i]).find(".fa-lock").removeClass("fa-lock");
+        $(selectList[i]).removeClassName("lockCourse");
+        $(selectList[i]).addClassName("readyCourse");
+        $(selectList[i]).find(".fa-lock").removeClassName("fa-lock");
     }
 
     // lock course
@@ -240,17 +297,17 @@
         // console.log(selectList);
         for(var i = selectList.length-1; i >= 0; i--) {
             // console.log($(selectList[i]));
-            // console.log($(selectList[i]).hasClass("lockCourse"));
-            if($(selectList[i]).hasClass("lockCourse")) {
+            // console.log($(selectList[i]).hasClassName("lockCourse"));
+            if($(selectList[i]).hasClassName("lockCourse")) {
                 continue;
             } else {
-                /* myVar = setInterval(function() { 
+                myVar = setInterval(function() { 
                     // console.log(status);
                     if (status == "true") {
                         $(selectList[i]).click();
                         clearTimeout(myVar);
                     }
-                }, 200) */
+                }, 200)
                 $(selectList[i]).click();
                 break;
             }
@@ -260,8 +317,8 @@
     }
     
     function nextVideo() {
-        // console.log($(selectList[videoPlaying+1]).hasClass("lockCourse"));
-        if($(selectList[videoPlaying+1]).hasClass("lockCourse")) return;
+        // console.log($(selectList[videoPlaying+1]).hasClassName("lockCourse"));
+        if($(selectList[videoPlaying+1]).hasClassName("lockCourse")) return;
         else {
             $(selectList[videoPlaying+1]).click();
         }
@@ -289,13 +346,13 @@
             url: '/courses/checkThamgia',
             type: 'POST',
             data: {
-                slug: `{{course.slug}}`,
+                slug: `'course.slug'`,
             }
         }).done(function(ketqua) {
             // console.log(ketqua);
             if (ketqua == 0) {
                 $.ajax({
-                    url: '/courses/thamGia/' + `{{course.slug}}`,
+                    url: '/courses/thamGia/' + `'course.slug'`,
                     type: 'POST',
                 })                    
                 // joinCourseForm.action = "/courses/thamGia/" + slugCourse;
@@ -329,11 +386,11 @@
                 var content = element.content;
                 var contentProcess = content.replace(/\n/g, "<br/>");
                 allCommnet += (`
-                    <div class='media'>
-                        <img class='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src='` + element.actor.image + `' alt='' width="40" height="40">
-                        <div class='media-body mt-2 mb-2 pt-2 pb-2'>
-                            <h5 class='mt-0 mb-0'><b>`+ element.actor.username +`</b> <small class="timeComments">`+ element.createdAt +`</small></h5>
-                            <p class='mb-0'>`+ contentProcess +`</p>
+                    <div className='media'>
+                        <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src='` + element.actor.image + `' alt='' width="40" height="40">
+                        <div className='media-body mt-2 mb-2 pt-2 pb-2'>
+                            <h5 className='mt-0 mb-0'><b>`+ element.actor.username +`</b> <small className="timeComments">`+ element.createdAt +`</small></h5>
+                            <p className='mb-0'>`+ contentProcess +`</p>
                         </div>
                     </div>
                 `)
@@ -368,4 +425,4 @@
             refreshComment(videoIDs);
         }
     })
-</script>
+</script> */}
