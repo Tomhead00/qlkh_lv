@@ -15,6 +15,7 @@ const Course = new Schema(
         level: { type: String, default: ''},
         req: { type: String, default: ''},
         result: { type: String, default: ''},
+        time: { type: Number, default: 0},
         actor: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'user',

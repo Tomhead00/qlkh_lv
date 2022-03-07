@@ -42,6 +42,7 @@ module.exports = new GoogleStrategy(
                     } else if (user) {
                         // console.log("user found")
                         // console.log(user)
+                        User.updateOne({email: profile.emails[0].value}, {image: profile.photos[0].value})
                         return done(null, user);
                     } else {
                         var newUser = new User();

@@ -3,6 +3,7 @@ import $ from 'jquery'
 import axios from "axios"
 import { useState } from "react"
 import {youtube_parser} from '../../components/nav/Func'
+import YouTube from 'react-youtube';
 
 const {REACT_APP_SERVER} = process.env
 
@@ -12,12 +13,14 @@ function UpdateVideo() {
     const [course, setCourse] = useState(location.state.course);
     const [video, setVideo] = useState(location.state.video);
     const [tempVid, setTempVid] = useState(`https://www.youtube.com/watch?v=${video.videoID}`);
+    const [time, setTime] = useState(0)
+
 
     // console.log(video);
 
     // Function
     const navigate = useNavigate()
-    document.title = "Cập nhật video" + video.name
+    document.title = "Cập nhật video " + video.name
     const handleName = (e) => {
         setVideo({
             ...video,
@@ -54,7 +57,8 @@ function UpdateVideo() {
             axios({
                 method: "put",
                 data: {
-                    video
+                    video,
+                    time: time,
                 },
                 withCredentials: true,
                 url: `${REACT_APP_SERVER}/me/stored/${course._id}/edit/${video._id}/update`
@@ -69,6 +73,10 @@ function UpdateVideo() {
                 }
             })
         }
+    }
+    const ReadyYT = (e) => {
+        console.log(e.target.getDuration());
+        setTime(e.target.getDuration())
     }
 
     return (
@@ -89,6 +97,24 @@ function UpdateVideo() {
                         <label htmlFor="name">Link video:</label>
                         <input type="text" className="form-control" id="link" placeholder="Sao chép liên kết youtube và dán vào đây!" value={tempVid} required onChange={handleVideoID}/>
                         <small id="alert-link" style={{display: "none"}}>Link chưa hợp lệ, Vui lòng thử lại (^.^)!</small>
+                        <div className="mt-4">
+                            <YouTube style={{ display: 'none' }}
+                                videoId={video.videoID}                  // defaults -> null
+                                id="player"                      // defaults -> null
+                                className="player"               // defaults -> null
+                                // containerClassName={string}       // defaults -> ''
+                                // title={string}                    // defaults -> null
+                                // opts={opts}                       // defaults -> {}
+                                onReady={ReadyYT}                    // defaults -> noop
+                                // onPlay={func}                     // defaults -> noop
+                                // onPause={func}                    // defaults -> noop
+                                // onEnd={func}                      // defaults -> noop
+                                // onError={func}                    // defaults -> noop
+                                // onStateChange={func}              // defaults -> noop
+                                // onPlaybackRateChange={func}       // defaults -> noop
+                                // onPlaybackQualityChange={func}    // defaults -> noop
+                            />
+                        </div>
                     </div>
                     <div>
                         <button type="submit" className="btn btn-primary float-right ml-2" onClick={submit}>Lưu lại</button>

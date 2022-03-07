@@ -1,6 +1,9 @@
 import logo from './logo.svg';
 import './App.scss';
 import {Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react';
+import axios from "axios"
+
 import Nav from './components/nav/Nav'
 import Account from './resources/user/Account';
 import ResetPass from './resources/user/ResetPass';
@@ -15,9 +18,10 @@ import EditCourse from './resources/me/EditCourse';
 import AddVideo from './resources/me/AddVideo';
 import UpdateVideo from './resources/me/UpdateVideo';
 import TrashVideo from './resources/me/TrashVideo';
-import { useEffect, useRef, useState } from 'react';
-import axios from "axios"
-
+import TrashMnCourses from './resources/manager/TrashMnCourses';
+import MNAccount from './resources/manager/MNAccount';
+import BlockAccount from './resources/manager/BlockAccount';
+import MNCourses from './resources/manager/MNCourses';
 
 const {REACT_APP_SERVER} = process.env
 
@@ -70,6 +74,14 @@ function App() {
         <Route path="/me/stored/:id/EditCourse/:_id/update" element={check ? <UpdateVideo />:<Navigate to="/account"/>}/>
         {/* Trash video */}
         <Route path="/me/trash/:id" element={check ? <TrashVideo />:<Navigate to="/account"/>}/>
+
+        {/* Manager */}
+        {/* Quản lý khóa học */}
+        <Route path="/manager/courses" element={check ? <MNCourses />:<Navigate to="/account"/>}/>
+        <Route path="/manager/TrashMnCourses" element={check ? <TrashMnCourses />:<Navigate to="/account"/>}/>
+        {/* Quản lý tài khoản */}
+        <Route path="/manager/account" element={check ? <MNAccount />:<Navigate to="/account"/>}/>
+        <Route path="/manager/account/blocked" element={check ? <BlockAccount />:<Navigate to="/account"/>}/>
 
       </Routes>
     </div>

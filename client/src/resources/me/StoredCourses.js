@@ -103,7 +103,7 @@ function StoredCourses() {
   }
   // Close modal xoa nhieu khoa hoc
   const closeModal = () => {
-    document.getElementById("deleteAll-course-model").click()
+    document.getElementById("deleteAll-course-model").click() 
   }
   // Xoa 1 khoa hoc
   const deleteCourse = (courseID) => (e) => {
@@ -145,7 +145,7 @@ function StoredCourses() {
         return false;
     });
 
-    if (nameCourse !== '' && level !== '' && description !== '' && req !== '') {
+    if (nameCourse !== '' && level !== '' && description !== '') {
         axios({
             method: "post",
             data: {

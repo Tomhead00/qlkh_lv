@@ -1,15 +1,19 @@
-import { Link, useLocation, useParams} from "react-router-dom"
+import { Link, useLocation, useNavigate, useParams} from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState } from "react"
 import {youtube_parser} from '../../components/nav/Func'
+import YouTube from 'react-youtube';
+
 const {REACT_APP_SERVER} = process.env
 
 function AddVideo() {
     // Khai báo
+    const navigate = useNavigate()
     const {state} = useLocation()
     const {course} = state
     const [name, setName] = useState('')
+    const [time, setTime] = useState(0)
     const [description, setDescription] = useState('')
     const [videoID, setVideoID] = useState('')
     const {id} = useParams()
@@ -46,6 +50,7 @@ function AddVideo() {
                     name: name,
                     description: description,
                     videoID: videoID,
+                    time: time,
                 },
                 withCredentials: true,
                 url: `${REACT_APP_SERVER}/me/stored/${id}`
@@ -53,12 +58,19 @@ function AddVideo() {
             .then(ketqua => {
                 if(ketqua.data) {
                     alert('Lưu khóa học thành công!')
+                    navigate(`/me/stored/${course._id}/EditCourse`)
                 } else {
                     alert('Lỗi!')
                 }
             })
         }
     }
+
+    const ReadyYT = (e) => {
+        console.log(e.target.getDuration());
+        setTime(e.target.getDuration())
+    }
+
     return (
         <div className="container">
             <div className="mt-4">
@@ -87,6 +99,24 @@ function AddVideo() {
                     </div>
                         <input type="text" className="form-control" id="link" placeholder="Sao chép liên kết youtube và dán vào đây!" required onChange={handleVideoID}/>
                         <small id="alert-link" style={{color: "#ff0000"}}></small>
+                        <div className="mt-4">
+                            <YouTube style={{ display: 'none' }}
+                                videoId={videoID}                  // defaults -> null
+                                id="player"                      // defaults -> null
+                                className="player"               // defaults -> null
+                                // containerClassName={string}       // defaults -> ''
+                                // title={string}                    // defaults -> null
+                                // opts={opts}                       // defaults -> {}
+                                onReady={ReadyYT}                    // defaults -> noop
+                                // onPlay={func}                     // defaults -> noop
+                                // onPause={func}                    // defaults -> noop
+                                // onEnd={func}                      // defaults -> noop
+                                // onError={func}                    // defaults -> noop
+                                // onStateChange={func}              // defaults -> noop
+                                // onPlaybackRateChange={func}       // defaults -> noop
+                                // onPlaybackQualityChange={func}    // defaults -> noop
+                            />
+                        </div>
                     </div>
                     <div>
                         <small><i><b>Example: </b></i></small>

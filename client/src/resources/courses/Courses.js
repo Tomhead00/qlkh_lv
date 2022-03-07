@@ -77,12 +77,10 @@ function Courses() {
             else {
                 ketqua.data.map(element => {
                     // name.replace(/\n/g, "<br/>");
-                    var regex = new RegExp(e.target.value, "g");
+                    var regex = new RegExp(e.target.value, "gi");
                     if (!/[`~.<>;':"/[\]|{}()=_+-]/.test(e.target.value)) {
-                        var name = element.name.replace(regex, "<span class='highlight'>"+e.target.value+"</span>");
-                        var mieuta = element.description.replace(regex, "<span class='highlight'>"+e.target.value+"</span>");
-
-
+                        var name = element.name.replace(regex, "<span class='highlight'>"+regex.exec(element.description)+"</span>");
+                        var mieuta = element.description.replace(regex, "<span class='highlight'>"+regex.exec(element.description)+"</span>");
                     }
                     allSearch += (`
                         <a href="courses/show/` + element.slug + `" class="list-group-item list-group-item-action" aria-current="true">
@@ -184,7 +182,7 @@ function Courses() {
                                                     cjoin.description.split('\n').map(
                                                         (str,index) => <div key={index}>{str}</div>)
                                                 }</div>
-                                                <p className="mb-3"><i className="far fa-clock"></i> 1000 phút</p>
+                                                <p className="mb-3"><i className="far fa-clock"></i> {moment.utc(cjoin.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(cjoin.actor.image) ? cjoin.actor.image : `${REACT_APP_SERVER + cjoin.actor.image}`} className="user-avatar" /><b>{cjoin.actor.username}</b></p>
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cjoin.updatedAt).fromNow()}</small>                                                    
@@ -225,7 +223,7 @@ function Courses() {
                                                     cupdate.description.split('\n').map(
                                                         (str,index) => <div key={index}>{str}</div>)
                                                 }</div>
-                                                <p className="mb-3"><i className="fas fa-clock"></i> 1000 phút</p>
+                                                <p className="mb-3"><i className="fas fa-clock"></i> {moment.utc(cupdate.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(cupdate.actor.image) ? cupdate.actor.image : `${REACT_APP_SERVER + cupdate.actor.image}`} className="user-avatar" /><b>{cupdate.actor.username}</b></p>
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cupdate.updatedAt).fromNow()}</small>                                                    
@@ -265,7 +263,7 @@ function Courses() {
                                                     cpopular.description.split('\n').map(
                                                         (str,index) => <div key={index}>{str}</div>)
                                                 }</div>
-                                                <p className="mb-3"><i className="fas fa-clock"></i> 1000 phút</p>
+                                                <p className="mb-3"><i className="fas fa-clock"></i> {moment.utc(cpopular.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(cpopular.actor.image) ? cpopular.actor.image : `${REACT_APP_SERVER + cpopular.actor.image}`} className="user-avatar" /><b>{cpopular.actor.username}</b></p>
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cpopular.updatedAt).fromNow()}</small>                                                    
@@ -304,7 +302,7 @@ function Courses() {
                                                     canother.description.split('\n').map(
                                                         (str,index) => <div key={index}>{str}</div>)
                                                 }</div>
-                                                <p className="mb-3"><i className="fas fa-clock"></i> 1000 phút</p>
+                                                <p className="mb-3"><i className="fas fa-clock"></i> {moment.utc(canother.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(canother.actor.image) ? canother.actor.image : `${REACT_APP_SERVER + canother.actor.image}`} className="user-avatar" /><b>{canother.actor.username}</b></p>
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(canother.updatedAt).fromNow()}</small>                                                    

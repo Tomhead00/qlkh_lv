@@ -45,7 +45,7 @@ function Itemnav() {
         )
     } else return (
         <div>
-            <a className="nav-link dropdown-toggle" href="  /#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <a className="nav-link dropdown-toggle" href="/#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <img src={isValidHttpUrl(user.image) ? user.image : `${REACT_APP_SERVER + user.image}`} alt="" className="user-avatar" />
                 <b>{user.username}</b>
             </a>

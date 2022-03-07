@@ -9,7 +9,7 @@ router.get('/trash/courses', meController.trashCourses);
 router.get('/stored/:id/editCourse', meController.edit);
 router.get('/stored/:id/editCourse/countDeleteVideo', meController.countDeleteVideo);
 router.put('/stored/:id', meController.storeVideo);
-router.get('/stored/:id/edit/addvideo', meController.addVideo);
+// router.get('/stored/:id/edit/addvideo', meController.addVideo);
 router.post('/stored/:id/edit/:_id/:action', meController.actionVideo);
 // update video
 // router.get('/stored/:id/edit/:_id/update', meController.updateVideo);

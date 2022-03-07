@@ -1,4 +1,4 @@
-import { useNavigate, useLocation, Link } from "react-router-dom"
+import { useNavigate, useLocation, Link, useParams } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect } from "react"
@@ -9,6 +9,7 @@ const {REACT_APP_SERVER} = process.env
 function Edit() {
     document.title = "Cập nhật thông tin tài khoản"
     const location = useLocation()
+    const params = useParams()
     const navigate = useNavigate()
     // console.log(location, REACT_APP_SERVER);
     const alert = $("#alert");
@@ -37,6 +38,20 @@ function Edit() {
     const [psw, setPsw] = useState('');
     const [newpsw, setNewPsw] = useState('');
     const [renewpsw, setReNewPsw] = useState('');
+
+    useEffect(() => {
+        axios({
+            method: "get",
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/account/getUser`
+        })
+        .then(ketqua => {
+            // console.log(ketqua.data.user._id, params.slug, ketqua.data.user.role);
+            if(!(ketqua.data.user._id === params.slug || ketqua.data.user.role === "admin")) {
+                navigate("/courses")
+            }
+        })
+    })
 
     // update user
     const handleEmail = (e) => {
@@ -93,6 +108,7 @@ function Edit() {
             setUser(ketqua.data)
         })
     },[])
+
     useEffect(() => {
         selectGT.val(user.gender).change()
     },[selectGT.val(user.gender)])

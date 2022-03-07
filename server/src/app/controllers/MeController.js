@@ -16,6 +16,24 @@ function array_move(arr, old_index, new_index) {
     return arr;
 }
 
+async function calculatorTimeCourse(id)  {
+    let time = 0;
+    await Course.findById(id)
+        .then(async (course) => {
+            // console.log(course.video);
+            await Video.find({
+                '_id': { $in: course.video}})
+                .then(video2 => {
+                    for(video of video2) {
+                        // console.log(video.time)
+                        time += video.time
+                    }
+                })
+        })
+    // console.log("tottla:" + time);
+    Course.findByIdAndUpdate(id, {time: time}).then()
+}
+
 class MeController {
     // GET /me/stored/Courses
     storeCourses(req, res, next) {
@@ -108,18 +126,18 @@ class MeController {
         }
     }
         
-    // GET /me/stored/:id/edit/addVideo
-    addVideo(req, res, next) {
-        Course.findById(req.params.id)
-            .then((course) =>
-                res.render('me/editVideo', {
-                    title: 'Thêm video cho khóa học',
-                    username: req.session.passport,
-                    course: mongooseToObject(course),
-                }),
-            )
-            .catch(next);
-    }
+    // // GET /me/stored/:id/edit/addVideo
+    // addVideo(req, res, next) {
+    //     Course.findById(req.params.id)
+    //         .then((course) =>
+    //             res.render('me/editVideo', {
+    //                 title: 'Thêm video cho khóa học',
+    //                 username: req.session.passport,
+    //                 course: mongooseToObject(course),
+    //             }),
+    //         )
+    //         .catch(next);
+    // }
 
     // POST /me/stored/:id/edit/:_id/:action
     actionVideo(req, res, next) {
@@ -158,6 +176,7 @@ class MeController {
                             res.send(true);
                         })
                         .catch(next);
+                    calculatorTimeCourse(req.params.id)
                     break;
                 case 'next':
                     Course.findById({ _id: req.params.id })
@@ -251,6 +270,7 @@ class MeController {
             name: req.body.video.name,
             description: req.body.video.description,
             videoID: req.body.video.videoID,
+            time: req.body.time,
             image:
                 'https://img.youtube.com/vi/' +
                 req.body.video.videoID +
@@ -261,13 +281,14 @@ class MeController {
             res.send(true);
         })
         .catch(next);
+        calculatorTimeCourse(req.params.id)
     }
 
     // PUT /me/stored/:id
     async storeVideo(req, res, next) {
         // res.json(req.body)
         try {
-            const course = await Course.findById({ _id: req.params.id });
+            const course = await Course.findByIdAndUpdate({ _id: req.params.id }, {$inc: {time: +req.body.time}});
             // console.log(typeof(course._id))
             req.body.image = `https://img.youtube.com/vi/${req.body.videoID}/sddefault.jpg`;
             const video = new Video(req.body);
@@ -294,8 +315,12 @@ class MeController {
     // PATCH /me/trash/:_id/restore/:id
     restoreVideo(req, res, next) {
         Video.restore({ _id: req.params.id })
-            .then(() => res.send(true))
+            .then(video =>{
+                // console.log(video);
+                res.send(true)
+            })
             .catch(next);
+        calculatorTimeCourse(req.params._id)
     }
 
     // DELETE /me/trash/:_id/delete/:id/force
@@ -332,6 +357,7 @@ class MeController {
                     Video.restore({ _id: _id }).catch(next);
                 }
                 res.send(true);
+                calculatorTimeCourse(req.params._id)
                 break;
             default:
                 res.send(false);

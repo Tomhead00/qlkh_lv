@@ -146,20 +146,21 @@ class CourseController {
             res.send([]);
         }
     }
-    // GET /courses/:slug
+    // GET /courses/show/:slug
     show(req, res, next) {
-        Course.findOne({ slug: req.params.slug })
+        try {
+            Course.findOne({ slug: req.params.slug })
             .populate('video')
             .then((course) => {
                 // res.json(course);
-                res.render('courses/show', {
-                    title: req.params.slug,
-                    course: mongooseToObject(course),
-                    username: req.session.passport,
-                });
+                res.send(course);
             })
-            .catch(next);
-        // res.send('Course Detail - ' + req.params.slug);
+            .catch(next => {
+                res.send(false)
+            });
+        } catch(err) {
+            res.send(false)
+        }
     }
     // POST /courses/addComment <AJAX>
     addComment(req, res, next) {
@@ -398,16 +399,14 @@ class CourseController {
                 if (doc === null) {
                     Video.updateOne(
                         { _id: req.body._id },
-                        { $push: { unlock: req.session.passport.user._id } },
+                        { $addToSet: { unlock: req.session.passport.user._id } },
                     )
                         .then((video) => {
-                            res.send('true');
+                            res.send(true);
                         })
                         .catch(next);
-                    return true;
                 } else {
-                    res.send('false');
-                    return false;
+                    res.send(false);
                 }
             },
         );

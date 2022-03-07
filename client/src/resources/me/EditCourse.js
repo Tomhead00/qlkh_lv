@@ -126,7 +126,7 @@ function EditCourse() {
                 <div className="col-sm-8 d-flex justify-content-end">
                     <Link to={`/courses/show/${course.slug}`} className="btn btn-primary btn-sm text-end ml-1" title="Thùng rác"><i className="fas fa-play"></i> Xem khóa học</Link>
                     <Link to={`/me/trash/${course._id}`} className="btn btn-primary btn-sm ml-1" title="Thùng rác"><i className="fas fa-trash-alt"></i> {countDel}</Link>
-                    <Link to="/me/stored/courses" className="btn btn-danger btn-sm ml-1" title="Quay lại"><i className="fas fa-chevron-left"></i> Quay lại</Link>
+                    <button className="btn btn-danger btn-sm ml-1" title="Quay lại" onClick={() => window.history.back()}><i className="fas fa-chevron-left"></i> Quay lại</button>
                 </div>
             </div>
             <div className="row">

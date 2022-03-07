@@ -346,6 +346,35 @@ table.table td i {
     background-color: orange;
 }
 
+// notification
+.notification {
+    color: white;
+    text-decoration: none;
+    // padding: 15px 26px;
+    position: relative;
+    display: inline-block;
+    border-radius: 2px;
+}
+  
+.notification .badge {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    // padding: 5px 10px;
+    border-radius: 50%;
+    background: red;
+    color: white;
+}
+.dropdown-menu {
+    max-height:500px;
+    overflow-y: scroll;
+    scrollbar-width: none;
+}
+
+.dropdown-menu::-webkit-scrollbar {
+    display: none;
+}
+
 // custom
 .App {
     min-height: 100vh;
