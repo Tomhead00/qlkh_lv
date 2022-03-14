@@ -14,7 +14,7 @@ export const youtube_parser = (url) => {
     return (match&&match[7].length===11)? match[7] : false;
 }
 
-    // check have video
+// check have video
 export const isEmpty = (obj) => {
     if(typeof(obj) !== 'object') {
         return true

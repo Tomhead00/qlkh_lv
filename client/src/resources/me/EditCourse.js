@@ -3,6 +3,7 @@ import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect } from "react"
 import moment from "moment"
+import {isValidHttpUrl} from '../../components/nav/Func'
 
 const {REACT_APP_SERVER} = process.env
 
@@ -141,7 +142,11 @@ function EditCourse() {
                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                         <div className="card card-course-item fadeIn">
                             <Link to="#">
-                                <img className="card-img-top" src={video.image} alt={video.image} />
+                                <img className="card-img-top" src={(isValidHttpUrl(video.image)) ?
+                                    video.image : 
+                                    video.image
+                                }
+                                alt={video.image} />
                             </Link>
 
                             <div className="card-body">

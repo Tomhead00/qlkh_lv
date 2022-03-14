@@ -4,6 +4,10 @@ const { multipleMongooseToObject } = require('../../util/mongoose');
 const { mongooseToObject } = require('../../util/mongoose');
 const { populate } = require('../models/Video');
 const { course } = require('./CourseController');
+const processFile = require("../middlewares/upload");
+const { format } = require("util");
+const { Storage } = require("@google-cloud/storage");
+const fs = require('fs');
 
 function array_move(arr, old_index, new_index) {
     if (new_index >= arr.length) {
@@ -269,12 +273,12 @@ class MeController {
         Video.findByIdAndUpdate({_id: req.params._id}, {
             name: req.body.video.name,
             description: req.body.video.description,
-            videoID: req.body.video.videoID,
-            time: req.body.time,
-            image:
-                'https://img.youtube.com/vi/' +
-                req.body.video.videoID +
-                '/sddefault.jpg',
+            // videoID: req.body.video.videoID,
+            // time: req.body.time,
+            // image:
+            //     'https://img.youtube.com/vi/' +
+            //     req.body.video.videoID +
+            //     '/sddefault.jpg',
         })
         .then(video => {
             // console.log(video);
@@ -290,7 +294,11 @@ class MeController {
         try {
             const course = await Course.findByIdAndUpdate({ _id: req.params.id }, {$inc: {time: +req.body.time}});
             // console.log(typeof(course._id))
-            req.body.image = `https://img.youtube.com/vi/${req.body.videoID}/sddefault.jpg`;
+            if (req.body.videoID < 13) {
+                req.body.image = `https://img.youtube.com/vi/${req.body.videoID}/sddefault.jpg`;
+            } else {
+                req.body.image = `/video/${req.body.videoID}`;
+            }
             const video = new Video(req.body);
             video
                 .save()
@@ -307,7 +315,8 @@ class MeController {
                 .catch(next => {
                     res,send(false)
                 });
-        } catch {
+        } catch (err) {
+            console.log(err);
             res.send(false)
         }
     }
@@ -324,43 +333,95 @@ class MeController {
     }
 
     // DELETE /me/trash/:_id/delete/:id/force
-    forceDeleteVideo(req, res, next) {
+    async forceDeleteVideo(req, res, next) {
         // res.json(req.params)
-        Course.updateOne(
-            { _id: req.params._id },
-            { $pull: { video: req.params.id } },
-            { new: true, useFindAndModify: false },
-        ).catch(next);
+        try {
+            Course.updateOne(
+                { _id: req.params._id },
+                { $pull: { video: req.params.id } },
+                { new: true, useFindAndModify: false },
+            ).catch(next);
+    
+            Video.findByIdAndDelete({ _id: req.params.id })
+                .then((video) => {
+                    if(video.videoID.length > 13) {
+                    var filePath = `src/public/video/${video.videoID}`;
+                    fs.unlinkSync(filePath);
+                    }
+                    res.send(true)
+                })
+                .catch(next => {
+                    res.send(false)
+                });
+        } catch (err) {
+            res.send(false)
+        }
 
-        Video.deleteOne({ _id: req.params.id })
-            .then(() => res.send(true))
-            .catch(next);
     }
 
     // POST /me/trash/:_id/handle-form-actions-trash
     handleFormTrashVideoActions(req, res, next) {
-        switch (req.body.action) {
-            case 'delete':
-                for (const _id of req.body.videoIDs) {
-                    Course.updateMany(
-                        { _id: req.params._id },
-                        { $pull: { video: _id } },
-                        { new: true, useFindAndModify: false },
-                    ).catch(next);
-
-                    Video.deleteOne({ _id: _id }).catch(next);
-                }
-                res.send(true);
-                break;
-            case 'restores':
-                for (const _id of req.body.videoIDs) {
-                    Video.restore({ _id: _id }).catch(next);
-                }
-                res.send(true);
-                calculatorTimeCourse(req.params._id)
-                break;
-            default:
-                res.send(false);
+        try {
+            switch (req.body.action) {
+                case 'delete':
+                    for (const _id of req.body.videoIDs) {
+                        Course.updateMany(
+                            { _id: req.params._id },
+                            { $pull: { video: _id } },
+                            { new: true, useFindAndModify: false },
+                        ).catch(next);
+    
+                        // Video.deleteOne({ _id: _id }).catch(next);
+                        Video.findByIdAndDelete({ _id: _id })
+                        .then((video) => {
+                            if(video.videoID.length > 13) {
+                            var filePath = `src/public/video/${video.videoID}`;
+                            fs.unlinkSync(filePath);
+                            }
+                        })
+                        .catch(next);
+                    }
+                    res.send(true);
+                    break;
+                case 'restores':
+                    for (const _id of req.body.videoIDs) {
+                        Video.restore({ _id: _id }).catch(next);
+                    }
+                    res.send(true);
+                    calculatorTimeCourse(req.params._id)
+                    break;
+                default:
+                    res.send(false);
+            }
+        } catch(err) {
+            res.send(false)
+        }
+    }
+    // DELETE /me/upload/:id
+    async deleteUpload(req, res, next) {
+        try {
+            if(req.params.id.length > 13) {
+                var filePath = `src/public/video/${req.params.id}`;
+                await fs.unlinkSync(filePath);
+            }
+            res.send(true)
+          } catch (error) {
+            console.error('there was an error:', error.message);
+            res.send(false)
+          }
+    }
+    // POST /me/upload
+    async upload(req, res, next) {
+        try {
+            await processFile(req, res);
+            if (!req.file) {
+                return res.send("Please upload a file!");
+            }
+            res.send(req.file)
+        } catch (err) {
+            res.send({
+            message: `Could not upload the file: ${name}. ${err}`,
+            });
         }
     }
 }

@@ -22,5 +22,8 @@ router.post(
     '/trash/:_id/handle-form-actions-trash',
     meController.handleFormTrashVideoActions,
 );
+// upload video
+router.post('/upload', meController.upload);
+router.delete('/upload/:id', meController.deleteUpload);
 
 module.exports = router;

@@ -27,6 +27,7 @@ const {REACT_APP_SERVER} = process.env
 
 function App() {
   const [check, setCheck] = useState(true);
+  const [user, setUser] = useState();
 
   useEffect( () => {
     axios({
@@ -35,7 +36,10 @@ function App() {
       url: `${REACT_APP_SERVER}/account/getUser`
     })
     .then(ketqua => {
-      if(ketqua.data.user) setCheck(true)
+      if(ketqua.data.user) {
+        setUser(ketqua.data.user)
+        setCheck(true)
+      }
       else setCheck(false)
     })
   }, [])
@@ -43,7 +47,7 @@ function App() {
   return (
     <div className="App">
       <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-        <Nav />
+        <Nav user={user}/>
       </nav>
 
       <Routes>

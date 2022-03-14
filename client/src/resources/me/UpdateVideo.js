@@ -3,7 +3,7 @@ import $ from 'jquery'
 import axios from "axios"
 import { useState } from "react"
 import {youtube_parser} from '../../components/nav/Func'
-import YouTube from 'react-youtube';
+// import YouTube from 'react-youtube';
 
 const {REACT_APP_SERVER} = process.env
 
@@ -12,8 +12,8 @@ function UpdateVideo() {
     const location = useLocation()
     const [course, setCourse] = useState(location.state.course);
     const [video, setVideo] = useState(location.state.video);
-    const [tempVid, setTempVid] = useState(`https://www.youtube.com/watch?v=${video.videoID}`);
-    const [time, setTime] = useState(0)
+    // const [tempVid, setTempVid] = useState(`https://www.youtube.com/watch?v=${video.videoID}`);
+    // const [time, setTime] = useState(0)
 
 
     // console.log(video);
@@ -33,22 +33,22 @@ function UpdateVideo() {
             description: e.target.value
         })
     }
-    const handleVideoID = (e) => {
-        if(youtube_parser(e.target.value)) {
-            $("#alert-link").text('')
-            $("#link").attr('style', 'false');
-            setVideo({
-                ...video,
-                videoID: youtube_parser(e.target.value)
-            })
-            setTempVid(e.target.value)
-        } else {
-            $("#link").attr('style', 'border: 2px solid red;');
-            $("#alert-link").text("Link chưa hợp lệ, Vui lòng thử lại (^.^)!")
-            setTempVid(e.target.value)
-        }
+    // const handleVideoID = (e) => {
+    //     if(youtube_parser(e.target.value)) {
+    //         $("#alert-link").text('')
+    //         $("#link").attr('style', 'false');
+    //         setVideo({
+    //             ...video,
+    //             videoID: youtube_parser(e.target.value)
+    //         })
+    //         setTempVid(e.target.value)
+    //     } else {
+    //         $("#link").attr('style', 'border: 2px solid red;');
+    //         $("#alert-link").text("Link chưa hợp lệ, Vui lòng thử lại (^.^)!")
+    //         setTempVid(e.target.value)
+    //     }
+    // }
 
-    }
     const submit = () => {
         $("#formVideo").submit(() => {
             return false;
@@ -58,7 +58,7 @@ function UpdateVideo() {
                 method: "put",
                 data: {
                     video,
-                    time: time,
+                    // time: time,
                 },
                 withCredentials: true,
                 url: `${REACT_APP_SERVER}/me/stored/${course._id}/edit/${video._id}/update`
@@ -74,10 +74,10 @@ function UpdateVideo() {
             })
         }
     }
-    const ReadyYT = (e) => {
-        console.log(e.target.getDuration());
-        setTime(e.target.getDuration())
-    }
+    // const ReadyYT = (e) => {
+    //     console.log(e.target.getDuration());
+    //     setTime(e.target.getDuration())
+    // }
 
     return (
         <div className="container">
@@ -93,7 +93,7 @@ function UpdateVideo() {
                         <label htmlFor="mieuta">miêu tả:</label>
                         <textarea type="text" className="form-control" id="mieuta" name="mieuta" onChange={handleDescription} value={video.description}></textarea>
                     </div>
-                    <div className="form-group">
+                    {/* <div className="form-group">
                         <label htmlFor="name">Link video:</label>
                         <input type="text" className="form-control" id="link" placeholder="Sao chép liên kết youtube và dán vào đây!" value={tempVid} required onChange={handleVideoID}/>
                         <small id="alert-link" style={{display: "none"}}>Link chưa hợp lệ, Vui lòng thử lại (^.^)!</small>
@@ -115,7 +115,7 @@ function UpdateVideo() {
                                 // onPlaybackQualityChange={func}    // defaults -> noop
                             />
                         </div>
-                    </div>
+                    </div> */}
                     <div>
                         <button type="submit" className="btn btn-primary float-right ml-2" onClick={submit}>Lưu lại</button>
                         <Link to={`/me/stored/${course._id}/EditCourse`} className="btn btn-danger cancel float-right" value="Quay lại">Quay lại</Link>

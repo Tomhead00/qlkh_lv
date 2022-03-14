@@ -23,6 +23,7 @@ const options = {
     key: fs.readFileSync("server.key"),
     cert: fs.readFileSync("server.cert"),
 };
+const randomstring = require("randomstring");
 
 // Khai bao MiddleWare
 // passport

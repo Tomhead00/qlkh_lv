@@ -5,23 +5,8 @@ import {isValidHttpUrl} from './Func'
 
 const {REACT_APP_SERVER} = process.env
 
-function Notification({test}) {
-    console.log(test);
-    const [user, setUser] = useState([]);
-
-    useLayoutEffect(() => {
-        axios({
-            method: "get",
-            withCredentials: true,
-            url: `${REACT_APP_SERVER}/account/getUser`
-        })
-        .then(ketqua => {
-            // console.log(ketqua.data.user, user);
-            if (JSON.stringify(ketqua.data.user) !== JSON.stringify(user))
-                setUser(ketqua.data.user)
-        })
-    })
-
+function Notification({user}) {
+    // console.log(user);
     const handlemodal = () => {
         document.getElementById("infor").click();
     }
@@ -33,7 +18,7 @@ function Notification({test}) {
             url: `${REACT_APP_SERVER}/account/logout`
         })
         .then(ketqua => {
-            setUser(ketqua.data)
+            // setUser(ketqua.data)
             // console.log(ketqua.data);
         })
         document.getElementById("exampleModal").click();

@@ -3,12 +3,8 @@ import {Link} from 'react-router-dom'
 import Itemnav from './Itemnav'
 import Notification from './Notification'
 
-function Nav() {
-    const test = useRef([{
-        'id': 12,
-        'name': "daxua",
-    }])
-
+function Nav({user}) {
+    // console.log(user);
 
     return (
         <div className="container">
@@ -26,11 +22,16 @@ function Nav() {
                     </li>
                 </ul>
                 <ul className="navbar-nav ml-auto">
-                    <li className="nav-link notification mr-3 dropdown">
-                        <Notification test={test}/>
-                    </li>
+                    {user ? (
+                        <li className="nav-link notification mr-2 dropdown">
+                            <Notification user={user}/>
+                        </li>
+                    ) : (
+                        true
+                    )}
+
                     <li className="nav-item dropdown">
-                        <Itemnav />
+                        <Itemnav user={user}/>
                     </li>
                 </ul>
             </div>
