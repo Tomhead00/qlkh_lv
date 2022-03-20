@@ -5,11 +5,9 @@ const exphbs = require('express-handlebars');
 const { dirname } = require('path');
 const methodOverride = require('method-override');
 const multer = require('multer');
-const cors = require('cors')
 require('dotenv').config();
 const app = express();
 const port = 3001;
-const SortMiddleware = require('./app/middlewares/SortMiddleware');
 const route = require('./routes');
 const db = require('./config/db');
 const session = require('express-session');
@@ -25,15 +23,21 @@ const options = {
 };
 const randomstring = require("randomstring");
 
+const server = require('http').createServer(app);
+const cors = require('cors')
+const io = require('socket.io')(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
 // Khai bao MiddleWare
 // passport
 const passport = require('passport');
 const LoginFB = require('./app/middlewares/LoginFB');
 const LoginLocal = require('./app/middlewares/LoginLocal');
 const LoginGG = require('./app/middlewares/LoginGG');
-const CheckUser = require('./app/middlewares/CheckUser');
-const CheckRole = require('./app/middlewares/CheckRole');
-const CheckInfo = require('./app/middlewares/CheckInfo');
 
 // connect to DB
 db.connect();
@@ -77,17 +81,6 @@ app.use(session({
     }),
 );
 app.use(cookieParser("keyboardcat"))
-
-// Custom middleware
-// app.use(SortMiddleware);
-
-// app.get('/courses', CheckUser);
-// app.get('/courses/:slug', CheckUser);
-// app.get('/me', CheckUser);
-// // edit profile
-// // app.get('/account/edit/:id', CheckInfo);
-// // manager
-// app.get('/manager/:slug', CheckUser, CheckRole);
 
 // passport fb
 passport.use(LoginFB);
@@ -194,88 +187,24 @@ app.put('/account/edit/:id/', upload.single('myFile'));
 // HTTP log
 // app.use(morgan('combined'));
 
-// Template engine
-app.engine(
-    'hbs',
-    exphbs({
-        extname: '.hbs',
-        runtimeOptions: {
-            allowProtoPropertiesByDefault: true,
-            allowProtoMethodsByDefault: true,
-        },
-        helpers: {
-            sum: (a, b) => a + b,
-            sortable: (field, sort) => {
-                const sortType = field === sort.column ? sort.type : 'default';
-                const icons = {
-                    default: 'oi oi-elevator',
-                    asc: 'oi oi-sort-ascending',
-                    desc: 'oi oi-sort-descending',
-                };
-                const types = {
-                    default: 'desc',
-                    asc: 'desc',
-                    desc: 'asc',
-                };
-                const icon = icons[sortType];
-                const type = types[sortType];
-                return `<a href="?_sort&column=${field}&type=${type}">
-                    <span class="${icon}"></span>
-                    </a>`;
-            },
-            topmenu: (username) => {
-                var role = null;
-                var name = null;
-                var image = null;
-                try {
-                    var role = username.user.role;
-                    var name = username.user.username;
-                    var image = username.user.image;
-                } catch {}
-                if (role == 'admin') {
-                    return `
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img src="${image}" alt="" class="user-avatar">
-                        <b>${name}</b>
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item text-danger" href="/manager/account">Quản lý tài khoản</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item text-danger" href="/manager/courses">Quản lý khóa học</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#infor">Thông tin tài khoản</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/me/stored/courses">Khóa học của tôi</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" data-toggle="modal" data-target="#exampleModal" href="#">Đăng xuất</a>
-                    </div>`;
-                }
-                if (role == 'user') {
-                    return `
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <img src="${image}" alt="" class="user-avatar">
-                        <b>${name}</b>
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="#" data-toggle="modal" data-target="#infor">Thông tin tài khoản</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/me/stored/courses">Khóa học của tôi</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" data-toggle="modal" data-target="#exampleModal" href="#">Đăng xuất</a>
-                    </div>`;
-                } else {
-                    return `<a class="nav-link ml-4" href="/account"><b>Đăng nhập</b></a>`;
-                }
-            },
-        },
-    }),
-);
-app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'resources', 'views'));
 
 route(app);
 
-app.listen(port, () => {
+io.on('connection', (socket) => {
+    socket.emit("me", socket.id)
+    socket.on("disconnect", () => {
+        socket.broadcasst.emit("callended")
+    })
+    socket.on("calluser", ({ userToCall, signalData, from, name }) => {
+        io.to(userToCall).emit("calluser", { signal: signalData, from, name })
+    })
+    socket.on("answercall", (data) => {
+        io.to(data.to).emit("callaccepted", data.signal)
+    });
+});
+
+server.listen(port, () => {
     console.log(`App listening at http://localhost:${port}`);
 });
 

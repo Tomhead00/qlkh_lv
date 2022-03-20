@@ -33,13 +33,26 @@ class CourseController {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'videos', // collection to join
+                        localField: 'video', //field from the input documents
+                        foreignField: '_id', //field from the documents of the "from" collection
+                        as: 'video', // output array field
+                    },
+                },
+                {
                     $addFields: { studentCount: { $size: '$student' } },
+                },
+                {
+                    $addFields: { user: user._id },
                 },
                 {
                     $sort: { updatedAt: -1 },
                 },
             ]).catch(next);
-            await Course.populate(courses, { modal: 'user', path: 'actor' }).catch(next);
+            await Course
+            .populate(courses, { modal: 'user', path: 'actor' })
+            .catch(next);
             res.send(courses);
         } else  {
             res.send([]);
@@ -62,7 +75,18 @@ class CourseController {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'videos', // collection to join
+                        localField: 'video', //field from the input documents
+                        foreignField: '_id', //field from the documents of the "from" collection
+                        as: 'video', // output array field
+                    },
+                },
+                {
                     $addFields: { studentCount: { $size: '$student' } },
+                },
+                {
+                    $addFields: { user: req.session.passport.user._id },
                 },
                 {
                     $sort: { updatedAt: -1 },
@@ -94,7 +118,18 @@ class CourseController {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'videos', // collection to join
+                        localField: 'video', //field from the input documents
+                        foreignField: '_id', //field from the documents of the "from" collection
+                        as: 'video', // output array field
+                    },
+                },
+                {
                     $addFields: { studentCount: { $size: '$student' } },
+                },
+                {
+                    $addFields: { user: req.session.passport.user._id },
                 },
                 {
                     $sort: { studentCount: -1 },
@@ -131,7 +166,18 @@ class CourseController {
                     },
                 },
                 {
+                    $lookup: {
+                        from: 'videos', // collection to join
+                        localField: 'video', //field from the input documents
+                        foreignField: '_id', //field from the documents of the "from" collection
+                        as: 'video', // output array field
+                    },
+                },
+                {
                     $addFields: { studentCount: { $size: '$student' } },
+                },
+                {
+                    $addFields: { user: req.session.passport.user._id },
                 },
                 {
                     $sort: { updatedAt: -1 },
@@ -198,7 +244,7 @@ class CourseController {
             '?Coutryside',
             '?Fruit',
             '?Vegatables',
-            '?people',
+            '?rainbow',
             '?ai',
             '?sunny',
         ];

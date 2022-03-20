@@ -2,7 +2,7 @@ import { useNavigate, Link } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect } from "react"
-import {isValidHttpUrl} from "../../components/nav/Func"
+import {isValidHttpUrl, progessBar} from "../../components/nav/Func"
 import moment from "moment"
 
 const {REACT_APP_SERVER} = process.env
@@ -86,8 +86,9 @@ function CoursesPopular() {
                                                 <h5 className="card-title">{cpopular.name}</h5>
                                             </Link>
                                             <p className="card-text mt">{cpopular.description}</p>
-                                            <p className="mb-3"><i className="fas fa-clock"></i> 1000 phút</p>
+                                            <p className="mb-3">{cpopular.level} | <i className="fas fa-clock"></i> {moment.utc(cpopular.time*1000).format('HH:mm:ss')}</p>
                                             <p><img src={isValidHttpUrl(cpopular.actor.image) ? cpopular.actor.image : `${REACT_APP_SERVER + cpopular.actor.image}`} className="user-avatar" /><b>{cpopular.actor.username}</b></p>
+                                            {progessBar(cpopular.video,cpopular.user)}
                                             <div className="card-footer d-flex">
                                                 <small className="text-muted time p-1">{moment(cpopular.updatedAt).fromNow()}</small>                                                    
                                                 <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {cpopular.studentCount}</i></small>

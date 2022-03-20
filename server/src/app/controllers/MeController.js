@@ -6,8 +6,13 @@ const { populate } = require('../models/Video');
 const { course } = require('./CourseController');
 const processFile = require("../middlewares/upload");
 const { format } = require("util");
-const { Storage } = require("@google-cloud/storage");
+// const { Storage } = require("@google-cloud/storage");
 const fs = require('fs');
+const ffmpeg = require('fluent-ffmpeg');
+const { User } = require('../models/User');
+const command = ffmpeg();
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 function array_move(arr, old_index, new_index) {
     if (new_index >= arr.length) {
@@ -294,10 +299,18 @@ class MeController {
         try {
             const course = await Course.findByIdAndUpdate({ _id: req.params.id }, {$inc: {time: +req.body.time}});
             // console.log(typeof(course._id))
-            if (req.body.videoID < 13) {
+            if (req.body.videoID.length < 13) {
                 req.body.image = `https://img.youtube.com/vi/${req.body.videoID}/sddefault.jpg`;
             } else {
-                req.body.image = `/video/${req.body.videoID}`;
+                var proc = new ffmpeg(`./src/public/video/${req.body.videoID}`)
+                    .takeScreenshots({
+                        count: 1,
+                        timemarks: [ '5' ],
+                        filename: `${req.body.videoID.substring(0,req.body.videoID.lastIndexOf("."))}.png`
+                        }, `./src/public/img/thumbnail/`, function(err) {
+                        console.log('screenshots were saved')
+                    });
+                req.body.image = `/img/thumbnail/${req.body.videoID.substring(0,req.body.videoID.lastIndexOf("."))}.png`;
             }
             const video = new Video(req.body);
             video
@@ -346,7 +359,9 @@ class MeController {
                 .then((video) => {
                     if(video.videoID.length > 13) {
                     var filePath = `src/public/video/${video.videoID}`;
+                    var thumbnailPath = `src/public/img/thumbnail/${video.videoID.substring(0,video.videoID.lastIndexOf("."))}.png`;
                     fs.unlinkSync(filePath);
+                    fs.unlinkSync(thumbnailPath);
                     }
                     res.send(true)
                 })
@@ -375,8 +390,10 @@ class MeController {
                         Video.findByIdAndDelete({ _id: _id })
                         .then((video) => {
                             if(video.videoID.length > 13) {
-                            var filePath = `src/public/video/${video.videoID}`;
-                            fs.unlinkSync(filePath);
+                                var filePath = `src/public/video/${video.videoID}`;
+                                var thumbnailPath = `src/public/img/thumbnail/${video.videoID.substring(0,video.videoID.lastIndexOf("."))}.png`;
+                                fs.unlinkSync(filePath);
+                                fs.unlinkSync(thumbnailPath);
                             }
                         })
                         .catch(next);
@@ -424,6 +441,18 @@ class MeController {
             });
         }
     }
+        // get /me/stored/:id/getMember
+        async getMember(req, res, next) {
+            try {
+                User.findWithDeleted({joined: req.params.id})
+                .then((users) => {
+                    res.send(users)
+                })
+                .catch(next)
+            } catch (err) {
+                res.send([])
+            }
+        }
 }
 
 module.exports = new MeController();

@@ -26,13 +26,14 @@ function TrashCourses() {
     {icon: icons.current.default, type: "desc"},
     {icon: icons.current.default, type: "desc"},
     {icon: icons.current.default, type: "desc"},
+    {icon: icons.current.default, type: "desc"},
   ]);
 
   // function
   // Sắp xếp khóa học
   const sort = (num) => (e) => {
     let columnNew = column
-    for(let index = 0; index < 4; index++) {
+    for(let index = 0; index < 5; index++) {
       if (index === num) continue
       else
         columnNew[index].icon = icons.current.default
@@ -207,13 +208,14 @@ function TrashCourses() {
                       <th scope="col">STT</th>
                       <th scope="col">Tên khóa học <Link to={`?_sort&column=name&type=${column[0].type}`} onClick={sort(0)}> <span className={column[0].icon}></span></Link></th>
                       <th scope="col">Miêu tả khóa học <Link to={`?_sort&column=description&type=${column[1].type}`} onClick={sort(1)}> <span className={column[1].icon}></span></Link></th>
-                      <th scope="col">Thời gian tạo <Link to={`?_sort&column=createdAt&type=${column[2].type}`} onClick={sort(2)}> <span className={column[2].icon}></span></Link></th>
-                      <th scope="col">Thời gian cập nhật <Link to={`?_sort&column=updatedAt&type=${column[3].type}`} onClick={sort(3)}> <span className={column[3].icon}></span></Link></th>
+                      <th scope="col">Trình độ kỹ năng <Link to={`?_sort&column=level&type=${column[2].type}`} onClick={sort(2)}> <span className={column[2].icon}></span></Link></th>
+                      <th scope="col">Yêu cầu <Link to={`?_sort&column=req&type=${column[3].type}`} onClick={sort(3)}> <span className={column[3].icon}></span></Link></th>
+                      <th scope="col">Kết quả đạt được<Link to={`?_sort&column=result&type=${column[4].type}`} onClick={sort(4)}> <span className={column[4].icon}></span></Link></th>
                   </tr>
               </thead>
               {course.toString() ? course.map((course,index)=>(
                 <tbody key={index}>
-                    <tr>
+                    <tr title={`Ngày tạo: ${moment(course.createdAt).format("L")} | Ngày cập nhật: ${moment(course.updatedAt).format("L")}`}>
                         <td>
                           <div className="form-check">
                             <input className="form-check-input courseId" type="checkbox" name="courseIds[]" value={course._id}/>
@@ -227,8 +229,19 @@ function TrashCourses() {
                                   (str,index) => <div key={index}>{str}</div>)
                           }</div>
                         </td>
-                        <td className="time">{moment(course.createdAt).format("L")}</td>
-                        <td className="time">{moment(course.updatedAt).format("L")}</td>
+                        <td>{course.level}</td>
+                        <td>
+                          <div className="mb-3">{
+                                course.req.split('\n').map(
+                                    (str,index) => <div key={index}>{str}</div>)
+                          }</div>
+                        </td>
+                        <td>
+                          <div className="mb-3">{
+                            course.result.split('\n').map(
+                                (str,index) => <div key={index}>{str}</div>)
+                          }</div>
+                        </td>
                         <td>
                         <Link to="#" className="btn btn-link btn-restore" onClick={restoreOne(course._id)}>Khôi phục</Link>
                         <Link to="#" className="btn btn-link" data-toggle="modal" data-target="#delete-course-model" onClick={deleteOne(course._id)}>Xóa vĩnh viễn</Link>

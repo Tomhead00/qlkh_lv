@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react"
 import {isValidHttpUrl, isEmpty} from "../../components/nav/Func"
 import moment from "moment"
 import YouTube from 'react-youtube';
+import ReactPlayer from 'react-player'
 
 const {REACT_APP_SERVER} = process.env
 
@@ -21,6 +22,7 @@ function Show() {
     const [course, setCourse] = useState([]);
     const [comment, setComment] = useState([]);
     const [videoID, setvideoID] = useState('')
+    const [duration, setDuration] = useState(null)
     const params = useParams()
     const {slug} = params
     const opts = {
@@ -34,11 +36,12 @@ function Show() {
         var i = continueView.current.children.length
         // console.log(i);
         try {
-            if(continueView.current.children[i-1].className.includes("lockCourse")) {
-                // console.log(i, "cc", videoID)
+            while(continueView.current.children[i-1].className.includes("lockCourse")) {
+                // console.log(i, videoID)
                 if(!videoID) {
                     continueView.current.children[i-2].click()
                 }
+                i--
             }
         } catch (err) {}
     })
@@ -119,6 +122,7 @@ function Show() {
     }
 
     const clickVideo = (videoID, className, index) => (e) => {
+        // console.log(videoID);
         if (!className.includes("lockCourse")) {
             setvideoID(videoID)
             refreshComment(videoID) 
@@ -128,7 +132,7 @@ function Show() {
             })
         }
     }
-    // console.log(click)
+    // console.log(click);
     
     const ListVideo = () => {
         let className = "row pb-3 pt-1 course lockCourse"
@@ -153,7 +157,13 @@ function Show() {
                     >
                             {iconControlVideo(className, classnameIcon, index)}
                         <div className="col-sm-3 imgCenter">
-                            <img src={`http://img.youtube.com/vi/${video.videoID}/default.jpg`} alt={video.name} className="img-responsive center-block d-block mx-auto" />
+                            {/* <img src={`http://img.youtube.com/vi/${video.videoID}/default.jpg`} alt={video.name} className="img-responsive center-block d-block mx-auto" /> */}
+                            <img className="img-responsive center-block d-block mx-auto" width={'120px'} height={'90px'} src={(isValidHttpUrl(video.image)) ?
+                                    `http://img.youtube.com/vi/${video.videoID}/default.jpg` : 
+                                    `${REACT_APP_SERVER}/${video.image}`
+                                }
+                                alt={video.image} 
+                            />
                         </div>
                         <div className="col-sm-8 pl-0">
                             <h5 className="mb-1 text2line"><b>{video.name}</b></h5>
@@ -164,6 +174,7 @@ function Show() {
                     </div>
                 )
             }
+            return true
         }) 
         :
         (
@@ -172,28 +183,6 @@ function Show() {
                 <Link to="/courses" className="mb-0 text-center"><i className="fas fa-arrow-left"></i> Quay lại</Link>
             </div>
         ))
-    }
-    
-    const watchVideo = (e) => {
-        // console.log(startInt);
-        if(!startInt.current) {
-            startInt.current = setInterval(() => {
-                if (e.target.getCurrentTime() >= 2/3*e.target.getDuration()) {
-                    console.log('aa');
-                    unlockVideoNextByID()
-                    clearInterval(startInt.current)
-                    startInt.current = null
-                }
-                else if (!e.target.getCurrentTime()) {
-                    console.log("bb");
-                    clearInterval(startInt.current)
-                    startInt.current = null
-                } 
-                // else {
-                //     console.log(e.target.getCurrentTime(), e.target.getDuration())
-                // }
-            }, 2000)
-        }
     }
 
     const unlockVideoNextByID = (e) => {
@@ -249,7 +238,7 @@ function Show() {
         $(".comments").submit(() => {
             return false;
         })
-        console.log(comment);
+        // console.log(comment);
         if (message !== '') {
             axios({
                 method: "post",
@@ -262,7 +251,9 @@ function Show() {
             })
             .then(async ketqua => {
                 if(ketqua.data) {
+                    // console.log(ketqua.data);
                     setMessage("")
+                    refreshComment(videoID)
                 }
             })
         }
@@ -272,26 +263,71 @@ function Show() {
         setMessage("")
     }
 
+    const watchVideo = (e) => {
+        // console.log(startInt);
+        if(!startInt.current) {
+            startInt.current = setInterval(() => {
+                if (e.target.getCurrentTime() >= 2/3*e.target.getDuration()) {
+                    // console.log('aa');
+                    unlockVideoNextByID()
+                    clearInterval(startInt.current)
+                    startInt.current = null
+                }
+                else if (!e.target.getCurrentTime()) {
+                    // console.log("bb");
+                    clearInterval(startInt.current)
+                    startInt.current = null
+                } 
+                // else {
+                //     console.log(e.target.getCurrentTime(), e.target.getDuration())
+                // }
+            }, 2000)
+        }
+    }
+
+    const watchVideoRP = (process) => {
+        clearInterval(startInt.current)
+        startInt.current = null
+        // console.log(startInt, process.playedSeconds, duration);
+        if (process.playedSeconds >= 2/3*duration) {
+            unlockVideoNextByID()
+        }
+    }
+
+    const progess = (listVideo, actor) => {
+        let unlocked = 0
+        listVideo.forEach(video => {
+            if (video.unlock.includes(actor)) {
+                unlocked++
+            }
+        })
+        // console.log(listVideo.length, unlocked);
+        return (unlocked / listVideo.length)
+    }
+
+    // console.log(Object.keys(course).length !== 0 ? progess(course.video, course.actor) : "0%");
+
     return (
         <div className="mt-3 ml-4 mr-4">
             <div className="row">
                 <div className="col-xl-8">
-                    <YouTube
-                    videoId={videoID}                  // defaults -> null
-                    id="player"                      // defaults -> null
-                    className="player"               // defaults -> null
-                    // containerClassName={string}       // defaults -> ''
-                    // title={string}                    // defaults -> null
-                    opts={opts}                       // defaults -> {}
-                    // onReady={setvideoIDYT}                    // defaults -> noop
-                    onPlay={watchVideo}                     // defaults -> noop
-                    // onPause={ClearInterval}                    // defaults -> noop
-                    // onEnd={setvideoIDYT}                      // defaults -> noop
-                    // onError={func}                    // defaults -> noop
-                    // onStateChange={func}              // defaults -> noop
-                    // onPlaybackRateChange={func}       // defaults -> noop
-                    // onPlaybackQualityChange={func}    // defaults -> noop
-                    />
+                    {(videoID.length < 13) ? 
+                        <YouTube
+                        videoId={videoID}                  // defaults -> null
+                        id="player"                      // defaults -> null
+                        className="player"               // defaults -> null
+                        opts={opts}                       // defaults -> {}
+                        onPlay={watchVideo}                     // defaults -> noop
+                        />
+                        :
+                        <ReactPlayer width={'100%'} height={'35%'}
+                        url={`${REACT_APP_SERVER}/video/${videoID}`}
+                        onProgress={(process) => watchVideoRP(process)}
+                        onDuration={(duration) => setDuration(duration)}
+                        controls
+                        />
+                    }
+
                     <div className="mt-2" style={{color: "black"}}>
                         <h3><b className="title">{!isEmpty(course.video) ? (course.video[click.id] ? course.video[click.id].name : true) : "N/A"}</b></h3>
                         <p className="description mb-4">{!isEmpty(course.video) ? (course.video[click.id] ? course.video[click.id].description : true) : "N/A"}</p>
@@ -353,6 +389,16 @@ function Show() {
                 </div>
                 <div className="col-xl-4">
                     <div className="list-group">
+                        <div className="progress" style={{height: "15px"}}>
+                            <div
+                                className={'progress-bar progress-bar-striped progress-bar-animated'}
+                                role="progressbar"
+                                style={{width: `${Object.keys(course).length != 0 ? progess(course.video, user._id)*100 : "0" }%`}}
+                                aria-valuenow={Object.keys(course).length !== 0 ? progess(course.video, user._id)*100 : "0"}
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                            >{Object.keys(course).length !== 0 ? progess(course.video, user._id)*100 : "0"}%</div>
+                        </div>
                         <div className="list-group-item list-group-item-dark" aria-current="true">
                             <div className="d-flex w-100 justify-content-between">
                                 <h4 className="mb-1"><b>{course.name}</b></h4>

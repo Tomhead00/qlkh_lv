@@ -2,7 +2,7 @@ import { useNavigate, Link } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect } from "react"
-import {isValidHttpUrl} from "../../components/nav/Func"
+import {isValidHttpUrl, progessBar} from "../../components/nav/Func"
 import moment from "moment"
 
 const {REACT_APP_SERVER} = process.env
@@ -144,6 +144,7 @@ function Courses() {
         window.$("#ques-course-model").modal("toggle");
     }
 
+    // console.log(cJoin);
 
     return (
         <div>
@@ -152,7 +153,8 @@ function Courses() {
                     <div className="row mt-4">
                         <form className="input-group d-flex justify-content-end" id="formSearch">
                             <div className="form-outline">
-                                <input id="search-input form1" type="search" autoComplete="off" placeholder="Search..." style={{height: "35.44px"}} onChange={searchCourses} value={search}/>                            </div>
+                                <input id="search-input form1" type="search" autoComplete="off" placeholder="Search..." style={{height: "35.44px"}} onChange={searchCourses} value={search}/>
+                            </div>
                             <button id="close-button" type="button" className="btn btn-danger" onClick={closeSearch}>
                                 <i className="fas fa-close"></i>
                             </button>
@@ -182,8 +184,9 @@ function Courses() {
                                                     cjoin.description.split('\n').map(
                                                         (str,index) => <div key={index}>{str}</div>)
                                                 }</div>
-                                                <p className="mb-3"><i className="far fa-clock"></i> {moment.utc(cjoin.time*1000).format('HH:mm:ss')}</p>
-                                                <p><img src={isValidHttpUrl(cjoin.actor.image) ? cjoin.actor.image : `${REACT_APP_SERVER + cjoin.actor.image}`} className="user-avatar" /><b>{cjoin.actor.username}</b></p>
+                                                <p className="mb-3">{cjoin.level} | <i className="fas fa-clock"></i> {moment.utc(cjoin.time*1000).format('HH:mm:ss')}</p>
+                                                <p><img src={isValidHttpUrl(cjoin.actor.image) ? cjoin.actor.image : `${REACT_APP_SERVER + cjoin.actor.image}`} className="user-avatar"  alt={cjoin.actor.image} /><b>{cjoin.actor.username}</b></p>
+                                                {progessBar(cjoin.video,cjoin.user)}
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cjoin.updatedAt).fromNow()}</small>                                                    
                                                     <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {cjoin.studentCount}</i></small>
@@ -223,8 +226,9 @@ function Courses() {
                                                     cupdate.description.split('\n').map(
                                                         (str,index) => <div key={index}>{str}</div>)
                                                 }</div>
-                                                <p className="mb-3"><i className="fas fa-clock"></i> {moment.utc(cupdate.time*1000).format('HH:mm:ss')}</p>
+                                                <p className="mb-3">{cupdate.level} | <i className="fas fa-clock"></i> {moment.utc(cupdate.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(cupdate.actor.image) ? cupdate.actor.image : `${REACT_APP_SERVER + cupdate.actor.image}`} className="user-avatar" /><b>{cupdate.actor.username}</b></p>
+                                                {progessBar(cupdate.video,cupdate.user)}
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cupdate.updatedAt).fromNow()}</small>                                                    
                                                     <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {cupdate.studentCount}</i></small>
@@ -263,8 +267,9 @@ function Courses() {
                                                     cpopular.description.split('\n').map(
                                                         (str,index) => <div key={index}>{str}</div>)
                                                 }</div>
-                                                <p className="mb-3"><i className="fas fa-clock"></i> {moment.utc(cpopular.time*1000).format('HH:mm:ss')}</p>
+                                                <p className="mb-3">{cpopular.level} | <i className="fas fa-clock"></i> {moment.utc(cpopular.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(cpopular.actor.image) ? cpopular.actor.image : `${REACT_APP_SERVER + cpopular.actor.image}`} className="user-avatar" /><b>{cpopular.actor.username}</b></p>
+                                                {progessBar(cpopular.video,cpopular.user)}
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cpopular.updatedAt).fromNow()}</small>                                                    
                                                     <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {cpopular.studentCount}</i></small>
@@ -302,8 +307,9 @@ function Courses() {
                                                     canother.description.split('\n').map(
                                                         (str,index) => <div key={index}>{str}</div>)
                                                 }</div>
-                                                <p className="mb-3"><i className="fas fa-clock"></i> {moment.utc(canother.time*1000).format('HH:mm:ss')}</p>
+                                                <p className="mb-3">{canother.level} | <i className="fas fa-clock"></i> {moment.utc(canother.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(canother.actor.image) ? canother.actor.image : `${REACT_APP_SERVER + canother.actor.image}`} className="user-avatar" /><b>{canother.actor.username}</b></p>
+                                                {progessBar(canother.video,canother.user)}
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(canother.updatedAt).fromNow()}</small>                                                    
                                                     <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {canother.studentCount}</i></small>

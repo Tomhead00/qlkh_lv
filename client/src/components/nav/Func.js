@@ -1,3 +1,5 @@
+import { useDebugValue } from "react";
+
 export const isValidHttpUrl = (string) => {
     let url;
     try {
@@ -20,4 +22,28 @@ export const isEmpty = (obj) => {
         return true
     } else
     return Object.keys(obj).length === 0;
+}
+
+// progess bar course
+export const progessBar = (listVideo, actor) => {
+    // console.log(listVideo, actor);
+    let unlocked = 0
+    listVideo.forEach(video => {
+        if (video.unlock.includes(actor)) {
+            unlocked++
+        }
+    })
+    const res = unlocked / listVideo.length
+    return (
+        <div className="progress">
+            <div
+                className="progress-bar progress-bar-striped progress-bar-animated"
+                role="progressbar"
+                style={{width: `${res*100}%`}}
+                aria-valuenow={{width: `${res*100}`}}
+                aria-valuemin="0"
+                aria-valuemax="100"
+            ></div>
+        </div>
+    )
 }
