@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import {Link} from 'react-router-dom'
 import Itemnav from './Itemnav'
-import Notification from './Notification'
+import Notification from '../Notification'
 
 function Nav({user}) {
     // console.log(user);

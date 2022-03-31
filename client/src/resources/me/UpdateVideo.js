@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState } from "react"
-import {youtube_parser} from '../../components/nav/Func'
+import {youtube_parser} from '../../components/Func'
 // import YouTube from 'react-youtube';
 
 const {REACT_APP_SERVER} = process.env

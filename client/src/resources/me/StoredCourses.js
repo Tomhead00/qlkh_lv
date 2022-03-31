@@ -247,7 +247,7 @@ function StoredCourses() {
             </div>
           </div>
 
-          <table className="table table-responsive">
+          <table className="table">
               <thead>
                   <tr>
                       <th></th>
@@ -257,6 +257,7 @@ function StoredCourses() {
                       <th scope="col">Trình độ kỹ năng <Link to={`?_sort&column=level&type=${column[2].type}`} onClick={sort(2)}> <span className={column[2].icon}></span></Link></th>
                       <th scope="col">Yêu cầu <Link to={`?_sort&column=req&type=${column[3].type}`} onClick={sort(3)}> <span className={column[3].icon}></span></Link></th>
                       <th scope="col">Kết quả đạt được<Link to={`?_sort&column=result&type=${column[4].type}`} onClick={sort(4)}> <span className={column[4].icon}></span></Link></th>
+                      <th>Công cụ</th>
                   </tr>
               </thead>
               {course.toString() ? course.map((course,index)=>(
@@ -288,9 +289,10 @@ function StoredCourses() {
                             (str,index) => <div key={index}>{str}</div>)
                           }</div>
                         </td>
-                        <td>
-                            <Link to={`/me/stored/${course._id}/EditCourse`} className="btn btn-link">Tùy chỉnh</Link>
-                            <a href="/#" className="btn btn-link" onClick={deleteCourse(course._id)}>Xóa</a>
+                        <td style={{width: "200px"}}>
+                            <a href={`/livestream`} className="btn-link" title="Livestream"><i className="fas fa-video" style={{color: "#1266F1"}}></i></a>
+                            <Link to={`/me/stored/${course._id}/EditCourse`} className="btn-link" title="Tùy chỉnh"><i className="fas fa-cog" style={{color: "#B23CFD"}}></i></Link>
+                            <Link to="#" className="btn-link" onClick={deleteCourse(course._id)} title="Xóa"><i className="fas fa-trash-alt" style={{color: "#ff0000"}}> </i></Link>
                         </td>
                     </tr>
                 </tbody>

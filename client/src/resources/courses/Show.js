@@ -2,7 +2,7 @@ import {Link, useParams } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect, useRef } from "react"
-import {isValidHttpUrl, isEmpty} from "../../components/nav/Func"
+import {isValidHttpUrl, isEmpty} from "../../components/Func"
 import moment from "moment"
 import YouTube from 'react-youtube';
 import ReactPlayer from 'react-player'

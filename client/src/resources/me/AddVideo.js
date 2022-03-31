@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate, useParams} from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useEffect, useRef, useState } from "react"
-import {youtube_parser} from '../../components/nav/Func'
+import {youtube_parser} from '../../components/Func'
 import YouTube from 'react-youtube';
 import { FilePond, File, registerPlugin } from 'react-filepond'
 import 'filepond/dist/filepond.min.css'

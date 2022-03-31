@@ -2,7 +2,7 @@ import { useNavigate, Link } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect } from "react"
-import {isValidHttpUrl, progessBar} from "../../components/nav/Func"
+import {isValidHttpUrl, progessBar} from "../../components/Func"
 import moment from "moment"
 
 const {REACT_APP_SERVER} = process.env

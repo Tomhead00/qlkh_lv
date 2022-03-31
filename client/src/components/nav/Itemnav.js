@@ -1,7 +1,7 @@
 import {Link} from 'react-router-dom'
 import axios from "axios"
 import { useState, useLayoutEffect } from 'react'
-import {isValidHttpUrl} from './Func'
+import {isValidHttpUrl} from '../Func'
 
 const {REACT_APP_SERVER} = process.env
 

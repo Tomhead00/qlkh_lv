@@ -3,7 +3,7 @@ import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect } from "react"
 import moment from "moment"
-import {isValidHttpUrl, progessBar} from '../../components/nav/Func'
+import {isValidHttpUrl, progessBar} from '../../components/Func'
 
 const {REACT_APP_SERVER} = process.env
 
@@ -163,7 +163,6 @@ function EditCourse() {
                                 }
                                 alt={video.image} />
                             </Link>
-
                             <div className="card-body">
                                     <Link to="#">
                                         <h5 className="card-title">{video.name}</h5>

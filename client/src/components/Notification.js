@@ -27,10 +27,6 @@ function Notification({user}) {
 
     return (
         <div>
-            {/* <Link to="#">
-                <span><i className="fas text-white fa-bell"></i></span>
-                <span className="badge">3</span>
-            </Link> */}
             <a href="/#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span><i className="fas text-white fa-bell"></i></span>
                 <span className="badge">3</span>

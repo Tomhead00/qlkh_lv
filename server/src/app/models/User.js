@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema(
             default: null,
         },
         phone: {
-            type: String,
+            type: Number,
             default: null,
         },
         address: {

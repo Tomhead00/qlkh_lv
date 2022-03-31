@@ -1,7 +1,9 @@
-import {Routes, Route, useLocation } from 'react-router-dom'
+import {Routes, Route, useLocation} from 'react-router-dom'
 import App from './App'
 import HomePage from "./resources/home/home"
+import LiveStream from "./resources/livestream/LiveStream"
 import {useEffect} from 'react'
+import { ContextProvider } from './components/SocketContext'
 
 const {REACT_APP_SERVER} = process.env
 
@@ -19,6 +21,11 @@ function Redirect() {
         <div>
             <Routes>
                 <Route path="/" element={<HomePage />}/>
+                <Route path="/livestream" element={
+                    <ContextProvider>
+                        <LiveStream />
+                    </ContextProvider>
+                }/>
                 <Route path="/*" element={<App />} />
             </Routes>
         </div>
