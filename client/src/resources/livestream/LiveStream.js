@@ -10,12 +10,14 @@ import VideoPlayer from '../../components/VideoPlayer'
 import { SocketContext } from '../../components/SocketContext'
 import {makeStyles} from '@material-ui/core/styles'
 
+
 const {REACT_APP_SERVER} = process.env
 const useStyle = makeStyles((theme) => ({
     appBar: {
+        backgroundColor: '#BDBDBD',
         position: 'fixed',
         bottom: '0',
-        border: '1px solid',
+        // border: '1px solid',
         width: '100%',
         height: '10vh',
         padding: 0,
@@ -43,7 +45,7 @@ const useStyle = makeStyles((theme) => ({
         width: '23vw',
         justifyContent: 'center',
         right: 0,
-        border: '1px solid',
+        // border: '1px solid',
         flex: '1 1 auto',
         display: 'none',
 
@@ -62,11 +64,20 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const { myVideo, stream, setStream } = useContext(SocketContext)
+    const { myVideo, stream, setStream , switchCameraToScreen, setSwitchCameraToScreen, changeStream, connectionRef } = useContext(SocketContext)
     const classes = useStyle()
     const refMenu = useRef()
     const refMember = useRef()
     const refInfo = useRef()
+    const mic = useRef(true)
+    const video = useRef(true)
+
+    const closeMenu = (e) => {
+        $(refMenu.current).hide("slow")
+        $(refMember.current).hide("slow")
+        $(refInfo.current).hide("slow")
+
+    }
 
     return (
         <div className={"row " + classes.wrapper}>
@@ -74,31 +85,18 @@ function LiveStream () {
             <div className={classes.menu} ref={refMenu}>
                 <div className="mb-3">
                     <h4 style={{display: 'inline'}}><b>Tin nhắn</b></h4>
-                    <button type="button" className="close" aria-label="Close">
+                    <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
                         <span aria-hidden="true">&times;</span>
                     </button>               
                 </div>
                 <div className="comments-list" id="comments-list">
-                    {/* Comment here */}
+
                     <div>
                         {/* {comment.map((element, index) => ( */}
                                 <div className="media">
                                     <div className='media-body'>
                                         {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
                                         <div className='mt-0 mb-0'>Tui <small className="timeComments">1000 giờ trước</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
                                         <div className='mb-0'>
                                             {/* <div>{
                                                 element.content.split('\n').map(
@@ -217,144 +215,27 @@ function LiveStream () {
                 </div>
             </div>
             <div className={classes.menu} ref={refMember}>
-            <div className="mb-3">
-                    <h4 style={{display: 'inline'}}><b>Tin nhắn</b></h4>
-                    <button type="button" className="close" aria-label="Close">
+                <div className="mb-3">
+                    <h4 style={{display: 'inline'}}><b>Mọi người</b> <span><small>(5000)</small></span> </h4>
+                    <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
                         <span aria-hidden="true">&times;</span>
                     </button>               
                 </div>
                 <div className="comments-list" id="comments-list">
-                    {/* Comment here */}
                     <div>
                         {/* {comment.map((element, index) => ( */}
-                                <div className="media">
-                                    <div className='media-body'>
+                                <div className="media pt-2 pb-2">
+                                    <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={'http://localhost:3001/img/user/1644482160278default.jpg'} alt='' width="40" height="40" />
+                                    <div className='media-body align-self-center'>
                                         {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000 giờ trước</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
+                                            <div className='mt-0 mb-0'>Trần Quốc Bảo</div>
                                     </div>
                                 </div>
-                                <div className="media">
-                                    <div className='media-body'>
+                                <div className="media pt-2 pb-2">
+                                    <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={'http://localhost:3001/img/user/1644482160278default.jpg'} alt='' width="40" height="40" />
+                                    <div className='media-body align-self-center'>
                                         {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
+                                            <div className='mt-0 mb-0'>Trần Quốc Bảo</div>
                                     </div>
                                 </div>
                         {/* ))} */}
@@ -362,27 +243,55 @@ function LiveStream () {
                 </div>
             </div>
             <div className={classes.menu} ref={refInfo}>
-                Info
+                <div className="mb-3">
+                    <h4 style={{display: 'inline'}}><b>Thông tin</b></h4>
+                    <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
+                        <span aria-hidden="true">&times;</span>
+                    </button>               
+                </div>
+
             </div>
 
-            {/* <Options>
+            <Options>
                 <Notifications />
-            </Options> */}
+            </Options>
             <div className={"row " + classes.appBar}>
                 <div className="col-4"></div>
                 <div className="col-4 d-flex justify-content-center align-items-center">
-                    <Link className="btn btn-light btn-lg btn-floating m-2" to="#" role="button" onClick={() => {
-                            myVideo.current.srcObject.getAudioTracks()[0].stop()
+                    {/* mic */}
+                    <Link className={`btn btn-lg btn-floating m-2 ${mic.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
+                        if(mic.current && stream) {
+                            stream.getTracks()[0].enabled = false
+                            mic.current = false
+                        }
+                        else {
+                            stream.getTracks()[0].enabled = true
+                            mic.current = true
+                        }
                     }}>
-                        <i className="fas fa-microphone"></i> <i className="fas fa-microphone-slash"></i>
+                        {mic.current ? (<i className="fas fa-microphone"></i>) : (<i className="fas fa-microphone-slash"></i>)}
                     </Link>
-                    <Link className="btn btn-light btn-lg btn-floating m-2" to="#" role="button" onClick={() => {
+                    {/* camera */}
+                    <Link className={`btn btn-lg btn-floating m-2 ${video.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
+                        // console.log( stream , audioTrack , videoTrack)
+                        if(video.current && stream) {
+                            stream.getTracks()[1].enabled = false
+                            video.current = false
+                        }
+                        else {
+                            stream.getTracks()[1].enabled = true
+                            video.current = true
+                        }
                     }}>
-                        <i className="fas fa-video"></i> <i className="fas fa-video-slash"></i>
+                        {video.current ? (<i className="fas fa-video"></i>) : (<i className="fas fa-video-slash"></i>)}
                     </Link>
-                    <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#FFA900"}} to="#" role="button">
+                    {/* share man hinh */}
+                    <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#FFA900"}} to="#" role="button" onClick={ () => {
+                        changeStream()
+                    }}>
                         <i className="fas fa-chalkboard" style={{color: "white"}}></i>
                     </Link>
+                    {/* tin nhan */}
                     <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
                         if ($(refMember.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
                             $(refMenu.current).toggle()
@@ -393,6 +302,7 @@ function LiveStream () {
                     }}>
                         <i className="fas fa-comment-alt" style={{color: "white"}}></i>
                     </Link>
+                    {/* Thanh vien */}
                     <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
                         if ($(refMenu.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
                             $(refMember.current).toggle()
@@ -403,6 +313,7 @@ function LiveStream () {
                     }}>
                         <i className="far fa-list-alt" style={{color: "white"}}></i>
                     </Link>
+                    {/* Thong bao */}
                     <Link className="btn btn-light btn-lg btn-floating m-2" to="#" role="button" onClick={() => {
                         if ($(refMenu.current).css("display") === "block" || $(refMember.current).css("display") === "block") {
                             $(refInfo.current).toggle()
@@ -413,6 +324,7 @@ function LiveStream () {
                     }}>
                         <i className="fas fa-ellipsis-v"></i>                    
                     </Link>
+                    {/* Thoat */}
                     <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} to="#" role="button">
                         <i className="fas fa-phone-slash" style={{color: "white"}}></i>
                     </Link>

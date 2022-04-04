@@ -367,18 +367,18 @@ function Show() {
                             {/* Comment here */}
                             <div>
                                 {comment.map((element, index) => (
-                                        <div className="media" key={index}>
-                                            <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={isValidHttpUrl(element.actor.image) ? element.actor.image : `${REACT_APP_SERVER + element.actor.image}`} alt='' width="40" height="40" />
-                                            <div className='media-body mt-2 mb-2 pt-2 pb-2'>
-                                                <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5>
-                                                <div className='mb-0'>
-                                                    <div>{
-                                                        element.content.split('\n').map(
-                                                            (str,index) => <div key={index}>{str}</div>)
-                                                    }</div>
-                                                </div>
+                                    <div className="media" key={index}>
+                                        <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={isValidHttpUrl(element.actor.image) ? element.actor.image : `${REACT_APP_SERVER + element.actor.image}`} alt='' width="40" height="40" />
+                                        <div className='media-body mt-2 mb-2 pt-2 pb-2'>
+                                            <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5>
+                                            <div className='mb-0'>
+                                                <div>{
+                                                    element.content.split('\n').map(
+                                                        (str,index) => <div key={index}>{str}</div>)
+                                                }</div>
                                             </div>
                                         </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>
