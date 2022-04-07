@@ -64,13 +64,11 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const { myVideo, stream, setStream , switchCameraToScreen, setSwitchCameraToScreen, changeStream, connectionRef } = useContext(SocketContext)
+    const { myVideo, stream, setStream , switchCameraToScreen, setSwitchCameraToScreen, CamAndScreen, changeStream, connectionRef, mic, video, streamPeer } = useContext(SocketContext)
     const classes = useStyle()
     const refMenu = useRef()
     const refMember = useRef()
     const refInfo = useRef()
-    const mic = useRef(true)
-    const video = useRef(true)
 
     const closeMenu = (e) => {
         $(refMenu.current).hide("slow")
@@ -260,13 +258,20 @@ function LiveStream () {
                 <div className="col-4 d-flex justify-content-center align-items-center">
                     {/* mic */}
                     <Link className={`btn btn-lg btn-floating m-2 ${mic.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
-                        if(mic.current && stream) {
-                            stream.getTracks()[0].enabled = false
+                        if (switchCameraToScreen.current) {
+                            if(mic.current) mic.current = false
+                            else mic.current = true
+                        } else if(mic.current) {
+                            stream.getAudioTracks()[0].enabled = false
+                            const test = () => {
+                                stream.getAudioTracks()[0].stop()
+                            }
+                            setTimeout(test, 1000);
                             mic.current = false
                         }
                         else {
-                            stream.getTracks()[0].enabled = true
                             mic.current = true
+                            CamAndScreen()
                         }
                     }}>
                         {mic.current ? (<i className="fas fa-microphone"></i>) : (<i className="fas fa-microphone-slash"></i>)}
@@ -274,13 +279,20 @@ function LiveStream () {
                     {/* camera */}
                     <Link className={`btn btn-lg btn-floating m-2 ${video.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
                         // console.log( stream , audioTrack , videoTrack)
-                        if(video.current && stream) {
-                            stream.getTracks()[1].enabled = false
+                        if (switchCameraToScreen.current) {
+                            if(video.current) video.current = false
+                            else video.current = true
+                        } else if(video.current) {
+                            stream.getVideoTracks()[0].enabled = false
+                            const test = () => {
+                                stream.getVideoTracks()[0].stop()
+                            }
+                            setTimeout(test, 1000);
                             video.current = false
                         }
                         else {
-                            stream.getTracks()[1].enabled = true
                             video.current = true
+                            CamAndScreen()
                         }
                     }}>
                         {video.current ? (<i className="fas fa-video"></i>) : (<i className="fas fa-video-slash"></i>)}

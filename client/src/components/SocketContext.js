@@ -17,69 +17,84 @@ const ContextProvider = ({ children }) => {
     const myVideo = useRef()
     const userVideo = useRef()
     const connectionRef = useRef()
-    const oldTrackAudio = useRef(null)
-    const oldTrackVideo = useRef(null)
+    const streamPeer = useRef(null)
     const switchCameraToScreen = useRef(false)
-
+    const mic = useRef(true)
+    const video = useRef(true)
     
     useEffect(() => {
-        streamFn()
+        CamAndScreen()
         socket.on('me', (id) => {
             setMe(id)
         })
-        socket.on('calluser', ({from, name: callerName, signal}) => {
+        socket.on('calluser', ({signal, from, name: callerName}) => {
             console.log("Nhan cuoc goi");
+            // console.log({signal, from, name: callerName});
             setCall({isReceivedCall: true, from, name: callerName, signal})
         })
     },[])
 
 
     const getScreenshareWithMicrophone = async () => {
-        const audio = await navigator.mediaDevices.getUserMedia({audio: true});
-        const stream = await navigator.mediaDevices.getDisplayMedia({video: true});
-        oldTrackAudio.current = audio.getTracks()[0]
-        oldTrackVideo.current = stream.getTracks()[0]
-        // console.log(oldTrackVideo.current, oldTrackAudio.current);
-        return new MediaStream([audio.getTracks()[0], stream.getTracks()[0]]);
+        let audio = await navigator.mediaDevices.getUserMedia({audio: mic.current});
+        let stream = await navigator.mediaDevices.getDisplayMedia({video: true});
+        // console.log(audio.getTracks()[0], stream.getTracks()[0]);
+        if (mic.current)
+            return new MediaStream([audio.getTracks()[0], stream.getTracks()[0]]);
+        else
+            return new MediaStream([stream.getTracks()[0]]);
     }
+
     const getCameraWithMicrophone = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({audio: true, video: true });
-        oldTrackAudio.current = stream.getTracks()[0]
-        oldTrackVideo.current = stream.getTracks()[1]
-        // console.log(oldTrackVideo.current, oldTrackAudio.current);
-        return new MediaStream([stream.getTracks()[0], stream.getTracks()[1]]);
+        let stream = await navigator.mediaDevices.getUserMedia({audio: mic.current, video: video.current });
+        // console.log(stream.getTracks()[0], stream.getTracks()[1]);
+        return new MediaStream(stream.getTracks());
     }
-    const streamFn = async () => {
-        // console.log(oldTrackAudio.current, oldTrackVideo.current, "Ham chay", switchCameraToScreen);
-        if (switchCameraToScreen.current)
+
+    const CamAndScreen = async () => {
+        if (switchCameraToScreen.current) {
             var streamSw = await getScreenshareWithMicrophone()
+            streamSw.getVideoTracks()[0].onended = () => {
+                switchCameraToScreen.current = false
+                CamAndScreen()
+            };
+        }
         else
             var streamSw = await getCameraWithMicrophone()
-        // if(stream) {
-        //     stream.getTracks()[0].stop()
-        //     stream.getTracks()[1].stop()
-        // }
+    
+        try {
+            if(stream) {
+                stream.getAudioTracks()[0].stop()
+                stream.getVideoTracks()[0].stop()
+            }
+        } catch(err) {}
+
         if(connectionRef.current) {
-            console.log("Da ket noi");
-            // connectionRef.current.removeStream(stream)
-            connectionRef.current.addStream(streamSw)
-            // connectionRef.current.addTrack(stream.getVideoTracks(), stream)
-            // connectionRef.current.replaceTrack(oldTrackAudio.current, stream.getAudioTracks(), stream)
-            // connectionRef.current.replaceTrack(oldTrackVideo.current, stream.getVideoTracks(), stream)
+            if (video.current) {
+                connectionRef.current.addTrack(streamSw.getVideoTracks()[0], streamPeer.current)
+                connectionRef.current.replaceTrack(streamPeer.current.getVideoTracks()[0], streamSw.getVideoTracks()[0], streamPeer.current)
+            }
+            if (mic.current) {
+                connectionRef.current.addTrack(streamSw.getAudioTracks()[0], streamPeer.current)
+                connectionRef.current.replaceTrack(streamPeer.current.getAudioTracks()[0], streamSw.getAudioTracks()[0], streamPeer.current)
+            }
+        } else {
+            streamPeer.current = streamSw
         }
         setStream(streamSw)
         myVideo.current.srcObject = streamSw
     };
 
     const answerCall = () => {
-        console.log("tra loi cuoc goi");
-        // console.log(oldTrackAudio.current, oldTrackVideo.current);
+        console.log("join cuoc goi");
         setCallAccepted(true)
         var peer = new Peer({initiator: false, trickle: false, stream})
         peer.on('signal', (data) => {
+            // console.log(data);
             socket.emit('answercall', { signal: data, to: call.from })
         })
         peer.on('stream', (currentStream) => {
+            console.log(currentStream + " stream cua nguoi goi");
             userVideo.current.srcObject = currentStream
         })
         peer.signal(call.signal);
@@ -88,33 +103,30 @@ const ContextProvider = ({ children }) => {
     }
 
     const changeStream = async () => {
-        console.log("Doi stream hien tai");
-        if (switchCameraToScreen.current) {
+        try {
+            console.log("Doi stream hien tai");
+            if (switchCameraToScreen.current) {
+                switchCameraToScreen.current = false
+                await CamAndScreen()
+            }
+            else {
+                switchCameraToScreen.current = true
+                await CamAndScreen()
+            }
+        } catch (DOMException) {
             switchCameraToScreen.current = false
-            await streamFn()
-        }
-        else {
-            switchCameraToScreen.current = true
-            await streamFn()
-        }
-        // console.log(oldTrackAudio.current, stream.getTracks()[0]);
-        // console.log(oldTrackVideo.current, stream.getTracks()[1]);
-        if(connectionRef.current) {
-            console.log("Da ket noi");
-            // connectionRef.current.addTrack(stream.getAudioTracks(), stream)
-            // connectionRef.current.addTrack(stream.getVideoTracks(), stream)
-            // connectionRef.current.replaceTrack(oldTrackAudio.current, stream.getAudioTracks(), stream)
-            // connectionRef.current.replaceTrack(oldTrackVideo.current, stream.getVideoTracks(), stream)
         }
     }
 
     const callUser = (id) => {
-        console.log("goi nguoi khac");
+        console.log("bat dau cuoc goi");
         var peer = new Peer({initiator: true, trickle: false, stream})
         peer.on('signal', (data) => {
+            // console.log(data);
             socket.emit('calluser', { userToCall: id, signalData: data, from: me, name })
         })
         peer.on('stream', (currentStream) => {
+            console.log(currentStream + " stream cua nguoi nhan cuoc goi");
             userVideo.current.srcObject = currentStream
         })
         socket.on('callaccepted', (signal) => {
@@ -132,9 +144,11 @@ const ContextProvider = ({ children }) => {
     
     return (
         <SocketContext.Provider value={{
-            getScreenshareWithMicrophone,
-            getCameraWithMicrophone,
+            streamPeer,
+            mic,
+            video,
             changeStream,
+            CamAndScreen,
             switchCameraToScreen,
             call, 
             callAccepted,

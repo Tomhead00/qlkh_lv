@@ -197,9 +197,11 @@ io.on('connection', (socket) => {
         socket.broadcast.emit("callended")
     })
     socket.on("calluser", ({ userToCall, signalData, from, name }) => {
+        // console.log({ userToCall, from, name });
         io.to(userToCall).emit("calluser", { signal: signalData, from, name })
     })
     socket.on("answercall", (data) => {
+        // console.log(data.to);
         io.to(data.to).emit("callaccepted", data.signal)
     });
     // socket.on('clientcall', (data) => {
