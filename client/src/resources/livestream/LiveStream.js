@@ -1,17 +1,18 @@
-import { Link } from "react-router-dom"
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect, useRef, useContext } from "react"
 import moment from "moment"
 import { Typography, AppBar } from '@material-ui/core'
-import Notifications from '../../components/Notifications'
 import Options from '../../components/Options'
+import Notifications from '../../components/Notifications'
 import VideoPlayer from '../../components/VideoPlayer'
 import { SocketContext } from '../../components/SocketContext'
 import {makeStyles} from '@material-ui/core/styles'
 
 
-const {REACT_APP_SERVER} = process.env
+const {REACT_APP_SERVER, REACT_APP_CLIENT} = process.env
+
 const useStyle = makeStyles((theme) => ({
     appBar: {
         backgroundColor: '#BDBDBD',
@@ -42,12 +43,11 @@ const useStyle = makeStyles((theme) => ({
         padding: '15px',
         position: 'relative',
         height: '100%',
-        width: '23vw',
+        width: '25vw',
         justifyContent: 'center',
         right: 0,
         // border: '1px solid',
         flex: '1 1 auto',
-        display: 'none',
 
         wordWrap: 'break-word',
         whiteSpace: 'pre-wrap',
@@ -64,23 +64,63 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const { myVideo, stream, setStream , switchCameraToScreen, setSwitchCameraToScreen, CamAndScreen, changeStream, connectionRef, mic, video, streamPeer } = useContext(SocketContext)
+    const {changeStream, micro, video, toggleCam, toggleMic, me, callUser, stream, answer } = useContext(SocketContext)
     const classes = useStyle()
+    const [course, setCourse] = useState([])
+    const [name, setName] = useState('')
+    const [description, setDescription] = useState('')
+    const [save, setSave] = useState(true)
+    const params = useParams()
+    const navi = useNavigate()
+    const local = useLocation()
+
     const refMenu = useRef()
     const refMember = useRef()
     const refInfo = useRef()
+
+    // useEffect(() =>{
+    //     if (params.host && me) {
+    //         console.log(params.host, me);
+    //         callUser(params.host)
+    //     }
+    // }, [me])
+
+
+    useEffect(() =>{
+        axios({
+            method: "get",
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/livestream/getCourse/${params.id}`
+        })
+        .then(ketqua => {
+            setCourse(ketqua.data);
+        })
+    }, [])
 
     const closeMenu = (e) => {
         $(refMenu.current).hide("slow")
         $(refMember.current).hide("slow")
         $(refInfo.current).hide("slow")
+    }
 
+    const handleName = (e) => {
+        setName(e.target.value)
+    }
+    const handleDesciption = (e) => {
+        setDescription(e.target.value)
+    }
+    const startLive = (e) => {
+        if(name) {
+            navi(`${local.pathname}/${me}`)
+            $("#registerLive").toggle()
+            $("#inforLive").toggle()
+        }
     }
 
     return (
         <div className={"row " + classes.wrapper}>
             <VideoPlayer />
-            <div className={classes.menu} ref={refMenu}>
+            <div className={classes.menu} ref={refMenu} style={{display: "none"}}>
                 <div className="mb-3">
                     <h4 style={{display: 'inline'}}><b>Tin nhắn</b></h4>
                     <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
@@ -212,7 +252,7 @@ function LiveStream () {
                     </div>
                 </div>
             </div>
-            <div className={classes.menu} ref={refMember}>
+            <div className={classes.menu} ref={refMember} style={{display: "none"}}>
                 <div className="mb-3">
                     <h4 style={{display: 'inline'}}><b>Mọi người</b> <span><small>(5000)</small></span> </h4>
                     <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
@@ -242,58 +282,61 @@ function LiveStream () {
             </div>
             <div className={classes.menu} ref={refInfo}>
                 <div className="mb-3">
-                    <h4 style={{display: 'inline'}}><b>Thông tin</b></h4>
+                    <h4 style={{display: 'inline'}}><b>Chi tiết</b></h4>
                     <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
                         <span aria-hidden="true">&times;</span>
-                    </button>               
-                </div>
+                    </button>
+                    
+                    <h5 className="mt-4"><b>Khóa học: {course.name}</b></h5>
 
+                    <div id="registerLive">
+                        <p className="text-center mt-4">Vui lòng điền vài thông tin để bắt đầu livestream hôm nay!</p>
+                        <form id="formLive" onSubmit={e => e.preventDefault()}>
+                            <div className="mb-4">
+                                <input type="text" id="form1Example1" className="form-control" placeholder="Tiêu đề" autoComplete="off" required onChange={handleName}/>
+                            </div>
+
+                            <div className="mb-4">
+                                <input type="text" id="form1Example2" className="form-control" placeholder="Miêu tả" autoComplete="off" onChange={handleDesciption}/>
+                            </div>
+
+                            <div className="row">
+                                <div className="col d-flex">
+                                    <div className="form-check">
+                                        <input className="form-check-input" type="checkbox" value="" id="form1Example3" checked={save} onChange={(e) => {setSave(e.target.checked)}}/>
+                                        <label className="form-check-label" htmlFor="form1Example3"> Lưu lại video </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" className="btn btn-primary float-end" onClick={startLive}>Bắt đầu</button>
+                        </form>
+                    </div>
+                    <div className={"mt-3"} id="inforLive" style={{display: "none"}}>
+                        <h6>Tiêu đề: {name}</h6>
+                        <h6>Miêu tả: {description}</h6>
+                        <h6 className="mt-3 fw-bolder">Livestream đã bắt đầu!</h6>
+                    </div>                        
+                </div>
             </div>
+
 
             <Options>
                 <Notifications />
             </Options>
+
             <div className={"row " + classes.appBar}>
                 <div className="col-4"></div>
                 <div className="col-4 d-flex justify-content-center align-items-center">
                     {/* mic */}
-                    <Link className={`btn btn-lg btn-floating m-2 ${mic.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
-                        if (switchCameraToScreen.current) {
-                            if(mic.current) mic.current = false
-                            else mic.current = true
-                        } else if(mic.current) {
-                            stream.getAudioTracks()[0].enabled = false
-                            const test = () => {
-                                stream.getAudioTracks()[0].stop()
-                            }
-                            setTimeout(test, 1000);
-                            mic.current = false
-                        }
-                        else {
-                            mic.current = true
-                            CamAndScreen()
-                        }
+                    <Link className={`btn btn-lg btn-floating m-2 ${micro.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
+                        toggleMic()
                     }}>
-                        {mic.current ? (<i className="fas fa-microphone"></i>) : (<i className="fas fa-microphone-slash"></i>)}
+                        {micro.current ? (<i className="fas fa-microphone"></i>) : (<i className="fas fa-microphone-slash"></i>)}
                     </Link>
                     {/* camera */}
                     <Link className={`btn btn-lg btn-floating m-2 ${video.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
-                        // console.log( stream , audioTrack , videoTrack)
-                        if (switchCameraToScreen.current) {
-                            if(video.current) video.current = false
-                            else video.current = true
-                        } else if(video.current) {
-                            stream.getVideoTracks()[0].enabled = false
-                            const test = () => {
-                                stream.getVideoTracks()[0].stop()
-                            }
-                            setTimeout(test, 1000);
-                            video.current = false
-                        }
-                        else {
-                            video.current = true
-                            CamAndScreen()
-                        }
+                        toggleCam()
                     }}>
                         {video.current ? (<i className="fas fa-video"></i>) : (<i className="fas fa-video-slash"></i>)}
                     </Link>

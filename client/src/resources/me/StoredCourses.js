@@ -290,7 +290,7 @@ function StoredCourses() {
                           }</div>
                         </td>
                         <td style={{width: "200px"}}>
-                            <a href={`/livestream`} className="btn-link" title="Livestream"><i className="fas fa-video" style={{color: "#1266F1"}}></i></a>
+                            <a href={`/livestream/${course._id}`} className="btn-link" title="Livestream"><i className="fas fa-video" style={{color: "#1266F1"}}></i></a>
                             <Link to={`/me/stored/${course._id}/EditCourse`} className="btn-link" title="Tùy chỉnh"><i className="fas fa-cog" style={{color: "#B23CFD"}}></i></Link>
                             <Link to="#" className="btn-link" onClick={deleteCourse(course._id)} title="Xóa"><i className="fas fa-trash-alt" style={{color: "#ff0000"}}> </i></Link>
                         </td>

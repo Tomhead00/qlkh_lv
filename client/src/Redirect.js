@@ -21,7 +21,14 @@ function Redirect() {
         <div>
             <Routes>
                 <Route path="/" element={<HomePage />}/>
-                <Route path="/livestream" element={
+                <Route path="/livestream/:id" element={
+                    <ContextProvider>
+                        <LiveStream />
+                    </ContextProvider>
+                }/>
+                <Route path="/*" element={<App />} />
+
+                <Route path="/livestream/:id/:host" element={
                     <ContextProvider>
                         <LiveStream />
                     </ContextProvider>
