@@ -188,25 +188,34 @@ app.put('/account/edit/:id/', upload.single('myFile'));
 // app.use(morgan('combined'));
 
 app.set('views', path.join(__dirname, 'resources', 'views'));
-
 route(app);
 
-io.on('connection', (socket) => {
-    socket.emit("me", socket.id)
-    socket.on("disconnect", () => {
-        socket.broadcast.emit("callended")
-    })
-    socket.on("calluser", ({ userToCall, signalData, from, name }) => {
-        // console.log({ userToCall, from, name });
-        io.to(userToCall).emit("calluser", { signal: signalData, from, name })
-    })
-    socket.on("answercall", (data) => {
-        // console.log(data.to);
-        io.to(data.to).emit("callaccepted", data.signal)
+io.sockets.on("error", e => console.log(e));
+io.sockets.on("connection", socket => {
+    socket.on("broadcaster", () => {
+        console.log("start live: " + socket.id);
+        socket.emit("getID", socket.id)
     });
-    // socket.on('clientcall', (data) => {
-    //     console.log(data);
-    // })
+    socket.on("watcher", (idSocket) => {
+        console.log("watcher");
+        socket.to(idSocket).emit("watcher", socket.id);
+    });
+    socket.on("offer", (id, message) => {
+        console.log("offer", socket.id);
+        socket.to(id).emit("offer", socket.id, message);
+    });
+    socket.on("answer", (id, message) => {
+        console.log("answer", socket.id);
+        socket.to(id).emit("answer", socket.id, message);
+    });
+    socket.on("candidate", (id, message) => {
+        console.log("candidate", socket.id);
+        socket.to(id).emit("candidate", socket.id, message);
+    });
+    socket.on("disconnect", () => {
+        console.log("disconnect", socket.id);
+        // socket.to(broadcaster).emit("disconnectPeer", socket.id);
+    });
 });
 
 server.listen(port, () => {

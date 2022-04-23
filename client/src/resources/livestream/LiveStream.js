@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useContext } from "react"
 import moment from "moment"
 import { Typography, AppBar } from '@material-ui/core'
 import Options from '../../components/Options'
-import Notifications from '../../components/Notifications'
+// import Notifications from '../../components/Notifications'
 import VideoPlayer from '../../components/VideoPlayer'
 import { SocketContext } from '../../components/SocketContext'
 import {makeStyles} from '@material-ui/core/styles'
@@ -64,27 +64,19 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {changeStream, micro, video, toggleCam, toggleMic, me, callUser, stream, answer } = useContext(SocketContext)
+    const {changeStream, micro, video, toggleCam, toggleMic, me, callUser, stream, answer, start, broadcaster, watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [course, setCourse] = useState([])
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    const [user, setUser] = useState([])
     const [save, setSave] = useState(true)
     const params = useParams()
     const navi = useNavigate()
-    const local = useLocation()
 
     const refMenu = useRef()
     const refMember = useRef()
     const refInfo = useRef()
-
-    // useEffect(() =>{
-    //     if (params.host && me) {
-    //         console.log(params.host, me);
-    //         callUser(params.host)
-    //     }
-    // }, [me])
-
 
     useEffect(() =>{
         axios({
@@ -95,7 +87,25 @@ function LiveStream () {
         .then(ketqua => {
             setCourse(ketqua.data);
         })
+        axios({
+            method: "get",
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/account/getUser`
+        })
+        .then(ketqua => {
+            setUser(ketqua.data);
+        })
     }, [])
+
+    useEffect(() =>{
+        if (user.user && course) {
+            if (params.host) {
+                watcher(params.host)
+            } else {
+                start()
+            }
+        }
+    }, [user, course])
 
     const closeMenu = (e) => {
         $(refMenu.current).hide("slow")
@@ -111,7 +121,8 @@ function LiveStream () {
     }
     const startLive = (e) => {
         if(name) {
-            navi(`${local.pathname}/${me}`)
+            navi(`/livestream/${params.id}/${me}`)
+            broadcaster()
             $("#registerLive").toggle()
             $("#inforLive").toggle()
         }
@@ -119,7 +130,9 @@ function LiveStream () {
 
     return (
         <div className={"row " + classes.wrapper}>
+
             <VideoPlayer />
+
             <div className={classes.menu} ref={refMenu} style={{display: "none"}}>
                 <div className="mb-3">
                     <h4 style={{display: 'inline'}}><b>Tin nhắn</b></h4>
@@ -320,10 +333,9 @@ function LiveStream () {
                 </div>
             </div>
 
-
-            <Options>
+            {/* <Options>
                 <Notifications />
-            </Options>
+            </Options> */}
 
             <div className={"row " + classes.appBar}>
                 <div className="col-4"></div>
