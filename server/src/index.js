@@ -192,12 +192,14 @@ route(app);
 
 io.sockets.on("error", e => console.log(e));
 io.sockets.on("connection", socket => {
+    let broadcaster;
     socket.on("broadcaster", () => {
         console.log("start live: " + socket.id);
         socket.emit("getID", socket.id)
     });
     socket.on("watcher", (idSocket) => {
         console.log("watcher");
+        broadcaster = idSocket
         socket.to(idSocket).emit("watcher", socket.id);
     });
     socket.on("offer", (id, message) => {
@@ -209,12 +211,12 @@ io.sockets.on("connection", socket => {
         socket.to(id).emit("answer", socket.id, message);
     });
     socket.on("candidate", (id, message) => {
-        console.log("candidate", socket.id);
+        // console.log("candidate", socket.id);
         socket.to(id).emit("candidate", socket.id, message);
     });
-    socket.on("disconnect", () => {
+    socket.on("disconnect", (idSocket) => {
         console.log("disconnect", socket.id);
-        // socket.to(broadcaster).emit("disconnectPeer", socket.id);
+        socket.to(broadcaster).emit("disconnectPeer", socket.id);
     });
 });
 

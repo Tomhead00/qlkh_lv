@@ -1,8 +1,4 @@
-import { Link, useLocation } from "react-router-dom"
-import $ from 'jquery'
-import axios from "axios"
 import { useState, useEffect, useRef, useContext } from "react"
-import moment from "moment"
 import { Typography, Paper, Grid } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { SocketContext } from '../components/SocketContext'
@@ -45,26 +41,26 @@ const useStyles = makeStyles((theme) => ({
 const {REACT_APP_SERVER} = process.env
 
 function VideoPlayer () {
-    const { name, callAccepted, myVideo, userVideo, callEnded, stream, call } = useContext(SocketContext)
+    const {myVideo, stream, isBroadcaster, userVideo } = useContext(SocketContext)
     const classes = useStyles()
+
+    useEffect(() => {
+        // console.log(myVideo.current, isBroadcaster)
+        myVideo.current.srcObject = stream
+    }, [stream])
+
     return (
         <Grid container className={classes.gridContainer}>
-            {stream && (
-                <Paper className={classes.paper}>
-                    <Grid item xs={12} md={6}>
+                {/* <Paper className={classes.paper}> */}
+                    {/* <Grid item xs={12} md={6}> */}
                         {/* <Typography variant="h5" gutterBottom>{name || 'Name'}</Typography> */}
-                        <video playsInline muted ref={myVideo} autoPlay className={classes.video}></video>
-                    </Grid>
-                </Paper>
-            )}
-            {/* {callAccepted && !callEnded && (
-                <Paper className={classes.paper}>
-                    <Grid item xs={12} md={6}>
-                        <Typography variant="h5" gutterBottom>{call.name || 'Name'}</Typography>
-                        <video playsInline ref={userVideo} autoPlay className={classes.video}></video>
-                    </Grid>
-                </Paper>
-            )} */}
+                        {isBroadcaster ? 
+                            (<video playsInline ref={myVideo} muted autoPlay className={classes.video}></video>)
+                                :     
+                            (<video playsInline ref={myVideo} muted autoPlay controls className={classes.video}></video>)
+                        }
+                    {/* </Grid> */}
+                {/* </Paper> */}
         </Grid>
     )
 }

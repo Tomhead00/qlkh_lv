@@ -30,7 +30,6 @@ const useStyle = makeStyles((theme) => ({
         position: 'relative',
         margin: '0px',
         padding: '0px',
-        height: '90vh',
         // display: 'flex',
         // flexDirection: 'column',
         alignItems: 'center',
@@ -64,7 +63,7 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {changeStream, micro, video, toggleCam, toggleMic, me, callUser, stream, answer, start, broadcaster, watcher } = useContext(SocketContext)
+    const {changeStream, micro, video, toggleCam, toggleMic, me, callUser, stream, answer, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [course, setCourse] = useState([])
     const [name, setName] = useState('')
@@ -103,6 +102,7 @@ function LiveStream () {
                 watcher(params.host)
             } else {
                 start()
+                setIsBroadcaster(true)
             }
         }
     }, [user, course])
@@ -129,7 +129,7 @@ function LiveStream () {
     }
 
     return (
-        <div className={"row " + classes.wrapper}>
+        <div className={"row " + classes.wrapper} style={{height: isBroadcaster ? '90vh' : '100vh'}}>
 
             <VideoPlayer />
 
@@ -337,67 +337,67 @@ function LiveStream () {
                 <Notifications />
             </Options> */}
 
-            <div className={"row " + classes.appBar}>
-                <div className="col-4"></div>
-                <div className="col-4 d-flex justify-content-center align-items-center">
-                    {/* mic */}
-                    <Link className={`btn btn-lg btn-floating m-2 ${micro.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
-                        toggleMic()
-                    }}>
-                        {micro.current ? (<i className="fas fa-microphone"></i>) : (<i className="fas fa-microphone-slash"></i>)}
-                    </Link>
-                    {/* camera */}
-                    <Link className={`btn btn-lg btn-floating m-2 ${video.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
-                        toggleCam()
-                    }}>
-                        {video.current ? (<i className="fas fa-video"></i>) : (<i className="fas fa-video-slash"></i>)}
-                    </Link>
-                    {/* share man hinh */}
-                    <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#FFA900"}} to="#" role="button" onClick={ () => {
-                        changeStream()
-                    }}>
-                        <i className="fas fa-chalkboard" style={{color: "white"}}></i>
-                    </Link>
-                    {/* tin nhan */}
-                    <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
-                        if ($(refMember.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
-                            $(refMenu.current).toggle()
-                        } else 
-                            $(refMenu.current).toggle('slow')
-                        $(refMember.current).hide()
-                        $(refInfo.current).hide()
-                    }}>
-                        <i className="fas fa-comment-alt" style={{color: "white"}}></i>
-                    </Link>
-                    {/* Thanh vien */}
-                    <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
-                        if ($(refMenu.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
-                            $(refMember.current).toggle()
-                        } else 
-                            $(refMember.current).toggle('slow')
-                        $(refMenu.current).hide()
-                        $(refInfo.current).hide()
-                    }}>
-                        <i className="far fa-list-alt" style={{color: "white"}}></i>
-                    </Link>
-                    {/* Thong bao */}
-                    <Link className="btn btn-light btn-lg btn-floating m-2" to="#" role="button" onClick={() => {
-                        if ($(refMenu.current).css("display") === "block" || $(refMember.current).css("display") === "block") {
-                            $(refInfo.current).toggle()
-                        } else 
-                            $(refInfo.current).toggle('slow')
-                        $(refMenu.current).hide()
-                        $(refMember.current).hide()
-                    }}>
-                        <i className="fas fa-ellipsis-v"></i>                    
-                    </Link>
-                    {/* Thoat */}
-                    <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} to="#" role="button">
-                        <i className="fas fa-phone-slash" style={{color: "white"}}></i>
-                    </Link>
+            {isBroadcaster && (
+                <div className={"row " + classes.appBar}>
+                        <div className="col d-flex justify-content-center align-items-center">
+                            {/* mic */}
+                            <Link className={`btn btn-lg btn-floating m-2 ${micro.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
+                                toggleMic()
+                            }}>
+                                {micro.current ? (<i className="fas fa-microphone"></i>) : (<i className="fas fa-microphone-slash"></i>)}
+                            </Link>
+                            {/* camera */}
+                            <Link className={`btn btn-lg btn-floating m-2 ${video.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
+                                toggleCam()
+                            }}>
+                                {video.current ? (<i className="fas fa-video"></i>) : (<i className="fas fa-video-slash"></i>)}
+                            </Link>
+                            {/* share man hinh */}
+                            <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#FFA900"}} to="#" role="button" onClick={ () => {
+                                changeStream()
+                            }}>
+                                <i className="fas fa-chalkboard" style={{color: "white"}}></i>
+                            </Link>
+                            {/* tin nhan */}
+                            <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
+                                if ($(refMember.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
+                                    $(refMenu.current).toggle()
+                                } else 
+                                    $(refMenu.current).toggle('slow')
+                                $(refMember.current).hide()
+                                $(refInfo.current).hide()
+                            }}>
+                                <i className="fas fa-comment-alt" style={{color: "white"}}></i>
+                            </Link>
+                            {/* Thanh vien */}
+                            <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
+                                if ($(refMenu.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
+                                    $(refMember.current).toggle()
+                                } else 
+                                    $(refMember.current).toggle('slow')
+                                $(refMenu.current).hide()
+                                $(refInfo.current).hide()
+                            }}>
+                                <i className="far fa-list-alt" style={{color: "white"}}></i>
+                            </Link>
+                            {/* Thong bao */}
+                            <Link className="btn btn-light btn-lg btn-floating m-2" to="#" role="button" onClick={() => {
+                                if ($(refMenu.current).css("display") === "block" || $(refMember.current).css("display") === "block") {
+                                    $(refInfo.current).toggle()
+                                } else 
+                                    $(refInfo.current).toggle('slow')
+                                $(refMenu.current).hide()
+                                $(refMember.current).hide()
+                            }}>
+                                <i className="fas fa-ellipsis-v"></i>                    
+                            </Link>
+                            {/* Thoat */}
+                            <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} to="#" role="button">
+                                <i className="fas fa-phone-slash" style={{color: "white"}}></i>
+                            </Link>
+                        </div>
                 </div>
-                <div className="col-4"></div>
-            </div>
+            )}
         </div>
     )
 }
