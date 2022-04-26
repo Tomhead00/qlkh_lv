@@ -19,8 +19,11 @@ const config = {
 const ContextProvider = ({ children }) => {
     const [stream, setStream] = useState(null)
     const [me, setMe] = useState('')
-    const [name, setName] = useState('')
     const [isBroadcaster, setIsBroadcaster] = useState(false)
+    const [course, setCourse] = useState([])
+    const [name, setName] = useState(null)
+    const [description, setDescription] = useState(null)
+    const [user, setUser] = useState([])
 
     const myVideo = useRef()
     // const connectionRef = useRef()
@@ -186,9 +189,11 @@ const ContextProvider = ({ children }) => {
               });
         });
         
-        socket.on("answer", (id, description) => {
+        socket.on("answer", (id, Description) => {
             console.log("answer");
-            peerConnections[id].setRemoteDescription(description);
+            // console.log(user, course, name, description);
+            socket.emit("infor", id, name, description);
+            peerConnections[id].setRemoteDescription(Description);
             console.log(peerConnections);
         });
         
@@ -210,7 +215,7 @@ const ContextProvider = ({ children }) => {
 
     // // watcher
     const watcher = (idSocket) => {
-        console.log("watcher: " + idSocket);
+        console.log("watcher: " + socket.id);
         
         socket.emit("watcher", idSocket);
         let peerConnection;
@@ -229,7 +234,7 @@ const ContextProvider = ({ children }) => {
                 window.location.reload();
             }
             peerConnection.ontrack = event => {
-                console.log(event.streams[0].getTracks());
+                // console.log(event.streams[0].getTracks());
                 setStream(event.streams[0])
             };
             peerConnection.onicecandidate = event => {
@@ -243,6 +248,12 @@ const ContextProvider = ({ children }) => {
             peerConnection
             .addIceCandidate(new RTCIceCandidate(candidate))
             .catch(e => console.error(e));
+        });
+
+        socket.on("infor", (name, description) => {
+            // console.log(name, description);
+            setName(name)
+            setDescription(description)
         });
         
         window.onunload = window.onbeforeunload = () => {
@@ -278,6 +289,14 @@ const ContextProvider = ({ children }) => {
             watcher,
             isBroadcaster,
             setIsBroadcaster,
+            name, 
+            setName, 
+            course, 
+            setCourse, 
+            description, 
+            setDescription, 
+            user, 
+            setUser,
         }}>
             {children}
         </SocketContext.Provider>

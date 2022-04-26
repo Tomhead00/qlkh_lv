@@ -63,12 +63,8 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {changeStream, micro, video, toggleCam, toggleMic, me, callUser, stream, answer, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
-    const [course, setCourse] = useState([])
-    const [name, setName] = useState('')
-    const [description, setDescription] = useState('')
-    const [user, setUser] = useState([])
     const [save, setSave] = useState(true)
     const params = useParams()
     const navi = useNavigate()
@@ -106,6 +102,13 @@ function LiveStream () {
             }
         }
     }, [user, course])
+
+    useEffect(() => {
+        if (params.host && name) {
+            $("#registerLive").toggle()
+            $("#inforLive").toggle()
+        }
+    },[name])
 
     const closeMenu = (e) => {
         $(refMenu.current).hide("slow")
@@ -301,35 +304,36 @@ function LiveStream () {
                     </button>
                     
                     <h5 className="mt-4"><b>Khóa học: {course.name}</b></h5>
+                    {isBroadcaster && (
+                        <div id="registerLive">
+                            <p className="text-center mt-4">Vui lòng điền vài thông tin để bắt đầu livestream hôm nay!</p>
+                            <form id="formLive" onSubmit={e => e.preventDefault()}>
+                                <div className="mb-4">
+                                    <input type="text" id="form1Example1" className="form-control" placeholder="Tiêu đề" autoComplete="off" required onChange={handleName}/>
+                                </div>
 
-                    <div id="registerLive">
-                        <p className="text-center mt-4">Vui lòng điền vài thông tin để bắt đầu livestream hôm nay!</p>
-                        <form id="formLive" onSubmit={e => e.preventDefault()}>
-                            <div className="mb-4">
-                                <input type="text" id="form1Example1" className="form-control" placeholder="Tiêu đề" autoComplete="off" required onChange={handleName}/>
-                            </div>
+                                <div className="mb-4">
+                                    <input type="text" id="form1Example2" className="form-control" placeholder="Miêu tả" autoComplete="off" onChange={handleDesciption}/>
+                                </div>
 
-                            <div className="mb-4">
-                                <input type="text" id="form1Example2" className="form-control" placeholder="Miêu tả" autoComplete="off" onChange={handleDesciption}/>
-                            </div>
-
-                            <div className="row">
-                                <div className="col d-flex">
-                                    <div className="form-check">
-                                        <input className="form-check-input" type="checkbox" value="" id="form1Example3" checked={save} onChange={(e) => {setSave(e.target.checked)}}/>
-                                        <label className="form-check-label" htmlFor="form1Example3"> Lưu lại video </label>
+                                <div className="row">
+                                    <div className="col d-flex">
+                                        <div className="form-check">
+                                            <input className="form-check-input" type="checkbox" value="" id="form1Example3" checked={save} onChange={(e) => {setSave(e.target.checked)}}/>
+                                            <label className="form-check-label" htmlFor="form1Example3"> Lưu lại video </label>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <button type="submit" className="btn btn-primary float-end" onClick={startLive}>Bắt đầu</button>
-                        </form>
-                    </div>
+                                <button type="submit" className="btn btn-primary float-end" onClick={startLive}>Bắt đầu</button>
+                            </form>
+                        </div>
+                    )}
                     <div className={"mt-3"} id="inforLive" style={{display: "none"}}>
                         <h6>Tiêu đề: {name}</h6>
                         <h6>Miêu tả: {description}</h6>
                         <h6 className="mt-3 fw-bolder">Livestream đã bắt đầu!</h6>
-                    </div>                        
+                    </div>                     
                 </div>
             </div>
 
@@ -337,9 +341,10 @@ function LiveStream () {
                 <Notifications />
             </Options> */}
 
-            {isBroadcaster && (
-                <div className={"row " + classes.appBar}>
-                        <div className="col d-flex justify-content-center align-items-center">
+            <div className={"row " + classes.appBar}>
+                <div className="col d-flex justify-content-center align-items-center">
+                    {isBroadcaster && (
+                        <div>
                             {/* mic */}
                             <Link className={`btn btn-lg btn-floating m-2 ${micro.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
                                 toggleMic()
@@ -358,46 +363,47 @@ function LiveStream () {
                             }}>
                                 <i className="fas fa-chalkboard" style={{color: "white"}}></i>
                             </Link>
-                            {/* tin nhan */}
-                            <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
-                                if ($(refMember.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
-                                    $(refMenu.current).toggle()
-                                } else 
-                                    $(refMenu.current).toggle('slow')
-                                $(refMember.current).hide()
-                                $(refInfo.current).hide()
-                            }}>
-                                <i className="fas fa-comment-alt" style={{color: "white"}}></i>
-                            </Link>
-                            {/* Thanh vien */}
-                            <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
-                                if ($(refMenu.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
-                                    $(refMember.current).toggle()
-                                } else 
-                                    $(refMember.current).toggle('slow')
-                                $(refMenu.current).hide()
-                                $(refInfo.current).hide()
-                            }}>
-                                <i className="far fa-list-alt" style={{color: "white"}}></i>
-                            </Link>
-                            {/* Thong bao */}
-                            <Link className="btn btn-light btn-lg btn-floating m-2" to="#" role="button" onClick={() => {
-                                if ($(refMenu.current).css("display") === "block" || $(refMember.current).css("display") === "block") {
-                                    $(refInfo.current).toggle()
-                                } else 
-                                    $(refInfo.current).toggle('slow')
-                                $(refMenu.current).hide()
-                                $(refMember.current).hide()
-                            }}>
-                                <i className="fas fa-ellipsis-v"></i>                    
-                            </Link>
-                            {/* Thoat */}
-                            <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} to="#" role="button">
-                                <i className="fas fa-phone-slash" style={{color: "white"}}></i>
-                            </Link>
                         </div>
+                    )}
+                    {/* tin nhan */}
+                    <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
+                        if ($(refMember.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
+                            $(refMenu.current).toggle()
+                        } else 
+                            $(refMenu.current).toggle('slow')
+                        $(refMember.current).hide()
+                        $(refInfo.current).hide()
+                    }}>
+                        <i className="fas fa-comment-alt" style={{color: "white"}}></i>
+                    </Link>
+                    {/* Thanh vien */}
+                    <Link className="btn btn-light btn-lg btn-floating m-2" to="#" style={{backgroundColor: "#39C0ED"}} role="button" onClick={() => {
+                        if ($(refMenu.current).css("display") === "block" || $(refInfo.current).css("display") === "block") {
+                            $(refMember.current).toggle()
+                        } else 
+                            $(refMember.current).toggle('slow')
+                        $(refMenu.current).hide()
+                        $(refInfo.current).hide()
+                    }}>
+                        <i className="far fa-list-alt" style={{color: "white"}}></i>
+                    </Link>
+                    {/* Thong bao */}
+                    <Link className="btn btn-light btn-lg btn-floating m-2" to="#" role="button" onClick={() => {
+                        if ($(refMenu.current).css("display") === "block" || $(refMember.current).css("display") === "block") {
+                            $(refInfo.current).toggle()
+                        } else 
+                            $(refInfo.current).toggle('slow')
+                        $(refMenu.current).hide()
+                        $(refMember.current).hide()
+                    }}>
+                        <i className="fas fa-ellipsis-v"></i>                    
+                    </Link>
+                    {/* Thoat */}
+                    <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} to="#" role="button">
+                        <i className="fas fa-phone-slash" style={{color: "white"}}></i>
+                    </Link>
                 </div>
-            )}
+            </div>
         </div>
     )
 }

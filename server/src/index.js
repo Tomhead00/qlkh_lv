@@ -194,28 +194,33 @@ io.sockets.on("error", e => console.log(e));
 io.sockets.on("connection", socket => {
     let broadcaster;
     socket.on("broadcaster", () => {
-        console.log("start live: " + socket.id);
+        // console.log("start live: " + socket.id);
         socket.emit("getID", socket.id)
     });
+    socket.on("infor", (id, name, description) => {
+        // console.log(id, name, description);
+        socket.to(id).emit("infor", name, description);
+    });
     socket.on("watcher", (idSocket) => {
-        console.log("watcher");
+        // console.log("watcher");
         broadcaster = idSocket
         socket.to(idSocket).emit("watcher", socket.id);
     });
     socket.on("offer", (id, message) => {
-        console.log("offer", socket.id);
+        // console.log("offer", socket.id);
         socket.to(id).emit("offer", socket.id, message);
     });
     socket.on("answer", (id, message) => {
-        console.log("answer", socket.id);
+        // console.log("answer", socket.id);
+        // console.log(broadcaster);
         socket.to(id).emit("answer", socket.id, message);
     });
     socket.on("candidate", (id, message) => {
         // console.log("candidate", socket.id);
         socket.to(id).emit("candidate", socket.id, message);
     });
-    socket.on("disconnect", (idSocket) => {
-        console.log("disconnect", socket.id);
+    socket.on("disconnect", () => {
+        // console.log("disconnect", socket.id);
         socket.to(broadcaster).emit("disconnectPeer", socket.id);
     });
 });
