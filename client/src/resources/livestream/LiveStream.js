@@ -3,8 +3,6 @@ import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect, useRef, useContext } from "react"
 import moment from "moment"
-import { Typography, AppBar } from '@material-ui/core'
-import Options from '../../components/Options'
 // import Notifications from '../../components/Notifications'
 import VideoPlayer from '../../components/VideoPlayer'
 import { SocketContext } from '../../components/SocketContext'
@@ -30,6 +28,7 @@ const useStyle = makeStyles((theme) => ({
         position: 'relative',
         margin: '0px',
         padding: '0px',
+        height: '90vh',
         // display: 'flex',
         // flexDirection: 'column',
         alignItems: 'center',
@@ -45,9 +44,13 @@ const useStyle = makeStyles((theme) => ({
         width: '25vw',
         justifyContent: 'center',
         right: 0,
+        backgroundColor: "#DCDCDC",
         // border: '1px solid',
         flex: '1 1 auto',
-
+    },
+    listChat: {
+        height: "85%",
+        scrollBehavior: "smooth",
         wordWrap: 'break-word',
         whiteSpace: 'pre-wrap',
         wordBreak: 'break-word',
@@ -59,19 +62,22 @@ const useStyle = makeStyles((theme) => ({
         },
         msOverflowStyle: 'none',  /* IE and Edge */
         scrollbarWidth: 'none',  /* Firefox */
-    },
+    }
 })) 
 
 function LiveStream () {
-    const {changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [save, setSave] = useState(true)
+    const [message, setMessage] = useState('')
+
     const params = useParams()
     const navi = useNavigate()
 
     const refMenu = useRef()
     const refMember = useRef()
     const refInfo = useRef()
+    const listComment = useRef()
 
     useEffect(() =>{
         axios({
@@ -91,6 +97,10 @@ function LiveStream () {
             setUser(ketqua.data);
         })
     }, [])
+
+    useEffect(() => {
+        listComment.current.scrollTop = listComment.current.scrollHeight
+    }, [messages])
 
     useEffect(() =>{
         if (user.user && course) {
@@ -122,17 +132,35 @@ function LiveStream () {
     const handleDesciption = (e) => {
         setDescription(e.target.value)
     }
-    const startLive = (e) => {
+    const startLive = async (e) => {
         if(name) {
+            await broadcaster()
             navi(`/livestream/${params.id}/${me}`)
-            broadcaster()
             $("#registerLive").toggle()
             $("#inforLive").toggle()
         }
     }
 
+    const inputChat = (e) => {
+        if (e.key === 'Enter') {
+            sendChat()
+        }
+    }
+
+    const sendChat = () => {
+        // console.log("sendChat");
+        if (message) {
+            addChat(message)
+            setMessage("")
+        }
+    }
+    
+    const handleMessage = (e) => {
+        setMessage(e.target.value)
+    }
+
     return (
-        <div className={"row " + classes.wrapper} style={{height: isBroadcaster ? '90vh' : '100vh'}}>
+        <div className={"row " + classes.wrapper}>
 
             <VideoPlayer />
 
@@ -143,129 +171,24 @@ function LiveStream () {
                         <span aria-hidden="true">&times;</span>
                     </button>               
                 </div>
-                <div className="comments-list" id="comments-list">
-
+                <div className={"comments-list " + classes.listChat} id="comments-list" ref={listComment}>
                     <div>
-                        {/* {comment.map((element, index) => ( */}
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000 giờ trước</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
+                        {messages.map((element, index) => (
+                            <div className="media" key={index}>
+                                <div className='media-body'>
+                                    {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
+                                    <div className='mt-0 mb-0'>Tui <small className="timeComments">1000 giờ trước</small></div>
+                                    <div className='mb-0'>
+                                        {element}
                                     </div>
                                 </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="media">
-                                    <div className='media-body'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                        <div className='mt-0 mb-0'>Tui <small className="timeComments">1000</small></div>
-                                        <div className='mb-0'>
-                                            {/* <div>{
-                                                element.content.split('\n').map(
-                                                    (str,index) => <div key={index}>{str}</div>)
-                                            }</div> */}
-                                            askfjashkdfaglwiugfbslasdasasdasdaasdasdasdadasdad asd s
-                                        </div>
-                                    </div>
-                                </div>
-                        {/* ))} */}
+                            </div>
+                        ))}
                     </div>
+                </div>
+                <div className="d-flex justify-content-start align-items-center mb-2">
+                    <input type="text" className="form-control form-control-lg" autoComplete="off" id="exampleFormControlInput1" placeholder="Type message" onKeyDown={inputChat} onChange={handleMessage} value={message}/>
+                    <a className="m-3" href="#" onClick={() => {sendChat()}}><i className="fas fa-paper-plane"></i></a>
                 </div>
             </div>
             <div className={classes.menu} ref={refMember} style={{display: "none"}}>
@@ -278,13 +201,6 @@ function LiveStream () {
                 <div className="comments-list" id="comments-list">
                     <div>
                         {/* {comment.map((element, index) => ( */}
-                                <div className="media pt-2 pb-2">
-                                    <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={'http://localhost:3001/img/user/1644482160278default.jpg'} alt='' width="40" height="40" />
-                                    <div className='media-body align-self-center'>
-                                        {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                            <div className='mt-0 mb-0'>Trần Quốc Bảo</div>
-                                    </div>
-                                </div>
                                 <div className="media pt-2 pb-2">
                                     <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={'http://localhost:3001/img/user/1644482160278default.jpg'} alt='' width="40" height="40" />
                                     <div className='media-body align-self-center'>
@@ -336,10 +252,6 @@ function LiveStream () {
                     </div>                     
                 </div>
             </div>
-
-            {/* <Options>
-                <Notifications />
-            </Options> */}
 
             <div className={"row " + classes.appBar}>
                 <div className="col d-flex justify-content-center align-items-center">
@@ -400,7 +312,7 @@ function LiveStream () {
                     </Link>
                     {/* Thoat */}
                     <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} to="#" role="button">
-                        <i className="fas fa-phone-slash" style={{color: "white"}}></i>
+                        <i className="fas fa-lg fa-sign-out-alt fa-rotate-180" style={{color: "white"}}></i>
                     </Link>
                 </div>
             </div>

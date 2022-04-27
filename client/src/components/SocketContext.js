@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, createContext } from "react"
+import { useState, useEffect, useRef, createContext, useReducer } from "react"
 import { io } from 'socket.io-client'
 import Peer from 'simple-peer'
 import axios from "axios"
@@ -24,6 +24,7 @@ const ContextProvider = ({ children }) => {
     const [name, setName] = useState(null)
     const [description, setDescription] = useState(null)
     const [user, setUser] = useState([])
+    const [messages, setMessages] = useState(["messages"])
 
     const myVideo = useRef()
     // const connectionRef = useRef()
@@ -164,6 +165,11 @@ const ContextProvider = ({ children }) => {
         socket.emit("broadcaster");
     }
 
+    const addChat = (message) => {
+        setMessages((prevMessages) => [...prevMessages, message])
+        socket.emit("mess", message, socket.id)
+    } 
+
     // broatcaster
     const broadcaster = () => {
         console.log("broadcaster");
@@ -207,6 +213,11 @@ const ContextProvider = ({ children }) => {
             peerConnections[id].close();
             delete peerConnections[id];
         });
+
+        socket.on("mess", (message, id) => {
+            if (socket.id != id)
+                setMessages((prevMessages) => [...prevMessages, message])
+        });
         
         window.onunload = window.onbeforeunload = () => {
             socket.close();
@@ -238,9 +249,9 @@ const ContextProvider = ({ children }) => {
                 setStream(event.streams[0])
             };
             peerConnection.onicecandidate = event => {
-            if (event.candidate) {
-                socket.emit("candidate", id, event.candidate);
-            }
+                if (event.candidate) {
+                    socket.emit("candidate", id, event.candidate);
+                }
             };
         });
         socket.on("candidate", (id, candidate) => {
@@ -255,6 +266,11 @@ const ContextProvider = ({ children }) => {
             setName(name)
             setDescription(description)
         });
+
+        socket.on("mess", (message, id) => {
+            if (socket.id != id)
+                setMessages((prevMessages) => [...prevMessages, message])
+        });
         
         window.onunload = window.onbeforeunload = () => {
             socket.close();
@@ -262,13 +278,13 @@ const ContextProvider = ({ children }) => {
         };
     }
 
+
     useEffect(() => {
         socket.on("getID", (id) => {
             setMe(id)
         })
     },[])
-
-    
+ 
     return (
         <SocketContext.Provider value={{
             toggleCam,
@@ -297,6 +313,8 @@ const ContextProvider = ({ children }) => {
             setDescription, 
             user, 
             setUser,
+            addChat,
+            messages,
         }}>
             {children}
         </SocketContext.Provider>

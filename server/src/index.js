@@ -223,6 +223,9 @@ io.sockets.on("connection", socket => {
         // console.log("disconnect", socket.id);
         socket.to(broadcaster).emit("disconnectPeer", socket.id);
     });
+    socket.on("mess", (mess, id) => {
+        socket.broadcast.emit("mess", mess, id);
+    });
 });
 
 server.listen(port, () => {
