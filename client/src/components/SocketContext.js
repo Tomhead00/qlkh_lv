@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, createContext, useReducer } from "react"
 import { io } from 'socket.io-client'
 import Peer from 'simple-peer'
 import axios from "axios"
+import moment from "moment"
 
 const {REACT_APP_SERVER} = process.env
 const SocketContext = createContext()
@@ -24,7 +25,8 @@ const ContextProvider = ({ children }) => {
     const [name, setName] = useState(null)
     const [description, setDescription] = useState(null)
     const [user, setUser] = useState([])
-    const [messages, setMessages] = useState(["messages"])
+    const [messages, setMessages] = useState([])
+    const [listUser, setListUser] = useState([])
 
     const myVideo = useRef()
     // const connectionRef = useRef()
@@ -166,9 +168,17 @@ const ContextProvider = ({ children }) => {
     }
 
     const addChat = (message) => {
-        setMessages((prevMessages) => [...prevMessages, message])
-        socket.emit("mess", message, socket.id)
-    } 
+        setMessages((prevMessages) => {
+            var actor = listUser.find(user => user.socketID === socket.id)
+            var newMessage = {
+                message: message,
+                actor: actor.username,
+                time: `${moment().format()}`,
+            }
+            socket.emit("mess", socket.id, newMessage, listUser)
+            return [...prevMessages, newMessage]
+        })
+    }
 
     // broatcaster
     const broadcaster = () => {
@@ -196,27 +206,41 @@ const ContextProvider = ({ children }) => {
         });
         
         socket.on("answer", (id, Description) => {
-            console.log("answer");
+            // console.log("answer");
             // console.log(user, course, name, description);
             socket.emit("infor", id, name, description);
             peerConnections[id].setRemoteDescription(Description);
-            console.log(peerConnections);
+            // console.log(peerConnections);
         });
         
         socket.on("candidate", (id, candidate) => {
-            console.log("candidate");
+            // console.log("candidate");
             peerConnections[id].addIceCandidate(new RTCIceCandidate(candidate));
         });
     
         socket.on("disconnectPeer", id => {
-            console.log("disconnectPeer");
+            console.log("disconnectPeer", id);
             peerConnections[id].close();
             delete peerConnections[id];
+            setListUser(pre => {
+                let newList = pre.filter(user => user.socketID != id);
+                socket.emit("joinLive", newList)
+                return newList
+            })
         });
 
-        socket.on("mess", (message, id) => {
+        socket.on("mess", (id, newMessage) => {
             if (socket.id != id)
-                setMessages((prevMessages) => [...prevMessages, message])
+                setMessages((prevMessages) => [...prevMessages, newMessage])
+        });
+
+        socket.on("joinLive", (newUser) => {
+            // console.log("joinLive");
+            setListUser((prev) => {
+                let newList = [...prev, newUser]
+                socket.emit("joinLive", newList)
+                return newList
+            })
         });
         
         window.onunload = window.onbeforeunload = () => {
@@ -226,9 +250,14 @@ const ContextProvider = ({ children }) => {
 
     // // watcher
     const watcher = (idSocket) => {
+        let newUser = {
+            socketID: socket.id,
+            userID: user.user._id,
+            username: user.user.username,
+            image: user.user.image,
+        }
         console.log("watcher: " + socket.id);
-        
-        socket.emit("watcher", idSocket);
+        socket.emit("watcher", idSocket, newUser);
         let peerConnection;
         socket.on("offer", (id, description) => {
             console.log("offer");
@@ -255,7 +284,7 @@ const ContextProvider = ({ children }) => {
             };
         });
         socket.on("candidate", (id, candidate) => {
-            console.log("candidate");
+            // console.log("candidate");
             peerConnection
             .addIceCandidate(new RTCIceCandidate(candidate))
             .catch(e => console.error(e));
@@ -267,9 +296,14 @@ const ContextProvider = ({ children }) => {
             setDescription(description)
         });
 
-        socket.on("mess", (message, id) => {
+        socket.on("mess", (id, newMessage) => {
             if (socket.id != id)
-                setMessages((prevMessages) => [...prevMessages, message])
+                setMessages((prevMessages) => [...prevMessages, newMessage])
+        });
+
+        socket.on("joinLive", (newUser) => {
+            // console.log("joinLive");
+            setListUser(newUser)
         });
         
         window.onunload = window.onbeforeunload = () => {
@@ -315,6 +349,9 @@ const ContextProvider = ({ children }) => {
             setUser,
             addChat,
             messages,
+            listUser,
+            setListUser,
+            socket,
         }}>
             {children}
         </SocketContext.Provider>

@@ -7,6 +7,8 @@ import moment from "moment"
 import VideoPlayer from '../../components/VideoPlayer'
 import { SocketContext } from '../../components/SocketContext'
 import {makeStyles} from '@material-ui/core/styles'
+import { ListSubheader } from "@material-ui/core"
+import {isValidHttpUrl} from "../../components/Func"
 
 
 const {REACT_APP_SERVER, REACT_APP_CLIENT} = process.env
@@ -66,7 +68,7 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [save, setSave] = useState(true)
     const [message, setMessage] = useState('')
@@ -97,6 +99,17 @@ function LiveStream () {
             setUser(ketqua.data);
         })
     }, [])
+
+    useEffect(() => {
+        if (isBroadcaster) {
+            setListUser([...listUser, {
+                socketID: socket.id,
+                userID: user.user._id,
+                username: user.user.username,
+                image: user.user.image,
+            }])
+        }
+    }, [isBroadcaster, user])
 
     useEffect(() => {
         listComment.current.scrollTop = listComment.current.scrollHeight
@@ -177,9 +190,9 @@ function LiveStream () {
                             <div className="media" key={index}>
                                 <div className='media-body'>
                                     {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                    <div className='mt-0 mb-0'>Tui <small className="timeComments">1000 giờ trước</small></div>
+                                    <div className='mt-0 mb-0'><b>{element.actor}</b> <i><small className="timeComments">{moment(element.time).fromNow()}</small></i></div>
                                     <div className='mb-0'>
-                                        {element}
+                                        {element.message}
                                     </div>
                                 </div>
                             </div>
@@ -193,22 +206,23 @@ function LiveStream () {
             </div>
             <div className={classes.menu} ref={refMember} style={{display: "none"}}>
                 <div className="mb-3">
-                    <h4 style={{display: 'inline'}}><b>Mọi người</b> <span><small>(5000)</small></span> </h4>
+                    <h4 style={{display: 'inline'}}><b>Tham gia</b> <span><small>({listUser.length})</small></span> </h4>
                     <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
                         <span aria-hidden="true">&times;</span>
                     </button>               
                 </div>
                 <div className="comments-list" id="comments-list">
                     <div>
-                        {/* {comment.map((element, index) => ( */}
-                                <div className="media pt-2 pb-2">
-                                    <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={'http://localhost:3001/img/user/1644482160278default.jpg'} alt='' width="40" height="40" />
+                        {listUser.map((element, index) => {
+                            return (
+                                <div className="media pt-2 pb-2" key={index}>
+                                    <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={isValidHttpUrl(element.image) ? element.image : `${REACT_APP_SERVER + element.image}`} alt='' width="40" height="40" />
                                     <div className='media-body align-self-center'>
                                         {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                            <div className='mt-0 mb-0'>Trần Quốc Bảo</div>
+                                            <div className='mt-0 mb-0'>{element.username} &nbsp;{element.userID === course.actor ? (<i className="fas fa-crown" style={{color: "red", fontSize: "15px"}}></i>) : null}</div>
                                     </div>
                                 </div>
-                        {/* ))} */}
+                        )})}
                     </div>
                 </div>
             </div>

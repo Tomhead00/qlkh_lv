@@ -201,10 +201,11 @@ io.sockets.on("connection", socket => {
         // console.log(id, name, description);
         socket.to(id).emit("infor", name, description);
     });
-    socket.on("watcher", (idSocket) => {
+    socket.on("watcher", (idSocket, newUser) => {
         // console.log("watcher");
         broadcaster = idSocket
         socket.to(idSocket).emit("watcher", socket.id);
+        socket.to(idSocket).emit("joinLive", newUser);
     });
     socket.on("offer", (id, message) => {
         // console.log("offer", socket.id);
@@ -223,8 +224,16 @@ io.sockets.on("connection", socket => {
         // console.log("disconnect", socket.id);
         socket.to(broadcaster).emit("disconnectPeer", socket.id);
     });
-    socket.on("mess", (mess, id) => {
-        socket.broadcast.emit("mess", mess, id);
+    socket.on("mess", (id, newMessage, listUser) => {
+        listUser.map((element) => {
+            socket.to(element.socketID).emit("mess", id, newMessage);
+        })
+    });
+
+    socket.on("joinLive", (newList) => {
+        newList.map((element) => {
+            socket.to(element.socketID).emit("joinLive", newList);
+        })
     });
 });
 
