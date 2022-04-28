@@ -68,9 +68,8 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
-    const [save, setSave] = useState(true)
     const [message, setMessage] = useState('')
 
     const params = useParams()
@@ -151,6 +150,9 @@ function LiveStream () {
             navi(`/livestream/${params.id}/${me}`)
             $("#registerLive").toggle()
             $("#inforLive").toggle()
+            if (record) {
+                startRecord()
+            }
         }
     }
 
@@ -170,6 +172,12 @@ function LiveStream () {
     
     const handleMessage = (e) => {
         setMessage(e.target.value)
+    }
+
+    const handleRecord = () => {
+        if (record)
+            setRecord(false)
+        else setRecord(true)
     }
 
     return (
@@ -249,7 +257,7 @@ function LiveStream () {
                                 <div className="row">
                                     <div className="col d-flex">
                                         <div className="form-check">
-                                            <input className="form-check-input" type="checkbox" value="" id="form1Example3" checked={save} onChange={(e) => {setSave(e.target.checked)}}/>
+                                            <input className="form-check-input" type="checkbox" checked={record} onChange={handleRecord} id="form1Example3"/>
                                             <label className="form-check-label" htmlFor="form1Example3"> Lưu lại video </label>
                                         </div>
                                     </div>
@@ -263,6 +271,16 @@ function LiveStream () {
                         <h6>Tiêu đề: {name}</h6>
                         <h6>Miêu tả: {description}</h6>
                         <h6 className="mt-3 fw-bolder">Livestream đã bắt đầu!</h6>
+                        {
+                            record ? 
+                            (
+                                <button type="button" className="btn btn-danger btn-sm mt-3" onClick={() => {stopRecord()}}><i className="far fa-stop-circle"></i> &nbsp; Dừng lưu lại</button>
+                            )
+                            :
+                            (
+                                <button type="button" className="btn btn-success btn-sm mt-3" onClick={() => {startRecord()}}><i className="far fa-save"></i> &nbsp; Lưu lại video</button>
+                            )
+                        }
                     </div>                     
                 </div>
             </div>

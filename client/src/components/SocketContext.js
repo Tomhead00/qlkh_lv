@@ -8,6 +8,7 @@ const {REACT_APP_SERVER} = process.env
 const SocketContext = createContext()
 const socket = io.connect(REACT_APP_SERVER);
 
+const blobContainer = []
 const peerConnections = {};
 const config = {
   iceServers: [
@@ -27,6 +28,7 @@ const ContextProvider = ({ children }) => {
     const [user, setUser] = useState([])
     const [messages, setMessages] = useState([])
     const [listUser, setListUser] = useState([])
+    const [record, setRecord] = useState(true)
 
     const myVideo = useRef()
     // const connectionRef = useRef()
@@ -34,6 +36,7 @@ const ContextProvider = ({ children }) => {
     const switchCameraToScreen = useRef(false)
     const micro = useRef(true)
     const video = useRef(true)
+    const mediaRecorder = useRef()
 
     const getScreenshareWithMicrophone = async () => {
         let audio = await navigator.mediaDevices.getUserMedia({audio: true});
@@ -166,6 +169,29 @@ const ContextProvider = ({ children }) => {
         setStream(stream)
         socket.emit("broadcaster");
     }
+
+    const startRecord = () => {
+        mediaRecorder.current = new MediaRecorder(stream, {
+            audioBitsPerSecond : 128000,
+            videoBitsPerSecond : 2500000,
+            mimeType : 'video/webm; codecs=vp9'
+        });
+        mediaRecorder.current.start()
+        console.log(mediaRecorder.current);
+
+        mediaRecorder.current.ondataavailable = (e) => {
+            console.log(e.data);
+            blobContainer.push(e.data)
+            console.log(window.URL.createObjectURL(new Blob(blobContainer)))
+        }
+        setRecord(true)
+    }
+
+    const stopRecord = () => {
+        setRecord(false)
+        mediaRecorder.current.stop()
+    }
+
 
     const addChat = (message) => {
         setMessages((prevMessages) => {
@@ -352,6 +378,10 @@ const ContextProvider = ({ children }) => {
             listUser,
             setListUser,
             socket,
+            record,
+            setRecord,
+            startRecord,
+            stopRecord,
         }}>
             {children}
         </SocketContext.Provider>
