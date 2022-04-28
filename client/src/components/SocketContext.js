@@ -3,12 +3,14 @@ import { io } from 'socket.io-client'
 import Peer from 'simple-peer'
 import axios from "axios"
 import moment from "moment"
+import FileSaver from 'file-saver';
+import {slugify} from "./Func"
+
 
 const {REACT_APP_SERVER} = process.env
 const SocketContext = createContext()
 const socket = io.connect(REACT_APP_SERVER);
 
-const blobContainer = []
 const peerConnections = {};
 const config = {
   iceServers: [
@@ -29,6 +31,7 @@ const ContextProvider = ({ children }) => {
     const [messages, setMessages] = useState([])
     const [listUser, setListUser] = useState([])
     const [record, setRecord] = useState(true)
+    const [blobContainer, setBlobContainer] = useState([])
 
     const myVideo = useRef()
     // const connectionRef = useRef()
@@ -37,6 +40,7 @@ const ContextProvider = ({ children }) => {
     const micro = useRef(true)
     const video = useRef(true)
     const mediaRecorder = useRef()
+
 
     const getScreenshareWithMicrophone = async () => {
         let audio = await navigator.mediaDevices.getUserMedia({audio: true});
@@ -170,6 +174,10 @@ const ContextProvider = ({ children }) => {
         socket.emit("broadcaster");
     }
 
+    const combineBlobs = (recordedBlobs) => {
+        return new Blob(recordedBlobs, { type: 'video/webm' });
+    };
+
     const startRecord = () => {
         mediaRecorder.current = new MediaRecorder(stream, {
             audioBitsPerSecond : 128000,
@@ -177,21 +185,24 @@ const ContextProvider = ({ children }) => {
             mimeType : 'video/webm; codecs=vp9'
         });
         mediaRecorder.current.start()
-        console.log(mediaRecorder.current);
-
+        // console.log(mediaRecorder.current);
         mediaRecorder.current.ondataavailable = (e) => {
-            console.log(e.data);
-            blobContainer.push(e.data)
-            console.log(window.URL.createObjectURL(new Blob(blobContainer)))
+            // console.log(e);
+            setBlobContainer((prev) => {
+                return [...prev, {
+                    data: e.data,
+                    filename: `${slugify(moment().format()+"-"+name)}.webm`
+                }]
+            })
+            // console.log(window.URL.createObjectURL(new Blob(blobContainer)))
         }
         setRecord(true)
     }
 
     const stopRecord = () => {
-        setRecord(false)
         mediaRecorder.current.stop()
+        setRecord(false)
     }
-
 
     const addChat = (message) => {
         setMessages((prevMessages) => {
@@ -382,6 +393,7 @@ const ContextProvider = ({ children }) => {
             setRecord,
             startRecord,
             stopRecord,
+            blobContainer,
         }}>
             {children}
         </SocketContext.Provider>

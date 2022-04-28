@@ -9,6 +9,7 @@ import { SocketContext } from '../../components/SocketContext'
 import {makeStyles} from '@material-ui/core/styles'
 import { ListSubheader } from "@material-ui/core"
 import {isValidHttpUrl} from "../../components/Func"
+import prettyBytes from 'pretty-bytes';
 
 
 const {REACT_APP_SERVER, REACT_APP_CLIENT} = process.env
@@ -68,9 +69,10 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [message, setMessage] = useState('')
+    const [dataToModal, setDataToModal] = useState([])
 
     const params = useParams()
     const navi = useNavigate()
@@ -267,6 +269,7 @@ function LiveStream () {
                             </form>
                         </div>
                     )}
+
                     <div className={"mt-3"} id="inforLive" style={{display: "none"}}>
                         <h6>Tiêu đề: {name}</h6>
                         <h6>Miêu tả: {description}</h6>
@@ -281,7 +284,44 @@ function LiveStream () {
                                 <button type="button" className="btn btn-success btn-sm mt-3" onClick={() => {startRecord()}}><i className="far fa-save"></i> &nbsp; Lưu lại video</button>
                             )
                         }
+                    <div className={"comments-list mt-3 " + classes.listChat} id="comments-list" style={{border: "solid 1px", height: "400px"}}>
+                        <div>
+                            {blobContainer.map((element, index) => (
+                                <div className="media" key={index}>
+                                    <div className='media-body text-center'>
+                                        <a href="#" className="btn-link mt-0 mb-0" onClick={() => {setDataToModal(element)}} data-mdb-toggle="modal" data-mdb-target="#exampleModal">{element.filename}</a>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     </div>                     
+                </div>
+            </div>
+            
+            {/* Modal */}
+            <div className="modal fade" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog modal-dialog-centered">
+                    <div className="modal-content">
+                    <div className="modal-header">
+                        <h5 className="modal-title" id="exampleModalLabel">Thông tin file</h5>
+                        <button type="button" className="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div className="modal-body">
+                        {/* {console.log(dataToModal.data)} */}
+                        <p><b>Tên tệp:</b> {dataToModal.filename}</p>
+                        <p><b>Kích thước:</b> {dataToModal.data ? prettyBytes(dataToModal.data.size) : null}</p>
+                        <div className="progress" style={{height: "20px"}}>
+                            <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style={{width: "25%"}} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button type="button" className="btn btn-success">Upload lên hệ thống</button>
+                        <button type="button" className="btn btn-primary">Tải xuống</button>
+                        <button type="button" className="btn btn-secondary" data-mdb-dismiss="modal">Close</button>
+                    </div>
+                    </div>
                 </div>
             </div>
 
