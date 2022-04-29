@@ -5,6 +5,7 @@ import axios from "axios"
 import moment from "moment"
 import FileSaver from 'file-saver';
 import {slugify} from "./Func"
+import fixWebmDuration from "fix-webm-duration";
 
 
 const {REACT_APP_SERVER} = process.env
@@ -174,30 +175,35 @@ const ContextProvider = ({ children }) => {
         socket.emit("broadcaster");
     }
 
-    const combineBlobs = (recordedBlobs) => {
-        return new Blob(recordedBlobs, { type: 'video/webm' });
-    };
-
     const startRecord = () => {
         mediaRecorder.current = new MediaRecorder(stream, {
             audioBitsPerSecond : 128000,
             videoBitsPerSecond : 2500000,
-            mimeType : 'video/webm; codecs=vp9'
+            mimeType : 'video/webm\;codecs=vp9'
         });
         mediaRecorder.current.start()
         // console.log(mediaRecorder.current);
         mediaRecorder.current.ondataavailable = (e) => {
-            // console.log(e);
             setBlobContainer((prev) => {
                 return [...prev, {
                     data: e.data,
-                    filename: `${slugify(moment().format()+"-"+name)}.webm`
+                    filename: `${slugify(moment().format()+"-"+name)}.webm`,
+                    timeStop: `${moment().format()}`,
                 }]
             })
             // console.log(window.URL.createObjectURL(new Blob(blobContainer)))
         }
         setRecord(true)
     }
+
+    const combineBlobs = (recordedBlobs) => {
+        return new Blob([recordedBlobs], { type: 'video/webm' });
+    };
+
+    const download = ( element ) => {
+        const blob = combineBlobs(element.data);
+        return FileSaver.saveAs(blob, element.filename);
+    };
 
     const stopRecord = () => {
         mediaRecorder.current.stop()
@@ -394,6 +400,7 @@ const ContextProvider = ({ children }) => {
             startRecord,
             stopRecord,
             blobContainer,
+            download,
         }}>
             {children}
         </SocketContext.Provider>

@@ -69,7 +69,7 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [message, setMessage] = useState('')
     const [dataToModal, setDataToModal] = useState([])
@@ -289,7 +289,7 @@ function LiveStream () {
                             {blobContainer.map((element, index) => (
                                 <div className="media" key={index}>
                                     <div className='media-body text-center'>
-                                        <a href="#" className="btn-link mt-0 mb-0" onClick={() => {setDataToModal(element)}} data-mdb-toggle="modal" data-mdb-target="#exampleModal">{element.filename}</a>
+                                        <a href="#" className="btn-link mt-0 mb-0" onClick={() => {setDataToModal(element)}} data-mdb-toggle="modal" data-mdb-target="#exampleModal">{element.filename} ({moment(element.timeStop).fromNow()})</a>
                                     </div>
                                 </div>
                             ))}
@@ -317,8 +317,8 @@ function LiveStream () {
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-success">Upload lên hệ thống</button>
-                        <button type="button" className="btn btn-primary">Tải xuống</button>
+                        <button type="button" className="btn btn-success"><i className="fas fa-file-upload fa-lg"></i> &nbsp; Upload lên hệ thống</button>
+                        <button type="button" className="btn btn-primary" onClick={() => download(dataToModal)}><i className="fas fa-file-download fa-lg"></i> &nbsp; Tải xuống</button>
                         <button type="button" className="btn btn-secondary" data-mdb-dismiss="modal">Close</button>
                     </div>
                     </div>

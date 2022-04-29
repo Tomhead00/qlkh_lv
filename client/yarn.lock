@@ -4410,6 +4410,11 @@
     "locate-path" "^6.0.0"
     "path-exists" "^4.0.0"
 
+"fix-webm-duration@^1.0.5":
+  "integrity" "sha512-b6oula3OfSknx0aWoLsxvp4DVIYbwsf+UAkr6EDAK3iuMYk/OSNKzmeSI61GXK0MmFTEuzle19BPvTxMIKjkZg=="
+  "resolved" "https://registry.npmjs.org/fix-webm-duration/-/fix-webm-duration-1.0.5.tgz"
+  "version" "1.0.5"
+
 "flat-cache@^3.0.4":
   "integrity" "sha512-dm9s5Pw7Jc0GvMYbshN6zchCA9RgQlzzEZX3vylR9IqFfS8XciblUXOKfW6SiuJ0e13eDYZoZV5wdrev7P3Nwg=="
   "resolved" "https://registry.npmjs.org/flat-cache/-/flat-cache-3.0.4.tgz"
