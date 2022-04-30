@@ -5,7 +5,8 @@ import axios from "axios"
 import moment from "moment"
 import FileSaver from 'file-saver';
 import {slugify} from "./Func"
-import fixWebmDuration from "fix-webm-duration";
+// import fixWebmDuration from "fix-webm-duration";
+import ysFixWebmDuration from "fix-webm-duration";
 
 
 const {REACT_APP_SERVER} = process.env
@@ -13,6 +14,7 @@ const SocketContext = createContext()
 const socket = io.connect(REACT_APP_SERVER);
 
 const peerConnections = {};
+var duration;
 const config = {
   iceServers: [
     {
@@ -176,12 +178,12 @@ const ContextProvider = ({ children }) => {
     }
 
     const startRecord = () => {
+        var startTime = Date.now();
         mediaRecorder.current = new MediaRecorder(stream, {
             audioBitsPerSecond : 128000,
             videoBitsPerSecond : 2500000,
             mimeType : 'video/webm\;codecs=vp9'
         });
-        mediaRecorder.current.start()
         // console.log(mediaRecorder.current);
         mediaRecorder.current.ondataavailable = (e) => {
             setBlobContainer((prev) => {
@@ -193,17 +195,22 @@ const ContextProvider = ({ children }) => {
             })
             // console.log(window.URL.createObjectURL(new Blob(blobContainer)))
         }
+        mediaRecorder.current.onstop = () => {
+            duration = Date.now() - startTime;
+        };
+        mediaRecorder.current.start()
         setRecord(true)
     }
 
-    const combineBlobs = (recordedBlobs) => {
-        return new Blob([recordedBlobs], { type: 'video/webm' });
+    const download = async ( element ) => {
+        var buggyBlob = new Blob([element.data], { type: 'video/webm\;codecs=vp9' });
+        const fixedBlob = await ysFixWebmDuration(buggyBlob, duration);
+        displayResultAndDownload(fixedBlob, element.filename);
     };
 
-    const download = ( element ) => {
-        const blob = combineBlobs(element.data);
-        return FileSaver.saveAs(blob, element.filename);
-    };
+    function displayResultAndDownload(blob, filename) {
+        return FileSaver.saveAs(blob, filename);
+    }
 
     const stopRecord = () => {
         mediaRecorder.current.stop()
