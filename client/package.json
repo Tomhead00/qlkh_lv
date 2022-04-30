@@ -26,6 +26,7 @@
     "react-router-dom": "^6.2.1",
     "react-scripts": "5.0.0",
     "react-youtube": "^7.14.0",
+    "recordrtc": "^5.6.2",
     "sass": "^1.49.0",
     "simple-peer": "^9.11.1",
     "socket.io-client": "^4.4.1",

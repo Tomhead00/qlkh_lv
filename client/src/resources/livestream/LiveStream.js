@@ -3,7 +3,6 @@ import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect, useRef, useContext } from "react"
 import moment from "moment"
-// import Notifications from '../../components/Notifications'
 import VideoPlayer from '../../components/VideoPlayer'
 import { SocketContext } from '../../components/SocketContext'
 import {makeStyles} from '@material-ui/core/styles'
@@ -165,7 +164,6 @@ function LiveStream () {
     }
 
     const sendChat = () => {
-        // console.log("sendChat");
         if (message) {
             addChat(message)
             setMessage("")
@@ -274,17 +272,22 @@ function LiveStream () {
                         <h6>Tiêu đề: {name}</h6>
                         <h6>Miêu tả: {description}</h6>
                         <h6 className="mt-3 fw-bolder">Livestream đã bắt đầu!</h6>
-                        {
-                            record ? 
-                            (
-                                <button type="button" className="btn btn-danger btn-sm mt-3" onClick={() => {stopRecord()}}><i className="far fa-stop-circle"></i> &nbsp; Dừng lưu lại</button>
-                            )
-                            :
-                            (
-                                <button type="button" className="btn btn-success btn-sm mt-3" onClick={() => {startRecord()}}><i className="far fa-save"></i> &nbsp; Lưu lại video</button>
-                            )
+                        { 
+                            isBroadcaster ? (
+                                record ? 
+                                (
+                                    <button type="button" className="btn btn-danger btn-sm mt-3" onClick={() => {stopRecord()}}><i className="far fa-stop-circle"></i> &nbsp; Dừng lưu lại</button>
+                                )
+                                :
+                                (
+                                    <div>
+                                        <button type="button" className="btn btn-success btn-sm mt-3" onClick={() => {startRecord()}}><i className="far fa-save"></i> &nbsp; Lưu lại video</button>
+                                        <p className="mt-2 text-danger"><small>Vui lòng chọn màn hình trước khi bắt đầu lưu video!</small></p>
+                                    </div>
+                                )
+                            ) : null
                         }
-                    <div className={"comments-list mt-3 " + classes.listChat} id="comments-list" style={{border: "solid 1px", height: "400px"}}>
+                    {(blobContainer.length > 0) ? (<div className={"comments-list mt-3 " + classes.listChat} id="comments-list" style={{border: "solid 2px", height: "30vh"}}>
                         <div>
                             {blobContainer.map((element, index) => (
                                 <div className="media" key={index}>
@@ -294,7 +297,7 @@ function LiveStream () {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </div>): null}
 
                     </div>                     
                 </div>
@@ -318,7 +321,7 @@ function LiveStream () {
                     </div>
                     <div className="modal-footer">
                         <button type="button" className="btn btn-success"><i className="fas fa-file-upload fa-lg"></i> &nbsp; Upload lên hệ thống</button>
-                        <button type="button" className="btn btn-primary" onClick={() => download(dataToModal)}><i className="fas fa-file-download fa-lg"></i> &nbsp; Tải xuống</button>
+                        <button type="button" className="btn btn-primary" onClick={() => {download(dataToModal); $(".modal.fade").click()}}><i className="fas fa-file-download fa-lg"></i> &nbsp; Tải xuống</button>
                         <button type="button" className="btn btn-secondary" data-mdb-dismiss="modal">Close</button>
                     </div>
                     </div>
@@ -342,11 +345,14 @@ function LiveStream () {
                                 {video.current ? (<i className="fas fa-video"></i>) : (<i className="fas fa-video-slash"></i>)}
                             </Link>
                             {/* share man hinh */}
-                            <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#FFA900"}} to="#" role="button" onClick={ () => {
-                                changeStream()
-                            }}>
-                                <i className="fas fa-chalkboard" style={{color: "white"}}></i>
-                            </Link>
+                            { !record ? (
+                                <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#FFA900"}} to="#" role="button" onClick={ () => {
+                                    changeStream()
+                                }}>
+                                    <i className="fas fa-chalkboard" style={{color: "white"}}></i>
+                                </Link>
+                            ): null}
+
                         </div>
                     )}
                     {/* tin nhan */}

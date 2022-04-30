@@ -33,7 +33,7 @@ const ContextProvider = ({ children }) => {
     const [user, setUser] = useState([])
     const [messages, setMessages] = useState([])
     const [listUser, setListUser] = useState([])
-    const [record, setRecord] = useState(true)
+    const [record, setRecord] = useState(false)
     const [blobContainer, setBlobContainer] = useState([])
 
     const myVideo = useRef()
@@ -197,6 +197,7 @@ const ContextProvider = ({ children }) => {
         }
         mediaRecorder.current.onstop = () => {
             duration = Date.now() - startTime;
+            setRecord(false)
         };
         mediaRecorder.current.start()
         setRecord(true)
@@ -205,12 +206,8 @@ const ContextProvider = ({ children }) => {
     const download = async ( element ) => {
         var buggyBlob = new Blob([element.data], { type: 'video/webm\;codecs=vp9' });
         const fixedBlob = await ysFixWebmDuration(buggyBlob, duration);
-        displayResultAndDownload(fixedBlob, element.filename);
+        FileSaver.saveAs(fixedBlob, element.filename);
     };
-
-    function displayResultAndDownload(blob, filename) {
-        return FileSaver.saveAs(blob, filename);
-    }
 
     const stopRecord = () => {
         mediaRecorder.current.stop()
