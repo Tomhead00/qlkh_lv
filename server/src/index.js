@@ -180,7 +180,6 @@ var storage = multer.diskStorage({
         cb(null, Date.now() + file.originalname);
     },
 });
-
 var upload = multer({ storage: storage });
 app.put('/account/edit/:id/', upload.single('myFile'));
 

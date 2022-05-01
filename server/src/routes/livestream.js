@@ -4,5 +4,6 @@ const LiveStreamController = require('../app/controllers/LiveStreamController');
 const app = express();
 
 router.get('/getCourse/:_id', LiveStreamController.getCourse);
+router.post('/:_id/addVideo', LiveStreamController.addVideo);
 
 module.exports = router;

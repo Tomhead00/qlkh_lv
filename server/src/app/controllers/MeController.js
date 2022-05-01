@@ -305,7 +305,7 @@ class MeController {
                 var proc = new ffmpeg(`./src/public/video/${req.body.videoID}`)
                     .takeScreenshots({
                         count: 1,
-                        timemarks: [ '5' ],
+                        timemarks: [ `${req.body.time/2}` ],
                         filename: `${req.body.videoID.substring(0,req.body.videoID.lastIndexOf("."))}.png`
                         }, `./src/public/img/thumbnail/`, function(err) {
                         console.log('screenshots were saved')

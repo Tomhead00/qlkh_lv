@@ -4,11 +4,11 @@ const { multipleMongooseToObject } = require('../../util/mongoose');
 class SitesController {
     // GET /home
     home(req, res, next) {
-        res.render('home', {
-            layout: false,
-            username: req.session.passport,
-        });
-        // res.send('you are a valid user');
+        // res.render('home', {
+        //     layout: false,
+        //     username: req.session.passport,
+        // });
+        res.send('null');
     }
 
     failed(req, res) {

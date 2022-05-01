@@ -320,7 +320,7 @@ function LiveStream () {
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-success" onClick={() => {upload(dataToModal, params.id); document.getElementById("exampleModal").click()}}><i className="fas fa-file-upload fa-lg"></i> &nbsp; Upload lên hệ thống</button>
+                        <button type="button" className="btn btn-success" onClick={() => {upload(dataToModal, params.id)}}><i className="fas fa-file-upload fa-lg"></i> &nbsp; Upload lên hệ thống</button>
                         <button type="button" className="btn btn-primary" onClick={() => {download(dataToModal); document.getElementById("exampleModal").click()}}><i className="fas fa-file-download fa-lg"></i> &nbsp; Tải xuống</button>
                         <button type="button" className="btn btn-secondary" data-mdb-dismiss="modal">Close</button>
                     </div>

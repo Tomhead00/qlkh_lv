@@ -26,6 +26,12 @@ const Course = new Schema(
                 ref: 'Video',
             },
         ],
+        livestream: [
+            {
+                type: mongoose.Schema.Types.Number,
+                ref: 'LiveStream',
+            },
+        ],
     },
     {
         _id: false,

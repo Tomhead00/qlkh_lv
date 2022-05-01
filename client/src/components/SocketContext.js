@@ -226,9 +226,13 @@ const ContextProvider = ({ children }) => {
     const upload = (element, id) => {
         // console.log(element, name, description);
         var formData = new FormData()
-        formData.append('blobFile', new Blob([element.data], { type: 'video/webm\;codecs=vp9' }))
+        formData.append('blobFile', new Blob([element.data], { type: 'video/webm\;codecs=vp9' }), element.liveID)
         formData.append('name', name)
         formData.append('description', description)
+        formData.append('liveID', element.liveID)
+        // for (var p of formData) {
+        //     console.log(p);
+        // }
 
         axios.post(`${REACT_APP_SERVER}/livestream/${id}/addVideo`, formData, {
             withCredentials: true,
