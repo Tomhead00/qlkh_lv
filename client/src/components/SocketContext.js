@@ -33,7 +33,7 @@ const ContextProvider = ({ children }) => {
     const [listUser, setListUser] = useState([])
     const [record, setRecord] = useState(false)
     const [blobContainer, setBlobContainer] = useState([])
-
+    const [load, setLoad] = useState(0)
     const myVideo = useRef()
     // const connectionRef = useRef()
     const switchCameraToScreen = useRef(false)
@@ -178,6 +178,7 @@ const ContextProvider = ({ children }) => {
         mediaRecorder.current = new MediaRecorder(stream, {
             audioBitsPerSecond : 128000,
             videoBitsPerSecond : 2500000,
+            // videoBitsPerSecond : 783216000,
             mimeType : 'video/webm\;codecs=vp9'
         });
         // console.log(mediaRecorder.current);
@@ -187,6 +188,7 @@ const ContextProvider = ({ children }) => {
                     data: e.data,
                     liveID: `${slugify(moment().format()+"-"+name)}.webm`,
                     timeStop: `${moment().format()}`,
+                    load: 0,
                 }]
             })
             // console.log(window.URL.createObjectURL(new Blob(blobContainer)))
@@ -199,10 +201,11 @@ const ContextProvider = ({ children }) => {
         setRecord(true)
     }
 
-    const download = async ( element ) => {
-        var buggyBlob = new Blob([element.data], { type: 'video/webm\;codecs=vp9' });
+    const download = async (dataToModal) => {
+        console.log(blobContainer[dataToModal]);
+        var buggyBlob = new Blob([blobContainer[dataToModal].data], { type: 'video/webm\;codecs=vp9' });
         // const fixedBlob = await ysFixWebmDuration(buggyBlob, duration);
-        FileSaver.saveAs(buggyBlob, element.filename);
+        FileSaver.saveAs(buggyBlob, blobContainer[dataToModal].liveID);
     };
 
     const stopRecord = () => {
@@ -223,13 +226,13 @@ const ContextProvider = ({ children }) => {
         })
     }
 
-    const upload = (element, id) => {
+    const upload = (dataToModal, id) => {
         // console.log(element, name, description);
         var formData = new FormData()
-        formData.append('blobFile', new Blob([element.data], { type: 'video/webm\;codecs=vp9' }), element.liveID)
+        formData.append('blobFile', new Blob([blobContainer[dataToModal].data], { type: 'video/webm\;codecs=vp9' }), blobContainer[dataToModal].liveID)
         formData.append('name', name)
         formData.append('description', description)
-        formData.append('liveID', element.liveID)
+        formData.append('liveID', blobContainer[dataToModal].liveID)
         // for (var p of formData) {
         //     console.log(p);
         // }
@@ -238,10 +241,25 @@ const ContextProvider = ({ children }) => {
             withCredentials: true,
             headers: {
                 'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: progressEvent => {
+                const totalLength = progressEvent.lengthComputable ? progressEvent.total : progressEvent.target.getResponseHeader('content-length') || progressEvent.target.getResponseHeader('x-decompressed-content-length');
+                if (totalLength !== null) {
+                    setBlobContainer(prev => {
+                        prev[dataToModal].load = Math.round((progressEvent.loaded * 100) / totalLength )
+                        return prev;
+                    })
+                    setLoad(blobContainer[dataToModal].load)
+                    // console.log(Math.round((progressEvent.loaded * 100) / totalLength ));
+                }
             }
         })
         .then(ketqua => {
-            console.log(ketqua.data);
+            if(ketqua.data) {
+                alert("Tải lên thành công!")
+            } else {
+                alert("Lỗi, không thể tải lên hệ thống!")
+            }
         })
     }
 
@@ -424,6 +442,8 @@ const ContextProvider = ({ children }) => {
             blobContainer,
             download,
             upload,
+            load,
+            setLoad,
         }}>
             {children}
         </SocketContext.Provider>

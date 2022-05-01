@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
-import $ from 'jquery'
+import $, { data } from 'jquery'
 import axios from "axios"
 import { useState, useEffect, useRef, useContext } from "react"
 import moment from "moment"
@@ -9,6 +9,7 @@ import {makeStyles} from '@material-ui/core/styles'
 import { ListSubheader } from "@material-ui/core"
 import {isValidHttpUrl} from "../../components/Func"
 import prettyBytes from 'pretty-bytes';
+import Switch from "react-switch";
 
 
 const {REACT_APP_SERVER, REACT_APP_CLIENT} = process.env
@@ -68,10 +69,11 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {upload, download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    document.title = "Livestream"
+    const {setLoad, load, upload, download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [message, setMessage] = useState('')
-    const [dataToModal, setDataToModal] = useState([])
+    const [dataToModal, setDataToModal] = useState(0)
 
     const params = useParams()
     const navi = useNavigate()
@@ -180,17 +182,27 @@ function LiveStream () {
         else setRecord(true)
     }
 
+    const [check, setCheck] = useState(true)
+
+    const handleChange = (checked) => {
+        setCheck(checked)
+    }
+
     return (
         <div className={"row " + classes.wrapper}>
 
             <VideoPlayer />
 
             <div className={classes.menu} ref={refMenu} style={{display: "none"}}>
-                <div className="mb-3">
+                <div className="mb-0">
                     <h4 style={{display: 'inline'}}><b>Tin nhắn</b></h4>
                     <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
                         <span aria-hidden="true">&times;</span>
                     </button>               
+                </div>
+                <div class="row">
+                    <span>Tắt chat livestream</span>
+                    <Switch onChange={handleChange} checked={check}/>
                 </div>
                 <div className={"comments-list " + classes.listChat} id="comments-list" ref={listComment}>
                     <div>
@@ -207,7 +219,7 @@ function LiveStream () {
                         ))}
                     </div>
                 </div>
-                <div className="d-flex justify-content-start align-items-center mb-2">
+                <div className="d-flex justify-content-start align-items-center">
                     <input type="text" className="form-control form-control-lg" autoComplete="off" id="exampleFormControlInput1" placeholder="Type message" onKeyDown={inputChat} onChange={handleMessage} value={message}/>
                     <a className="m-3" href="#" onClick={() => {sendChat()}}><i className="fas fa-paper-plane"></i></a>
                 </div>
@@ -280,7 +292,7 @@ function LiveStream () {
                                 )
                                 :
                                 (
-                                    <div>
+                                    <div>   
                                         <button type="button" className="btn btn-success btn-sm mt-3" onClick={() => {startRecord()}}><i className="far fa-save fa-lg"></i> &nbsp; Lưu lại video</button>
                                         <p className="mt-2 text-danger"><small>Vui lòng tùy chỉnh stream trước khi bắt đầu lưu video!</small></p>
                                     </div>
@@ -292,7 +304,7 @@ function LiveStream () {
                             {blobContainer.map((element, index) => (
                                 <div className="media" key={index}>
                                     <div className='media-body text-center'>
-                                        <a href="#" className="btn-link mt-0 mb-0" onClick={() => {setDataToModal(element)}} data-mdb-toggle="modal" data-mdb-target="#exampleModal">{element.liveID} ({moment(element.timeStop).fromNow()})</a>
+                                        <a href="#" className="btn-link mt-0 mb-0" onClick={() => {setDataToModal(index); setLoad(blobContainer[index].load)}} data-mdb-toggle="modal" data-mdb-target="#exampleModal">{element.liveID} ({moment(element.timeStop).fromNow()})</a>
                                     </div>
                                 </div>
                             ))}
@@ -312,15 +324,18 @@ function LiveStream () {
                         <button type="button" className="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div className="modal-body">
-                        {/* {console.log(dataToModal.data)} */}
-                        <p><b>Tên tệp:</b> {dataToModal.liveID}</p>
-                        <p><b>Kích thước:</b> {dataToModal.data ? prettyBytes(dataToModal.data.size) : null}</p>
-                        <div className="progress" style={{height: "20px"}}>
-                            <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style={{width: "25%"}} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-                        </div>
+                        <p><b>Tên tệp:</b> {blobContainer.length > 0 ? blobContainer[dataToModal].liveID : null}</p>
+                        <p><b>Kích thước:</b>{blobContainer.length > 0 ? prettyBytes(blobContainer[dataToModal].data.size) : null}</p>
+                        {load === 100 ?
+                            (<p className="text-danger"><small>Tải lên thành công!</small></p>)
+                            :
+                            ((load !== 0) ? (<div className="progress" style={{height: "20px"}}>
+                                <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style={{width: `${load}%`}} aria-valuenow={load} aria-valuemin="0" aria-valuemax="100">{load}%</div>
+                            </div>) : null)
+                        }
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-success" onClick={() => {upload(dataToModal, params.id)}}><i className="fas fa-file-upload fa-lg"></i> &nbsp; Upload lên hệ thống</button>
+                        {load !== 100 ? (<button type="button" className="btn btn-success" onClick={() => upload(dataToModal, params.id)}><i className="fas fa-file-upload fa-lg"></i> &nbsp; Upload lên hệ thống</button>) : null}
                         <button type="button" className="btn btn-primary" onClick={() => {download(dataToModal); document.getElementById("exampleModal").click()}}><i className="fas fa-file-download fa-lg"></i> &nbsp; Tải xuống</button>
                         <button type="button" className="btn btn-secondary" data-mdb-dismiss="modal">Close</button>
                     </div>
