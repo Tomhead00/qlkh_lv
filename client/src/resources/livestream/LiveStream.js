@@ -68,7 +68,7 @@ const useStyle = makeStyles((theme) => ({
 })) 
 
 function LiveStream () {
-    const {download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {upload, download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [message, setMessage] = useState('')
     const [dataToModal, setDataToModal] = useState([])
@@ -276,13 +276,13 @@ function LiveStream () {
                             isBroadcaster ? (
                                 record ? 
                                 (
-                                    <button type="button" className="btn btn-danger btn-sm mt-3" onClick={() => {stopRecord()}}><i className="far fa-stop-circle"></i> &nbsp; Dừng lưu lại</button>
+                                    <button type="button" className="btn btn-danger btn-sm mt-3" onClick={() => {stopRecord()}}><i className="far fa-stop-circle fa-lg fa-fade fa-spin"></i> &nbsp; Dừng lưu lại</button>
                                 )
                                 :
                                 (
                                     <div>
-                                        <button type="button" className="btn btn-success btn-sm mt-3" onClick={() => {startRecord()}}><i className="far fa-save"></i> &nbsp; Lưu lại video</button>
-                                        <p className="mt-2 text-danger"><small>Vui lòng chọn màn hình trước khi bắt đầu lưu video!</small></p>
+                                        <button type="button" className="btn btn-success btn-sm mt-3" onClick={() => {startRecord()}}><i className="far fa-save fa-lg"></i> &nbsp; Lưu lại video</button>
+                                        <p className="mt-2 text-danger"><small>Vui lòng tùy chỉnh stream trước khi bắt đầu lưu video!</small></p>
                                     </div>
                                 )
                             ) : null
@@ -292,7 +292,7 @@ function LiveStream () {
                             {blobContainer.map((element, index) => (
                                 <div className="media" key={index}>
                                     <div className='media-body text-center'>
-                                        <a href="#" className="btn-link mt-0 mb-0" onClick={() => {setDataToModal(element)}} data-mdb-toggle="modal" data-mdb-target="#exampleModal">{element.filename} ({moment(element.timeStop).fromNow()})</a>
+                                        <a href="#" className="btn-link mt-0 mb-0" onClick={() => {setDataToModal(element)}} data-mdb-toggle="modal" data-mdb-target="#exampleModal">{element.liveID} ({moment(element.timeStop).fromNow()})</a>
                                     </div>
                                 </div>
                             ))}
@@ -313,15 +313,15 @@ function LiveStream () {
                     </div>
                     <div className="modal-body">
                         {/* {console.log(dataToModal.data)} */}
-                        <p><b>Tên tệp:</b> {dataToModal.filename}</p>
+                        <p><b>Tên tệp:</b> {dataToModal.liveID}</p>
                         <p><b>Kích thước:</b> {dataToModal.data ? prettyBytes(dataToModal.data.size) : null}</p>
                         <div className="progress" style={{height: "20px"}}>
                             <div className="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style={{width: "25%"}} aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-success"><i className="fas fa-file-upload fa-lg"></i> &nbsp; Upload lên hệ thống</button>
-                        <button type="button" className="btn btn-primary" onClick={() => {download(dataToModal); $(".modal.fade").click()}}><i className="fas fa-file-download fa-lg"></i> &nbsp; Tải xuống</button>
+                        <button type="button" className="btn btn-success" onClick={() => {upload(dataToModal, params.id); document.getElementById("exampleModal").click()}}><i className="fas fa-file-upload fa-lg"></i> &nbsp; Upload lên hệ thống</button>
+                        <button type="button" className="btn btn-primary" onClick={() => {download(dataToModal); document.getElementById("exampleModal").click()}}><i className="fas fa-file-download fa-lg"></i> &nbsp; Tải xuống</button>
                         <button type="button" className="btn btn-secondary" data-mdb-dismiss="modal">Close</button>
                     </div>
                     </div>
@@ -330,7 +330,7 @@ function LiveStream () {
 
             <div className={"row " + classes.appBar}>
                 <div className="col d-flex justify-content-center align-items-center">
-                    {isBroadcaster && (
+                    {isBroadcaster && !record && (
                         <div>
                             {/* mic */}
                             <Link className={`btn btn-lg btn-floating m-2 ${micro.current ? "btn-light" : "btn-danger"}`} to="#" role="button" onClick={() => {
@@ -345,14 +345,11 @@ function LiveStream () {
                                 {video.current ? (<i className="fas fa-video"></i>) : (<i className="fas fa-video-slash"></i>)}
                             </Link>
                             {/* share man hinh */}
-                            { !record ? (
-                                <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#FFA900"}} to="#" role="button" onClick={ () => {
-                                    changeStream()
-                                }}>
-                                    <i className="fas fa-chalkboard" style={{color: "white"}}></i>
-                                </Link>
-                            ): null}
-
+                            <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#FFA900"}} to="#" role="button" onClick={ () => {
+                                changeStream()
+                            }}>
+                                <i className="fas fa-chalkboard" style={{color: "white"}}></i>
+                            </Link>
                         </div>
                     )}
                     {/* tin nhan */}

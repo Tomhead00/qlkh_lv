@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef, createContext, useReducer } from "react"
 import { io } from 'socket.io-client'
-import Peer from 'simple-peer'
 import axios from "axios"
 import moment from "moment"
 import FileSaver from 'file-saver';
 import {slugify} from "./Func"
-// import fixWebmDuration from "fix-webm-duration";
-import ysFixWebmDuration from "fix-webm-duration";
+// import ysFixWebmDuration from "fix-webm-duration";
 
 
 const {REACT_APP_SERVER} = process.env
@@ -38,7 +36,6 @@ const ContextProvider = ({ children }) => {
 
     const myVideo = useRef()
     // const connectionRef = useRef()
-    const oldStream = useRef(null)
     const switchCameraToScreen = useRef(false)
     const micro = useRef(true)
     const video = useRef(true)
@@ -172,7 +169,6 @@ const ContextProvider = ({ children }) => {
     const start = async () => {
         console.log('start');
         var stream = await getCameraWithMicrophone()
-        oldStream.current = stream
         setStream(stream)
         socket.emit("broadcaster");
     }
@@ -189,7 +185,7 @@ const ContextProvider = ({ children }) => {
             setBlobContainer((prev) => {
                 return [...prev, {
                     data: e.data,
-                    filename: `${slugify(moment().format()+"-"+name)}.webm`,
+                    liveID: `${slugify(moment().format()+"-"+name)}.webm`,
                     timeStop: `${moment().format()}`,
                 }]
             })
@@ -205,8 +201,8 @@ const ContextProvider = ({ children }) => {
 
     const download = async ( element ) => {
         var buggyBlob = new Blob([element.data], { type: 'video/webm\;codecs=vp9' });
-        const fixedBlob = await ysFixWebmDuration(buggyBlob, duration);
-        FileSaver.saveAs(fixedBlob, element.filename);
+        // const fixedBlob = await ysFixWebmDuration(buggyBlob, duration);
+        FileSaver.saveAs(buggyBlob, element.filename);
     };
 
     const stopRecord = () => {
@@ -224,6 +220,24 @@ const ContextProvider = ({ children }) => {
             }
             socket.emit("mess", socket.id, newMessage, listUser)
             return [...prevMessages, newMessage]
+        })
+    }
+
+    const upload = (element, id) => {
+        // console.log(element, name, description);
+        var formData = new FormData()
+        formData.append('blobFile', new Blob([element.data], { type: 'video/webm\;codecs=vp9' }))
+        formData.append('name', name)
+        formData.append('description', description)
+
+        axios.post(`${REACT_APP_SERVER}/livestream/${id}/addVideo`, formData, {
+            withCredentials: true,
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then(ketqua => {
+            console.log(ketqua.data);
         })
     }
 
@@ -405,6 +419,7 @@ const ContextProvider = ({ children }) => {
             stopRecord,
             blobContainer,
             download,
+            upload,
         }}>
             {children}
         </SocketContext.Provider>
