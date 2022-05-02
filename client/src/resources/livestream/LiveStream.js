@@ -72,7 +72,7 @@ const useStyle = makeStyles((theme) => ({
 
 function LiveStream () {
     document.title = "Livestream"
-    const {banAll, setBanAll, setLoad, load, upload, download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {listBan, setListBan, banAll, setBanAll, setLoad, load, upload, download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [message, setMessage] = useState('')
     const [dataToModal, setDataToModal] = useState(0)
@@ -111,6 +111,9 @@ function LiveStream () {
                 userID: user.user._id,
                 username: user.user.username,
                 image: user.user.image,
+            }])
+            setListBan([...listBan, {
+                userID: user.user._id,
                 banned: false,
             }])
         }
@@ -185,19 +188,20 @@ function LiveStream () {
         else setRecord(true)
     }
 
-    const handleChange = (checked) => {
+    const handleChangeBanAll = (checked) => {
         setBanAll(checked)
+        socket.emit("banAllToBroatcaster", checked);
+
     }
 
     const offChat = () => {
-        console.log("check");
-        var check = listUser.map(element => {
-            if(element.socketID === socket.id) {
-                return element.banned
-            }
-        })
-        return check
-    }
+        try {
+            const found = listUser.find(element => element.userID === user.user._id);
+            return found.banned
+        } catch (err) {
+            return true
+        }
+    }   
 
     return (
         <div className={"row " + classes.wrapper}>
@@ -211,13 +215,13 @@ function LiveStream () {
                         <span aria-hidden="true">&times;</span>
                     </button>               
                 </div>
-                <div className="row mb-2">
+                {isBroadcaster ? (<div className="row mb-2">
                     <div className="col-9 text-justify">
                         <span>Tắt chat tất cả mọi người</span>
                     </div>
                     <div className="col-3 d-flex justify-content-center">
                         <Switch 
-                            onChange={handleChange} 
+                            onChange={handleChangeBanAll} 
                             checked={banAll}
                             onColor="#86d3ff"
                             onHandleColor="#2693e6"
@@ -230,7 +234,7 @@ function LiveStream () {
                             width={48}
                         />
                     </div>
-                </div>
+                </div>) : null}
                     <div className={"comments-list " + classes.listChat} id="comments-list" ref={listComment}>
                     <div>
                         {messages.map((element, index) => (

@@ -212,13 +212,13 @@ io.sockets.on("connection", socket => {
     });
     socket.on("answer", (id, message) => {
         // console.log("answer", socket.id);
-        // console.log(broadcaster);
         socket.to(id).emit("answer", socket.id, message);
     });
     socket.on("candidate", (id, message) => {
         // console.log("candidate", socket.id);
         socket.to(id).emit("candidate", socket.id, message);
     });
+
     socket.on("disconnect", () => {
         // console.log("disconnect", socket.id);
         socket.to(broadcaster).emit("disconnectPeer", socket.id);
@@ -234,6 +234,17 @@ io.sockets.on("connection", socket => {
             socket.to(element.socketID).emit("joinLive", newList);
         })
     });
+
+    socket.on("banAllToBroatcaster", (checked) => {
+        socket.emit("banAllToBroatcaster", checked);
+    });
+
+    // socket.on("banAllToWatcher", (checked, listUser) => {
+    //     // console.log(listUser, checked);
+    //     listUser.map((element) => {
+    //         socket.to(element.socketID).emit("banChat", checked);
+    //     })
+    // });
 });
 
 server.listen(port, () => {

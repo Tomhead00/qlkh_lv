@@ -31,6 +31,7 @@ const ContextProvider = ({ children }) => {
     const [user, setUser] = useState([])
     const [messages, setMessages] = useState([])
     const [listUser, setListUser] = useState([])
+    const [listBan, setListBan] = useState([])
     const [record, setRecord] = useState(false)
     const [blobContainer, setBlobContainer] = useState([])
     const [load, setLoad] = useState(0)
@@ -320,12 +321,34 @@ const ContextProvider = ({ children }) => {
         });
 
         socket.on("joinLive", (newUser) => {
-            // console.log(newUser);
             setListUser((prev) => {
-                let newList = [...prev, 
-                    {...newUser, 
-                    banned: checkBan(newUser)}
-                ]
+                let newList = [...prev, newUser]
+                socket.emit("joinLive", newList)
+                return newList
+            })
+            setListBan((prev) => {
+                const found = prev.find(element => element.userID === newUser.userID);
+                if (found)
+                    return prev
+                else {
+                    let newList = [...prev, {
+                        userID: newUser.userID,
+                        banned: false,
+                    }]
+                    return newList
+                }
+            })
+        });
+
+        socket.on("banAllToBroatcaster", (checked) => {
+            setListUser(prev => {
+                var newList = prev
+                newList.map((element, index) => {
+                    if (index === 0 || element.userID === user.user._id)
+                        element.banned = false
+                    else 
+                        element.banned = checked
+                })
                 socket.emit("joinLive", newList)
                 return newList
             })
@@ -336,14 +359,7 @@ const ContextProvider = ({ children }) => {
         };
     }
 
-    const checkBan = (newUser) => {
-        console.log(newUser);
-        if(banAll && newUser.userID !== user._id) {
-            return true
-        } else {
-            return false
-        }
-    }
+    console.log(listUser, listBan);
 
     // // watcher
     const watcher = (idSocket) => {
@@ -402,6 +418,10 @@ const ContextProvider = ({ children }) => {
             // console.log("joinLive");
             setListUser(newList)
         });
+
+        // socket.on("banChat", (checked) => {
+        //     setBanAll(checked)
+        // });
         
         window.onunload = window.onbeforeunload = () => {
             socket.close();
@@ -409,6 +429,7 @@ const ContextProvider = ({ children }) => {
         };
     }
 
+    // console.log(listUser, banAll);
 
     useEffect(() => {
         socket.on("getID", (id) => {
@@ -460,6 +481,8 @@ const ContextProvider = ({ children }) => {
             setLoad,
             banAll, 
             setBanAll,
+            listBan, 
+            setListBan,
         }}>
             {children}
         </SocketContext.Provider>
