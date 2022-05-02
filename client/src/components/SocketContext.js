@@ -34,6 +34,8 @@ const ContextProvider = ({ children }) => {
     const [record, setRecord] = useState(false)
     const [blobContainer, setBlobContainer] = useState([])
     const [load, setLoad] = useState(0)
+    const [banAll, setBanAll] = useState(false)
+
     const myVideo = useRef()
     // const connectionRef = useRef()
     const switchCameraToScreen = useRef(false)
@@ -318,9 +320,12 @@ const ContextProvider = ({ children }) => {
         });
 
         socket.on("joinLive", (newUser) => {
-            // console.log("joinLive");
+            // console.log(newUser);
             setListUser((prev) => {
-                let newList = [...prev, newUser]
+                let newList = [...prev, 
+                    {...newUser, 
+                    banned: checkBan(newUser)}
+                ]
                 socket.emit("joinLive", newList)
                 return newList
             })
@@ -329,6 +334,15 @@ const ContextProvider = ({ children }) => {
         window.onunload = window.onbeforeunload = () => {
             socket.close();
         };
+    }
+
+    const checkBan = (newUser) => {
+        console.log(newUser);
+        if(banAll && newUser.userID !== user._id) {
+            return true
+        } else {
+            return false
+        }
     }
 
     // // watcher
@@ -384,9 +398,9 @@ const ContextProvider = ({ children }) => {
                 setMessages((prevMessages) => [...prevMessages, newMessage])
         });
 
-        socket.on("joinLive", (newUser) => {
+        socket.on("joinLive", (newList) => {
             // console.log("joinLive");
-            setListUser(newUser)
+            setListUser(newList)
         });
         
         window.onunload = window.onbeforeunload = () => {
@@ -444,6 +458,8 @@ const ContextProvider = ({ children }) => {
             upload,
             load,
             setLoad,
+            banAll, 
+            setBanAll,
         }}>
             {children}
         </SocketContext.Provider>

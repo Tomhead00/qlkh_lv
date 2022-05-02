@@ -50,8 +50,10 @@ const useStyle = makeStyles((theme) => ({
         backgroundColor: "#DCDCDC",
         // border: '1px solid',
         flex: '1 1 auto',
+        display: "table",
     },
     listChat: {
+        display: "table-row",
         height: "85%",
         scrollBehavior: "smooth",
         wordWrap: 'break-word',
@@ -70,18 +72,18 @@ const useStyle = makeStyles((theme) => ({
 
 function LiveStream () {
     document.title = "Livestream"
-    const {setLoad, load, upload, download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
+    const {banAll, setBanAll, setLoad, load, upload, download, blobContainer, stopRecord, startRecord, record, setRecord, socket, listUser, setListUser, addChat, messages, changeStream, micro, video, toggleCam, toggleMic, me, stream, name, setName, course, setCourse, description, setDescription, user, setUser, broadcaster, start, isBroadcaster, setIsBroadcaster , watcher } = useContext(SocketContext)
     const classes = useStyle()
     const [message, setMessage] = useState('')
     const [dataToModal, setDataToModal] = useState(0)
-
-    const params = useParams()
-    const navi = useNavigate()
-
+    
     const refMenu = useRef()
     const refMember = useRef()
     const refInfo = useRef()
     const listComment = useRef()
+
+    const params = useParams()
+    const navi = useNavigate()
 
     useEffect(() =>{
         axios({
@@ -109,6 +111,7 @@ function LiveStream () {
                 userID: user.user._id,
                 username: user.user.username,
                 image: user.user.image,
+                banned: false,
             }])
         }
     }, [isBroadcaster, user])
@@ -182,10 +185,18 @@ function LiveStream () {
         else setRecord(true)
     }
 
-    const [check, setCheck] = useState(true)
-
     const handleChange = (checked) => {
-        setCheck(checked)
+        setBanAll(checked)
+    }
+
+    const offChat = () => {
+        console.log("check");
+        var check = listUser.map(element => {
+            if(element.socketID === socket.id) {
+                return element.banned
+            }
+        })
+        return check
     }
 
     return (
@@ -194,17 +205,33 @@ function LiveStream () {
             <VideoPlayer />
 
             <div className={classes.menu} ref={refMenu} style={{display: "none"}}>
-                <div className="mb-0">
+                <div className="mb-2">
                     <h4 style={{display: 'inline'}}><b>Tin nhắn</b></h4>
                     <button type="button" className="close" aria-label="Close" onClick={closeMenu}>
                         <span aria-hidden="true">&times;</span>
                     </button>               
                 </div>
-                <div class="row">
-                    <span>Tắt chat livestream</span>
-                    <Switch onChange={handleChange} checked={check}/>
+                <div className="row mb-2">
+                    <div className="col-9 text-justify">
+                        <span>Tắt chat tất cả mọi người</span>
+                    </div>
+                    <div className="col-3 d-flex justify-content-center">
+                        <Switch 
+                            onChange={handleChange} 
+                            checked={banAll}
+                            onColor="#86d3ff"
+                            onHandleColor="#2693e6"
+                            handleDiameter={30}
+                            uncheckedIcon={false}
+                            checkedIcon={false}
+                            boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                            activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                            height={20}
+                            width={48}
+                        />
+                    </div>
                 </div>
-                <div className={"comments-list " + classes.listChat} id="comments-list" ref={listComment}>
+                    <div className={"comments-list " + classes.listChat} id="comments-list" ref={listComment}>
                     <div>
                         {messages.map((element, index) => (
                             <div className="media" key={index}>
@@ -220,7 +247,7 @@ function LiveStream () {
                     </div>
                 </div>
                 <div className="d-flex justify-content-start align-items-center">
-                    <input type="text" className="form-control form-control-lg" autoComplete="off" id="exampleFormControlInput1" placeholder="Type message" onKeyDown={inputChat} onChange={handleMessage} value={message}/>
+                    <input disabled = {offChat() ? "disabled" : ""} type="text" className="form-control form-control-lg" autoComplete="off" id="exampleFormControlInput1" placeholder="Type message" onKeyDown={inputChat} onChange={handleMessage} value={message}/>
                     <a className="m-3" href="#" onClick={() => {sendChat()}}><i className="fas fa-paper-plane"></i></a>
                 </div>
             </div>
