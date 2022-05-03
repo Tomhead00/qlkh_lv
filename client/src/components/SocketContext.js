@@ -368,6 +368,12 @@ const ContextProvider = ({ children }) => {
             })
         });
 
+        socket.on("joinLiveRefeshList", (listUsers, listBans) => {
+            // console.log("joinLive");
+            setListUser(listUsers)
+            setListBan(listBans)
+        });
+
         socket.on("ban1User", (userID) => {
             setListBan(prev => {
                 var newList = prev
@@ -378,13 +384,6 @@ const ContextProvider = ({ children }) => {
                         break;
                     }
                 }
-                // newList.map((element, index) => {
-                //     if (element.userID === userID) {
-                //         var res = element.banned
-                //         element.banned = !res
-                //         break;
-                //     }
-                // })
                 var listUsers
                 setListUser(prev => {
                     listUsers = prev

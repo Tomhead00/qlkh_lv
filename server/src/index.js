@@ -234,6 +234,7 @@ io.sockets.on("connection", socket => {
             listUsers.map((element) => {
                 socket.to(element.socketID).emit("joinLive", listUsers, listBans);
             })
+            socket.emit("joinLiveRefeshList", listUsers, listBans)
         } catch(err) {}
     });
 

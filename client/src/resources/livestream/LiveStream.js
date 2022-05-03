@@ -54,7 +54,7 @@ const useStyle = makeStyles((theme) => ({
     },
     listChat: {
         display: "table-row",
-        height: "85%",
+        // height: "85%",
         scrollBehavior: "smooth",
         wordWrap: 'break-word',
         whiteSpace: 'pre-wrap',
@@ -203,7 +203,11 @@ function LiveStream () {
     } 
 
     const ban1User = (userID) => {
-        socket.emit("ban1User", userID);
+        if (isBroadcaster) {
+            socket.emit("ban1User", userID);
+        } else {
+            alert("Bạn không thể thực hiện chức năng này!")
+        }
     }
 
     // console.log(listBan);
@@ -240,7 +244,7 @@ function LiveStream () {
                         />
                     </div>
                 </div>) : null}
-                    <div className={"comments-list " + classes.listChat} id="comments-list" ref={listComment}>
+                    <div className={"comments-list " + classes.listChat} id="comments-list" ref={listComment} style={{height: isBroadcaster ? "85%" : "90%"}}>
                     <div>
                         {messages.map((element, index) => (
                             <div className="media" key={index}>
@@ -277,7 +281,7 @@ function LiveStream () {
                                         {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
                                         <div className='mt-0 mb-0'>
                                             {element.username} &nbsp;{element.userID === course.actor ? (<i className="fas fa-crown" style={{color: "red", fontSize: "15px"}}></i>) : null}
-                                            <a className="m-3" href="#" onClick={() => ban1User(element.userID)}>{(element.socketID !== listUser[0].socketID) ? (offChat(element.userID) ? (<i className="fas fa-comment-slash" style={{color: "#583d8d"}}></i>) : (<i className="fas fa-comment" style={{color: "#583d8d"}}></i>)): null}</a>
+                                            <a className="m-3" href="#" onClick={() => ban1User(element.userID)}>{(element.userID !== listUser[0].userID) ? (offChat(element.userID) ? (<i className="fas fa-comment-slash" style={{color: "#583d8d"}}></i>) : (<i className="fas fa-comment" style={{color: "#583d8d"}}></i>)): null}</a>
                                         </div>
                                     </div>
                                 </div>
