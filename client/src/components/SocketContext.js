@@ -309,8 +309,13 @@ const ContextProvider = ({ children }) => {
             peerConnections[id].close();
             delete peerConnections[id];
             setListUser(pre => {
+                let listBans
                 let newList = pre.filter(user => user.socketID != id);
-                socket.emit("joinLive", newList)
+                setListBan(prev => {
+                    listBans = prev
+                    return prev
+                })
+                socket.emit("joinLive", newList, listBans)
                 return newList
             })
         });
@@ -321,27 +326,31 @@ const ContextProvider = ({ children }) => {
         });
 
         socket.on("joinLive", (newUser) => {
+            var listUsers, listBans
             setListUser((prev) => {
-                let newList = [...prev, newUser]
-                socket.emit("joinLive", newList)
-                return newList
+                listUsers = [...prev, newUser]
+                return listUsers
             })
             setListBan((prev) => {
                 const found = prev.find(element => element.userID === newUser.userID);
-                if (found)
+                if (found) {
+                    listBans = prev
                     return prev
+                }
                 else {
-                    let newList = [...prev, {
+                    listBans = [...prev, {
                         userID: newUser.userID,
-                        banned: false,
+                        banned: banAll,
                     }]
-                    return newList
+                    return listBans
                 }
             })
+            socket.emit("joinLive", listUsers, listBans)
         });
 
         socket.on("banAllToBroatcaster", (checked) => {
-            setListUser(prev => {
+            setBanAll(checked)
+            setListBan(prev => {
                 var newList = prev
                 newList.map((element, index) => {
                     if (index === 0 || element.userID === user.user._id)
@@ -349,7 +358,39 @@ const ContextProvider = ({ children }) => {
                     else 
                         element.banned = checked
                 })
-                socket.emit("joinLive", newList)
+                var listUsers
+                setListUser(prev => {
+                    listUsers = prev
+                    return prev
+                })
+                socket.emit("joinLive", listUsers, newList);
+                return newList
+            })
+        });
+
+        socket.on("ban1User", (userID) => {
+            setListBan(prev => {
+                var newList = prev
+                for (var i = 0; i < newList.length; i++) {
+                    if (newList[i].userID === userID) {
+                        var res = newList[i].banned
+                        newList[i].banned = !res
+                        break;
+                    }
+                }
+                // newList.map((element, index) => {
+                //     if (element.userID === userID) {
+                //         var res = element.banned
+                //         element.banned = !res
+                //         break;
+                //     }
+                // })
+                var listUsers
+                setListUser(prev => {
+                    listUsers = prev
+                    return prev
+                })
+                socket.emit("joinLive", listUsers, newList);
                 return newList
             })
         });
@@ -358,8 +399,6 @@ const ContextProvider = ({ children }) => {
             socket.close();
         };
     }
-
-    console.log(listUser, listBan);
 
     // // watcher
     const watcher = (idSocket) => {
@@ -414,14 +453,16 @@ const ContextProvider = ({ children }) => {
                 setMessages((prevMessages) => [...prevMessages, newMessage])
         });
 
-        socket.on("joinLive", (newList) => {
+        socket.on("joinLive", (listUsers, listBans) => {
             // console.log("joinLive");
-            setListUser(newList)
+            setListUser(listUsers)
+            setListBan(listBans)
         });
 
-        // socket.on("banChat", (checked) => {
-        //     setBanAll(checked)
-        // });
+        socket.on("banChat", (checked) => {
+            console.log(checked);
+            setBanAll(checked)
+        });
         
         window.onunload = window.onbeforeunload = () => {
             socket.close();

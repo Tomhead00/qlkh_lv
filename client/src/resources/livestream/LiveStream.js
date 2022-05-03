@@ -194,14 +194,19 @@ function LiveStream () {
 
     }
 
-    const offChat = () => {
+    const offChat = (userID) => {
         try {
-            const found = listUser.find(element => element.userID === user.user._id);
-            return found.banned
-        } catch (err) {
-            return true
-        }
-    }   
+            const found = listBan.find(element => element.userID === userID)
+            if (found) 
+                return found.banned
+        } catch (err) {return false}
+    } 
+
+    const ban1User = (userID) => {
+        socket.emit("ban1User", userID);
+    }
+
+    // console.log(listBan);
 
     return (
         <div className={"row " + classes.wrapper}>
@@ -251,7 +256,7 @@ function LiveStream () {
                     </div>
                 </div>
                 <div className="d-flex justify-content-start align-items-center">
-                    <input disabled = {offChat() ? "disabled" : ""} type="text" className="form-control form-control-lg" autoComplete="off" id="exampleFormControlInput1" placeholder="Type message" onKeyDown={inputChat} onChange={handleMessage} value={message}/>
+                    <input disabled = {user.user && offChat(user.user._id) ? "disabled" : ""} type="text" className="form-control form-control-lg" autoComplete="off" id="exampleFormControlInput1" placeholder="Type message" onKeyDown={inputChat} onChange={handleMessage} value={message}/>
                     <a className="m-3" href="#" onClick={() => {sendChat()}}><i className="fas fa-paper-plane"></i></a>
                 </div>
             </div>
@@ -270,7 +275,10 @@ function LiveStream () {
                                     <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={isValidHttpUrl(element.image) ? element.image : `${REACT_APP_SERVER + element.image}`} alt='' width="40" height="40" />
                                     <div className='media-body align-self-center'>
                                         {/* <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5> */}
-                                            <div className='mt-0 mb-0'>{element.username} &nbsp;{element.userID === course.actor ? (<i className="fas fa-crown" style={{color: "red", fontSize: "15px"}}></i>) : null}</div>
+                                        <div className='mt-0 mb-0'>
+                                            {element.username} &nbsp;{element.userID === course.actor ? (<i className="fas fa-crown" style={{color: "red", fontSize: "15px"}}></i>) : null}
+                                            <a className="m-3" href="#" onClick={() => ban1User(element.userID)}>{(element.socketID !== listUser[0].socketID) ? (offChat(element.userID) ? (<i className="fas fa-comment-slash" style={{color: "#583d8d"}}></i>) : (<i className="fas fa-comment" style={{color: "#583d8d"}}></i>)): null}</a>
+                                        </div>
                                     </div>
                                 </div>
                         )})}

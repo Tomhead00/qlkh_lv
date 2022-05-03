@@ -229,22 +229,25 @@ io.sockets.on("connection", socket => {
         })
     });
 
-    socket.on("joinLive", (newList) => {
-        newList.map((element) => {
-            socket.to(element.socketID).emit("joinLive", newList);
-        })
+    socket.on("joinLive", (listUsers, listBans) => {
+        try {
+            listUsers.map((element) => {
+                socket.to(element.socketID).emit("joinLive", listUsers, listBans);
+            })
+        } catch(err) {}
     });
 
     socket.on("banAllToBroatcaster", (checked) => {
         socket.emit("banAllToBroatcaster", checked);
     });
 
-    // socket.on("banAllToWatcher", (checked, listUser) => {
-    //     // console.log(listUser, checked);
-    //     listUser.map((element) => {
-    //         socket.to(element.socketID).emit("banChat", checked);
-    //     })
-    // });
+    socket.on("ban1User", (userID) => {
+        socket.emit("ban1User", userID);
+    });
+
+    socket.on("banChat", (id, checked) => {
+        socket.to(id).emit("banChat", checked);
+    });
 });
 
 server.listen(port, () => {
