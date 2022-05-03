@@ -444,7 +444,7 @@ function LiveStream () {
                         <i className="fas fa-ellipsis-v"></i>                    
                     </Link>
                     {/* Thoat */}
-                    <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} to="#" role="button">
+                    <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} role="button" to={`/me/stored/courses`}>
                         <i className="fas fa-lg fa-sign-out-alt fa-rotate-180" style={{color: "white"}}></i>
                     </Link>
                 </div>
