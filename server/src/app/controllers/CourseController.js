@@ -238,15 +238,12 @@ class CourseController {
         // console.log(req.body)
         var array = [
             '?technology',
-            '?nature',
-            '?color',
             '?cpu',
-            '?Coutryside',
-            '?Fruit',
-            '?Vegatables',
-            '?rainbow',
             '?ai',
-            '?sunny',
+            '?Frontend',
+            '?backend',
+            '?code',
+            '?study'
         ];
         var randomElement = array[Math.floor(Math.random() * array.length)];
         req.body.image = `https://source.unsplash.com/random/306x230/${randomElement}`;

@@ -329,7 +329,7 @@ function Courses() {
             </div>
 
             <div id="ques-course-model" className="modal fade" tabIndex="-1" role="dialog">
-                <div className="modal-dialog modal-dialog-centered" role="document">
+                <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
                     <div className="modal-content">
                     <div className="modal-header">
                         <h5 className="modal-title">Tham gia khóa học?</h5>
@@ -337,9 +337,79 @@ function Courses() {
                         <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
+
                     <div className="modal-body">
-                        <p>Bạn chưa tham gia khóa học này. Bạn có muốn tham gia?</p>
+                        <div className="row">
+                            <div className="col-6">
+                                <h5>Nội dung khóa học:</h5>
+                                <div className="accordion" id="accordionPanelsStayOpenExample">
+                                    <div className="accordion-item">
+                                        <h2 className="accordion-header" id="headingOne">
+                                        <button className="accordion-button" type="button" data-mdb-toggle="collapse" data-mdb-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                                            Accordion Item #1
+                                        </button>
+                                        </h2>
+                                        <div id="panelsStayOpen-collapseOne" className="accordion-collapse collapse show" aria-labelledby="headingOne">
+                                            <div className="accordion-body">
+                                                <strong>This is the first item's accordion body.</strong> It is shown by default,
+                                                until the collapse plugin adds the appropriate classes that we use to style each
+                                                element. These classes control the overall appearance, as well as the showing and
+                                                hiding via CSS transitions. You can modify any of this with custom CSS or overriding
+                                                our default variables. It's also worth noting that just about any HTML can go within
+                                                the <code>.accordion-body</code>, though the transition does limit overflow.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="accordion-item">
+                                        <h2 className="accordion-header" id="headingTwo">
+                                        <button className="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+                                            Accordion Item #2
+                                        </button>
+                                        </h2>
+                                        <div id="panelsStayOpen-collapseTwo" className="accordion-collapse collapse" aria-labelledby="headingTwo">
+                                            <div className="accordion-body">
+                                                <strong>This is the second item's accordion body.</strong> It is hidden by default,
+                                                until the collapse plugin adds the appropriate classes that we use to style each
+                                                element. These classes control the overall appearance, as well as the showing and
+                                                hiding via CSS transitions. You can modify any of this with custom CSS or overriding
+                                                our default variables. It's also worth noting that just about any HTML can go within
+                                                the <code>.accordion-body</code>, though the transition does limit overflow.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="accordion-item">
+                                        <h2 className="accordion-header" id="headingThree">
+                                        <button className="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target="#panelsStayOpen-collapseThree" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
+                                            Accordion Item #3
+                                        </button>
+                                        </h2>
+                                        <div id="panelsStayOpen-collapseThree" className="accordion-collapse collapse" aria-labelledby="headingThree">
+                                            <div className="accordion-body">
+                                                <strong>This is the third item's accordion body.</strong> It is hidden by default,
+                                                until the collapse plugin adds the appropriate classes that we use to style each
+                                                element. These classes control the overall appearance, as well as the showing and
+                                                hiding via CSS transitions. You can modify any of this with custom CSS or overriding
+                                                our default variables. It's also worth noting that just about any HTML can go within
+                                                the <code>.accordion-body</code>, though the transition does limit overflow.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-6" style={{wordWrap:" break-word"}}>
+                                     <p className="mb-0"><b>Yêu cầu:</b></p>
+                                    <div className="mb-3">
+                                        <div key='1'>qweqweqwdqwdqdwqdqwdqwdqwdqwdqwdqwdaasdqw sdfl alsd wd alkwj á</div>
+                                        <div key='2'>qweqweqwdqwdqdwqdqwdqwdqwdqwdqwdqwdaasdqw sdfl alsd wd alkwj á</div>
+                                    </div>
+                                    <p className="mb-0"><b>Kết quả đạt được:</b></p>
+                                    <div className="mb-3">
+                                        <div key='1'>qweqweqwdqwdqdwqdqwdqwdqwdqwdqwdqwdaasdqw sdfl alsd wd alkwj á</div>
+                                    </div>
+                            </div>
+                        </div>
                     </div>
+
                     <div className="modal-footer">
                         <button type="button" className="btn btn-secondary close-ques" data-dismiss="modal" onClick={closeModal}>Hủy</button>
                         <button id="btn-thamgia-course" type="button" className="btn btn-danger">Tham gia</button>

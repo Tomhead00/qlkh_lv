@@ -4,6 +4,7 @@ import axios from "axios"
 import { useState, useEffect } from "react"
 import moment from "moment"
 import {isValidHttpUrl, progessBar} from '../../components/Func'
+import { FilePond} from 'react-filepond'
 
 const {REACT_APP_SERVER} = process.env
 
@@ -138,7 +139,7 @@ function EditCourse() {
     return (
         <div className="container">
             <div className="row mt-4">
-                <h3 className="mb-0 col-sm-4"><b>Video khóa học:</b></h3>
+                <h3 className="mb-0 col-sm-4"><b>Tùy chỉnh khóa học:</b></h3>
                 <div className="col-sm-8 d-flex justify-content-end">
                     <Link to={`/courses/show/${course.slug}`} className="btn btn-primary btn-sm text-end ml-1" title="Thùng rác"><i className="fas fa-play"></i> Xem khóa học</Link>
                     <Link to={`/me/trash/${course._id}`} className="btn btn-primary btn-sm ml-1" title="Thùng rác"><i className="fas fa-trash-alt"></i> {countDel}</Link>
@@ -146,6 +147,137 @@ function EditCourse() {
                 </div>
             </div>
             <div className="row">
+                <div className="accordion mt-4" id="accordionExample">
+                    <div className="accordion-item">
+                        <h2 className="accordion-header" id="headingOne">
+                        <button className="accordion-button" type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Accordion Item #1
+                        </button>
+                        </h2>
+                        <div id="collapseOne" className="accordion-collapse collapse show" aria-labelledby="headingOne" data-mdb-parent="#accordionExample">
+                            <div className="accordion-body">
+                                <div className="d-flex justify-content-end">
+                                    <button type="button" className="btn btn-primary btn-rounded btn-sm ml-2" title="Sửa"><i className="fas fa-edit"></i></button>
+                                    <button type="button" className="btn btn-primary btn-rounded btn-sm ml-2" title="Lên"><i className="fas fa-long-arrow-alt-up"></i></button>
+                                    <button type="button" className="btn btn-primary btn-rounded btn-sm ml-2" title="Xuống"><i className="fas fa-long-arrow-alt-down"></i></button>
+                                    <button type="button" className="btn btn-danger btn-rounded btn-sm ml-2">Xóa</button>
+                                </div>
+                                <h5><strong>Video: </strong></h5>
+                                <div className="col-sm-3 col-lg-3 card-deck">
+                                    <div className="card card-course-item">
+                                        <div className="card-body w-100 d-flex justify-content-center align-items-center addVideo" style={{height: "429.59px",  backgroundColor: "rgba(0,0,255,.1)"}}>
+                                            <Link to={`/me/stored/${course._id}/EditCourse/AddVideo`} state={{course: course}}><i className="fas fa-plus-circle fa-5x"></i></Link>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h5 className="mt-4"><strong>
+                                    Tài liệu:
+                                </strong></h5>
+                                    <FilePond
+                                        // files={files}
+                                        // onupdatefiles={setFiles}
+                                        allowMultiple={false}
+                                        maxFiles={1}
+                                        // server={
+                                        //     {url: `${REACT_APP_SERVER}/me/upload`,
+                                        //     revert: `/${videoID}`
+                                        //     }
+                                        // }
+                                        // onprocessfile = {(err,file) => setVideoID(JSON.parse(file.serverId).filename)}
+                                        name="file"
+                                        labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
+                                    />
+                                <table className="table align-middle mt-4">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Tên file</th>
+                                            <th scope="col">Xóa</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th scope="row">1</th>
+                                            <td>Sit</td>
+                                            <td>
+                                                <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
+                                                <i className="fas fa-times" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">2</th>
+                                            <td>Adipisicing</td>
+                                            <td>
+                                                <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
+                                                <i className="fas fa-times" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th scope="row">3</th>
+                                            <td>Hic</td>
+                                            <td>
+                                                <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
+                                                <i className="fas fa-times" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div className="accordion-item">
+                        <h2 className="accordion-header" id="headingTwo">
+                        <button className="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Accordion Item #2
+                        </button>
+                        </h2>
+                        <div id="collapseTwo" className="accordion-collapse collapse" aria-labelledby="headingTwo" data-mdb-parent="#accordionExample">
+                            <div className="accordion-body">
+                                <strong>This is the first item's accordion body.</strong> It is hidden by default,
+                                until the collapse plugin adds the appropriate classes that we use to style each
+                                element. These classes control the overall appearance, as well as the showing and
+                                hiding via CSS transitions. You can modify any of this with custom CSS or
+                                overriding our default variables. It's also worth noting that just about any HTML
+                                can go within the <strong>.accordion-body</strong>, though the transition does
+                                limit overflow.
+                            </div>
+                        </div>
+                    </div>
+                    <div className="accordion-item">
+                        <h2 className="accordion-header" id="headingThree">
+                        <button className="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Accordion Item #3
+                        </button>
+                        </h2>
+                        <div id="collapseThree" className="accordion-collapse collapse" aria-labelledby="headingThree" data-mdb-parent="#accordionExample">
+                            <div className="accordion-body">
+                                <strong>This is the third item's accordion body.</strong> It is hidden by default,
+                                until the collapse plugin adds the appropriate classes that we use to style each
+                                element. These classes control the overall appearance, as well as the showing and
+                                hiding via CSS transitions. You can modify any of this with custom CSS or
+                                overriding our default variables. It's also worth noting that just about any HTML
+                                can go within the <strong>.accordion-body</strong>, though the transition does
+                                limit overflow.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="input-group mt-3">
+                    <input type="text" className="form-control" placeholder="Thêm chương mới" aria-label="Thêm chương mới" aria-describedby="basic-addon2" />
+                    <div className="input-group-append">
+                        <button className="btn btn-secondary" type="button"><i className="fas fa-plus"></i></button>
+                        <button className="btn btn-danger" type="button"><i className="fas fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div className="row">
+            <h3 className="mb-0 mt-3"><b>Video Livestream:</b></h3>
+
                 <div className="col-sm-3 col-lg-3 card-deck mt-4">
                     <div className="card card-course-item">
                         <div className="card-body w-100 d-flex justify-content-center align-items-center addVideo" style={{height: "429.59px",  backgroundColor: "rgba(0,0,255,.1)"}}>
