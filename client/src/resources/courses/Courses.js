@@ -16,6 +16,7 @@ function Courses() {
     const [cPopular, setCPopular] = useState([]);
     const [cAnother, setCAnother] = useState([]);
     const [search, setSearch] = useState('');
+    const [choice, setChoice] = useState({});
 
     useEffect(() => {
         // Cac khoa hoc da tham gia
@@ -59,7 +60,6 @@ function Courses() {
 
     const searchCourses = (e) => {
         setSearch(e.target.value)
-        console.log();
         axios({
             method: "post",
             withCredentials: true,
@@ -105,8 +105,9 @@ function Courses() {
         $("#resultSearch").html('');
     }
 
-    const navi = (string) => (e) => {
+    const navi = (string, obj) => (e) => {
         e.preventDefault()
+        setChoice(obj)
         axios({
             method: "post",
             withCredentials: true,
@@ -127,7 +128,7 @@ function Courses() {
                     })
                     .then(ketqua => {
                         if(ketqua.data) {
-                            console.log(ketqua.data)
+                            // console.log(ketqua.data)
                             window.$("#ques-course-model").modal("toggle");
                             navigate(`/courses/show/${string}`)
                         }
@@ -144,7 +145,7 @@ function Courses() {
         window.$("#ques-course-model").modal("toggle");
     }
 
-    // console.log(cJoin);
+    console.log(choice);
 
     return (
         <div>
@@ -172,7 +173,7 @@ function Courses() {
                             cJoin.map((cjoin, index) => (
                                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                                         <div className="card card-course-item">
-                                            <Link to={`/courses/show/${cjoin.slug}`} onClick={navi(`${cjoin.slug}`)}>
+                                            <Link to={`/courses/show/${cjoin.slug}`} onClick={navi(`${cjoin.slug}`, cjoin)}>
                                                 <img className="card-img-top" src={cjoin.image} alt={cjoin.name} />
                                             </Link>
 
@@ -186,7 +187,7 @@ function Courses() {
                                                 }</div>
                                                 <p className="mb-3">{cjoin.level} | <i className="fas fa-clock"></i> {moment.utc(cjoin.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(cjoin.actor.image) ? cjoin.actor.image : `${REACT_APP_SERVER + cjoin.actor.image}`} className="user-avatar"  alt={cjoin.actor.image} /><b>{cjoin.actor.username}</b></p>
-                                                {progessBar(cjoin.video,cjoin.user)}
+                                                {/* {progessBar(cjoin.video,cjoin.user)} */}
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cjoin.updatedAt).fromNow()}</small>                                                    
                                                     <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {cjoin.studentCount}</i></small>
@@ -214,12 +215,12 @@ function Courses() {
                             cUpdate.slice(0, 4).map((cupdate, index) => (
                                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                                         <div className="card card-course-item">
-                                            <Link to={`/courses/show/${cupdate.slug}`} onClick={navi(`${cupdate.slug}`)}>
+                                            <Link to={`/courses/show/${cupdate.slug}`} onClick={navi(`${cupdate.slug}`, cupdate)}>
                                                 <img className="card-img-top" src={cupdate.image} alt={cupdate.name} />
                                             </Link>
 
                                             <div className="card-body">
-                                                <Link to={`/courses/show/${cupdate.slug}`} onClick={navi(`${cupdate.slug}`)}>
+                                                <Link to={`/courses/show/${cupdate.slug}`} onClick={navi(`${cupdate.slug}`, cupdate)}>
                                                     <h5 className="card-title">{cupdate.name}</h5>
                                                 </Link>
                                                 <div className="card-text mt mb-3">{
@@ -228,7 +229,7 @@ function Courses() {
                                                 }</div>
                                                 <p className="mb-3">{cupdate.level} | <i className="fas fa-clock"></i> {moment.utc(cupdate.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(cupdate.actor.image) ? cupdate.actor.image : `${REACT_APP_SERVER + cupdate.actor.image}`} className="user-avatar" /><b>{cupdate.actor.username}</b></p>
-                                                {progessBar(cupdate.video,cupdate.user)}
+                                                {/* {progessBar(cupdate.video,cupdate.user)} */}
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cupdate.updatedAt).fromNow()}</small>                                                    
                                                     <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {cupdate.studentCount}</i></small>
@@ -255,12 +256,12 @@ function Courses() {
                             cPopular.slice(0, 4).map((cpopular, index) => (
                                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                                         <div className="card card-course-item">
-                                            <Link to={`/courses/show/${cpopular.slug}`} onClick={navi(`${cpopular.slug}`)}>
+                                            <Link to={`/courses/show/${cpopular.slug}`} onClick={navi(`${cpopular.slug}`, cpopular)}>
                                                 <img className="card-img-top" src={cpopular.image} alt={cpopular.name} />
                                             </Link>
 
                                             <div className="card-body">
-                                                <Link to={`/courses/show/${cpopular.slug}`} onClick={navi(`${cpopular.slug}`)}>
+                                                <Link to={`/courses/show/${cpopular.slug}`} onClick={navi(`${cpopular.slug}`, cpopular)}>
                                                     <h5 className="card-title">{cpopular.name}</h5>
                                                 </Link>
                                                 <div className="card-text mt mb-3">{
@@ -269,7 +270,7 @@ function Courses() {
                                                 }</div>
                                                 <p className="mb-3">{cpopular.level} | <i className="fas fa-clock"></i> {moment.utc(cpopular.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(cpopular.actor.image) ? cpopular.actor.image : `${REACT_APP_SERVER + cpopular.actor.image}`} className="user-avatar" /><b>{cpopular.actor.username}</b></p>
-                                                {progessBar(cpopular.video,cpopular.user)}
+                                                {/* {progessBar(cpopular.video,cpopular.user)} */}
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(cpopular.updatedAt).fromNow()}</small>                                                    
                                                     <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {cpopular.studentCount}</i></small>
@@ -295,12 +296,12 @@ function Courses() {
                             cAnother.map((canother, index) => (
                                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                                         <div className="card card-course-item">
-                                            <Link to={`/courses/show/${canother.slug}`} onClick={navi(`${canother.slug}`)}>
+                                            <Link to={`/courses/show/${canother.slug}`} onClick={navi(`${canother.slug}`, canother)}>
                                                 <img className="card-img-top" src={canother.image} alt={canother.name} />
                                             </Link>
 
                                             <div className="card-body">
-                                                <Link to={`/courses/show/${canother.slug}`} onClick={navi(`${canother.slug}`)}>
+                                                <Link to={`/courses/show/${canother.slug}`} onClick={navi(`${canother.slug}`, canother)}>
                                                     <h5 className="card-title">{canother.name}</h5>
                                                 </Link>
                                                 <div className="card-text mt mb-3">{
@@ -309,7 +310,7 @@ function Courses() {
                                                 }</div>
                                                 <p className="mb-3">{canother.level} | <i className="fas fa-clock"></i> {moment.utc(canother.time*1000).format('HH:mm:ss')}</p>
                                                 <p><img src={isValidHttpUrl(canother.actor.image) ? canother.actor.image : `${REACT_APP_SERVER + canother.actor.image}`} className="user-avatar" /><b>{canother.actor.username}</b></p>
-                                                {progessBar(canother.video,canother.user)}
+                                                {/* {progessBar(canother.video,canother.user)} */}
                                                 <div className="card-footer d-flex">
                                                     <small className="text-muted time p-1">{moment(canother.updatedAt).fromNow()}</small>                                                    
                                                     <small className="text-muted ml-auto p-1"><i className="fas fa-users"> {canother.studentCount}</i></small>

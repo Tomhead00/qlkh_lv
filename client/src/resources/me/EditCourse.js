@@ -4,7 +4,10 @@ import axios from "axios"
 import { useState, useEffect } from "react"
 import moment from "moment"
 import {isValidHttpUrl, progessBar} from '../../components/Func'
-import { FilePond} from 'react-filepond'
+import {FilePond, registerPlugin} from 'react-filepond'
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import prettyBytes from 'pretty-bytes';
+registerPlugin(FilePondPluginFileValidateType);
 
 const {REACT_APP_SERVER} = process.env
 
@@ -17,9 +20,11 @@ function EditCourse() {
     const [section, setSection] = useState([]);
     const [typeSection, setTypeSection] = useState('');
     const [member, setMember] = useState([]);
-    const [countDel, setCountDel] = useState(0);
+    // const [countDel, setCountDel] = useState(0);
     const [updateNameSection, seUpdateNameSection] = useState('');
+    const [modal, setModal] = useState({});
     const location = useLocation()
+
     
     // function
     document.title = "Tùy chỉnh khóa học"
@@ -36,12 +41,16 @@ function EditCourse() {
             setCourse(ketqua.data)
             setSection(ketqua.data.sections)
             setLivestream(ketqua.data.livestreams)
-            ketqua.data.sections.map((Video) => {
-                setVideo([...video, Video])
+            ketqua.data.sections.map((section) => {
+                section.videos.map(Video => {
+                    setVideo([...video, Video])
+                })
             })
             } else navigate("/me/stored/courses")
         })
     }
+
+    console.log(video);
 
     // const refreshDeleteVideo = (e) => {
     //     axios({
@@ -59,7 +68,6 @@ function EditCourse() {
     
     useEffect(() => {
         refreshCourse()
-        // refreshDeleteVideo()
         return () => {};
     }, [])
 
@@ -72,7 +80,6 @@ function EditCourse() {
                 url: `${REACT_APP_SERVER}/me/stored/${course._id}/getMember`
             })
             .then(ketqua => {
-                // console.log(ketqua.data);
                 setMember(ketqua.data)
             })
         }
@@ -247,6 +254,27 @@ function EditCourse() {
         })
     }
 
+    const deleteDocs = (sectionID, docName, docID) => {
+        console.log(sectionID, docName, docID);
+        axios({
+            method: "delete",
+            data: {
+                sectionID: sectionID,
+                docName: docName,
+                docID: docID,
+            },
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/me/delete/${sectionID}`
+        })
+        .then(ketqua => {
+            if (ketqua.data) {
+                refreshCourse()
+            } else {
+                alert("Lỗi hệ thống. Vui lòng thử lại!")
+            }
+        })
+    }
+
     return (
         <div className="container">
             <div className="row mt-4">
@@ -312,60 +340,43 @@ function EditCourse() {
                                                     </div>
                                                 ))}
                                             </div>
-                                            <h5 className="mt-4"><strong>
-                                                Tài liệu:
-                                            </strong></h5>
-                                                <FilePond
-                                                    // files={files}
-                                                    // onupdatefiles={setFiles}
-                                                    // allowMultiple={true}
-                                                    // maxFiles={1}
-                                                    // server={
-                                                    //     {url: `${REACT_APP_SERVER}/me/upload/${element._id}`,
-                                                    //     revert: `/${videoID}`
-                                                    //     }
-                                                    // }
-                                                    // onprocessfile = {(err,file) => setVideoID(JSON.parse(file.serverId).filename)}
-                                                    name="file"
-                                                    labelIdle='Drag & Drop your files or <span className="filepond--label-action">Browse</span>'
-                                                />
+                                            <h5 className="mt-4"><strong>Tài liệu:</strong></h5>
+                                            <FilePond
+                                                // files={files}
+                                                // onupdatefiles={setFiles}
+                                                acceptedFileTypes={["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
+                                                allowMultiple={true}
+                                                // maxFiles={1}
+                                                server={
+                                                    {url: `${REACT_APP_SERVER}/me/upload/${element._id}`}
+                                                }
+                                                onprocessfile = {(err,file) => refreshCourse()}
+                                                name="file"
+                                                labelIdle='Drag & Drop your files or <span className="filepond--label-action">Browse</span>'
+                                            />
                                             <table className="table align-middle mt-4">
                                                 <thead>
                                                     <tr>
                                                         <th scope="col">#</th>
                                                         <th scope="col">Tên file</th>
+                                                        <th scope="col">Size</th>
                                                         <th scope="col">Xóa</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <th scope="row">1</th>
-                                                        <td>Sit</td>
-                                                        <td>
-                                                            <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
-                                                            <i className="fas fa-times" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">2</th>
-                                                        <td>Adipisicing</td>
-                                                        <td>
-                                                            <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
-                                                            <i className="fas fa-times" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <th scope="row">3</th>
-                                                        <td>Hic</td>
-                                                        <td>
-                                                            <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
-                                                            <i className="fas fa-times" />
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
+                                                {element.docs.map((doc, index) => (
+                                                    <tbody key={index}>
+                                                        <tr>
+                                                            <th scope="row">{index+1}</th>
+                                                            <td>{doc.name}</td>
+                                                            <td>{prettyBytes(doc.size)}</td>
+                                                            <td>
+                                                                <button type="button" onClick={() => deleteDocs(element._id, doc.name, doc._id)} className="btn btn-link btn-sm px-3" data-ripple-color="dark">
+                                                                <i className="fas fa-times" />
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                ))}
                                             </table>
                                         </div>
                                     </div>
@@ -405,7 +416,9 @@ function EditCourse() {
                                 <button type="button" 
                                     className="btn btn-danger btn-rounded btn-sm ml-1" 
                                     title="Xóa"
-                                    onClick={() => deleteSection(course._id, element._id)}
+                                    data-mdb-toggle="modal"
+                                    data-mdb-target="#exampleModal2"
+                                    onClick={() => {setModal({courseID: course._id, section: element})}}
                                 >
                                     <i className="far fa-trash-alt"></i>
                                 </button>
@@ -425,14 +438,6 @@ function EditCourse() {
             </div>
             <div className="row">
             <h3 className="mb-0 mt-3"><b>Video Livestream:</b></h3>
-
-                {/* <div className="col-sm-3 col-lg-3 card-deck mt-4">
-                    <div className="card card-course-item">
-                        <div className="card-body w-100 d-flex justify-content-center align-items-center addVideo" style={{height: "429.59px",  backgroundColor: "rgba(0,0,255,.1)"}}>
-                            <Link to={`/me/stored/${course._id}/EditCourse/AddVideo`} state={{course: course}}><i className="fas fa-plus-circle fa-5x"></i></Link>
-                        </div>
-                    </div>
-                </div> */}
                 {livestream.map((video, index) => (
                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                         <div className="card card-course-item fadeIn">
@@ -560,7 +565,7 @@ function EditCourse() {
                                                     {(!member.deleted) ? (<span className="badge badge-success rounded-pill">Active</span>) : (<span className="badge badge-danger rounded-pill">Block</span>)}
                                                 </td>
                                                 <td style={{width: '20%'}}>
-                                                    {/* {progessBar(course.video,member._id)} */}
+                                                    {progessBar(video, member._id)}
                                                 </td>
                                             </tr>
                                         )
@@ -569,10 +574,27 @@ function EditCourse() {
                             </table>
                         </div>
                     </div>
-
-                
-            </div>
+                </div>
             <div style={{height: "500px"}}></div>
+
+            <div className="modal fade" id="exampleModal2" tabIndex={-1} aria-labelledby="exampleModalLabel2" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h5 className="modal-title" id="exampleModalLabel">Modal title</h5>
+                            <button type="button" className="btn-close" data-mdb-dismiss="modal" aria-label="Close" />
+                        </div>
+                        <div className="modal-body">
+                            Bạn có chắc muốn xóa phần <strong>{Object.keys(modal).length ? modal.section.name : null}</strong>. Hành động này bao gồm xóa cả video và tài liệu bên trong?
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-secondary" data-mdb-dismiss="modal">Hủy</button>
+                            <button type="button" className="btn btn-primary" onClick={() => deleteSection(modal.courseID, modal.section._id)}>Chấp nhận</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     )
 }

@@ -4315,7 +4315,12 @@
   "resolved" "https://registry.npmjs.org/filepond-plugin-file-validate-size/-/filepond-plugin-file-validate-size-2.2.5.tgz"
   "version" "2.2.5"
 
-"filepond@^4.30.3", "filepond@>=3.1.2 <5.x", "filepond@>=3.7.x < 5.x":
+"filepond-plugin-file-validate-type@^1.2.7":
+  "integrity" "sha512-HMOoS7BrpMt3YLWMylqshV7V0fJyTLZlibF4Y/Q7XFFFkzHKR+KSFiCRGZqXbFWw6hgtcl5wBC9kVwMB9AOPTg=="
+  "resolved" "https://registry.npmjs.org/filepond-plugin-file-validate-type/-/filepond-plugin-file-validate-type-1.2.7.tgz"
+  "version" "1.2.7"
+
+"filepond@^4.30.3", "filepond@>=1.x <5.x", "filepond@>=3.1.2 <5.x", "filepond@>=3.7.x < 5.x":
   "integrity" "sha512-G2b1LEe90Sq2vH0SYDASTB+vVU735NBctzIaFPlZtb14QAgi/AL89WyQ6LhTfqgyrMyuZur2O9yHAmzS2E9ZnA=="
   "resolved" "https://registry.npmjs.org/filepond/-/filepond-4.30.3.tgz"
   "version" "4.30.3"

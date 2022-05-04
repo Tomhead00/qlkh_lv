@@ -4,9 +4,11 @@ import axios from "axios"
 import { useEffect, useRef, useState } from "react"
 import {youtube_parser} from '../../components/Func'
 import YouTube from 'react-youtube';
-import { FilePond, File, registerPlugin } from 'react-filepond'
+import { FilePond, registerPlugin } from 'react-filepond'
 import 'filepond/dist/filepond.min.css'
 import ReactPlayer from 'react-player'
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+registerPlugin(FilePondPluginFileValidateType);
 
 const {REACT_APP_SERVER} = process.env
 
@@ -181,6 +183,7 @@ function AddVideo() {
                         <FilePond
                             files={files}
                             onupdatefiles={setFiles}
+                            acceptedFileTypes={['video/mp4', 'video/webm', 'video/x-msvideo', 'video/mpeg', 'video/3gpp']}
                             allowMultiple={false}
                             maxFiles={1}
                             server={

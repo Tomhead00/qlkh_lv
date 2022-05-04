@@ -14,6 +14,7 @@
     "file-saver": "^2.0.5",
     "filepond": "^4.30.3",
     "filepond-plugin-file-validate-size": "^2.2.5",
+    "filepond-plugin-file-validate-type": "^1.2.7",
     "fix-webm-duration": "^1.0.5",
     "jquery": "^3.6.0",
     "moment": "^2.29.1",
