@@ -1,4 +1,5 @@
 const Course = require('../models/Course');
+const LiveStream = require('../models/LiveStream');
 const Section = require('../models/Section');
 const Video = require('../models/Video');
 const { multipleMongooseToObject } = require('../../util/mongoose');
@@ -27,20 +28,21 @@ function array_move(arr, old_index, new_index) {
 }
 
 async function calculatorTimeCourse(id)  {
-    let time = 0;
-    await Course.findById(id)
-        .then(async (course) => {
-            // console.log(course.video);
-            await Video.find({
-                '_id': { $in: course.video}})
-                .then(video2 => {
-                    for(video of video2) {
-                        // console.log(video.time)
-                        time += video.time
-                    }
-                })
+    var time = 0;
+    const course = await Course.findById(id)
+    .populate({ 
+        modal: 'section', 
+        path: 'sections',
+        populate: {
+            path: 'videos',
+            modal: 'video',
+        },
+    })
+    course.sections.map(section => {
+        section.videos.map(video => {
+            time += video.time
         })
-    // console.log("tottla:" + time);
+    })
     Course.findByIdAndUpdate(id, {time: time}).then()
 }
 
@@ -97,7 +99,7 @@ class MeController {
     }
 
     // GET /me/stored/:id/editCourse
-    async edit(req, res, next) {
+    async show(req, res, next) {
         try {
             const course = await Course.findById(req.params.id)
             .populate({ 
@@ -210,7 +212,7 @@ class MeController {
         }
     }
         
-    // // GET /me/stored/:id/edit/addVideo
+    // // GET /me/stored/:id//edit/addVideo
     // addVideo(req, res, next) {
     //     Course.findById(req.params.id)
     //         .then((course) =>
@@ -230,9 +232,9 @@ class MeController {
         try {
             switch (req.params.action) {
                 case 'preview':
-                    Course.findById({ _id: req.params.id })
-                        .then((course) => {
-                            var arr = course.video;
+                    Section.findById({ _id: req.params.sectionID })
+                        .then((section) => {
+                            var arr = section.videos;
                             var pos = arr.indexOf(req.params._id);
                             var pos1 = pos - 1;
                             if (pos == 0) {
@@ -240,13 +242,9 @@ class MeController {
                             }
                             arr = array_move(arr, pos, pos1);
                             // console.log(arr, pos, pos1);
-                            Course.findOneAndUpdate(
-                                { _id: req.params.id },
-                                { $pullAll: { video: arr } },
-                            );
-                            Course.findOneAndUpdate(
-                                { _id: req.params.id },
-                                { video: arr },
+                            Section.findOneAndUpdate(
+                                { _id: req.params.sectionID },
+                                { videos: arr },
                             )
                                 .then(() => {
                                     res.send(true);
@@ -256,17 +254,37 @@ class MeController {
                         .catch(next);
                     break;
                 case 'delete':
-                    Video.delete({ _id: req.params._id })
-                        .then(() => {
-                            res.send(true);
-                        })
-                        .catch(next);
-                    calculatorTimeCourse(req.params.id)
+                    try {
+                        var time;
+                        Section.updateOne(
+                            { _id: req.params.sectionID },
+                            { $pull: { videos: req.params._id } },
+                            { new: true, useFindAndModify: false },
+                        ).catch(next);
+                
+                        Video.findByIdAndDelete({ _id: req.params._id })
+                            .then((video) => {
+                                time = video.time
+                                if(video.videoID.length > 13) {
+                                var filePath = `src/public/video/${video.videoID}`;
+                                var thumbnailPath = `src/public/img/thumbnail/${video.videoID.substring(0,video.videoID.lastIndexOf("."))}.png`;
+                                fs.unlinkSync(filePath);
+                                fs.unlinkSync(thumbnailPath);
+                                }
+                                res.send(true)
+                            })
+                            .catch(next => {
+                                res.send(false)
+                            });
+                            calculatorTimeCourse(req.params.id)
+                    } catch (err) {
+                        res.send(false)
+                    }
                     break;
                 case 'next':
-                    Course.findById({ _id: req.params.id })
-                        .then((course) => {
-                            var arr = course.video;
+                    Section.findById({ _id: req.params.sectionID })
+                        .then((section) => {
+                            var arr = section.videos;
                             var pos = arr.indexOf(req.params._id);
                             var pos1 = pos + 1;
                             if (pos == arr.length - 1) {
@@ -274,13 +292,9 @@ class MeController {
                             }
                             arr = array_move(arr, pos, pos1);
                             // console.log(arr, pos, pos1);
-                            Course.findOneAndUpdate(
-                                { _id: req.params.id },
-                                { $pullAll: { video: arr } },
-                            );
-                            Course.findOneAndUpdate(
-                                { _id: req.params.id },
-                                { video: arr },
+                            Section.findOneAndUpdate(
+                                { _id: req.params.sectionID },
+                                { videos: arr },
                             )
                                 .then(() => {
                                     res.send(true);
@@ -348,25 +362,30 @@ class MeController {
             });
     }
 
-    // PUT /me/stored/:id/edit/:_id/update
+    // PUT me/stored/:id/:sectionID/edit/:_id/update
     putUpdateVideo(req, res, next) {
-        // console.log(req.body.video, typeof(req.body.video))
-        Video.findByIdAndUpdate({_id: req.params._id}, {
-            name: req.body.video.name,
-            description: req.body.video.description,
-            // videoID: req.body.video.videoID,
-            // time: req.body.time,
-            // image:
-            //     'https://img.youtube.com/vi/' +
-            //     req.body.video.videoID +
-            //     '/sddefault.jpg',
-        })
-        .then(video => {
-            // console.log(video);
-            res.send(true);
-        })
-        .catch(next);
-        calculatorTimeCourse(req.params.id)
+        // console.log(req.params)
+        if(req.params.sectionID !== 'undefined') {
+            Video.findByIdAndUpdate({_id: req.params._id}, {
+                name: req.body.name,
+                description: req.body.description,
+            })
+            .then(video => {
+                // console.log(video);
+                res.send(true);
+            })
+            .catch(next);
+        } else {
+            LiveStream.findByIdAndUpdate({_id: req.params._id}, {
+                name: req.body.name,
+                description: req.body.description,
+            })
+            .then(video => {
+                // console.log(video);
+                res.send(true);
+            })
+            .catch(next);
+        }
     }
 
     // PUT /me/stored/:id/:sectionID

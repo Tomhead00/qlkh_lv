@@ -12,6 +12,9 @@ function UpdateVideo() {
     const location = useLocation()
     const [course, setCourse] = useState(location.state.course);
     const [video, setVideo] = useState(location.state.video);
+    const [section, setSection] = useState(location.state.section);
+
+    // console.log(course, video, section);
     // const [tempVid, setTempVid] = useState(`https://www.youtube.com/watch?v=${video.videoID}`);
     // const [time, setTime] = useState(0)
 
@@ -57,11 +60,12 @@ function UpdateVideo() {
             axios({
                 method: "put",
                 data: {
-                    video,
+                    name: video.name,
+                    description: video.description,
                     // time: time,
                 },
                 withCredentials: true,
-                url: `${REACT_APP_SERVER}/me/stored/${course._id}/edit/${video._id}/update`
+                url: `${REACT_APP_SERVER}/me/stored/${course._id}/${section._id}/edit/${video._id}/update`,
             })
             .then(ketqua => {
                 // console.log(ketqua.data);
@@ -83,7 +87,7 @@ function UpdateVideo() {
         <div className="container">
             <div className="mt-4">
                 <h3><b>Cập nhật video cho khóa học:</b></h3>
-                <h3 className="ml-3">{course.name}</h3>
+                <h3 className="ml-3">{course.name} {Object.keys(section).length ? ` | ${section.name}` : null}</h3>
                 <form className="mt-4 pl-5 pr-5 pb-5" id="formVideo" method="POST" action="/me/stored/{{course._id}}/edit/{{video._id}}/update?_method=PUT">
                     <div className="form-group">
                         <label htmlFor="name">Tên video:</label>

@@ -5,5 +5,6 @@ const app = express();
 
 router.get('/getCourse/:_id', LiveStreamController.getCourse);
 router.post('/:_id/addVideo', LiveStreamController.addVideo);
+router.post('/:_id/:liveID/deleteLive', LiveStreamController.deleteLive);
 
 module.exports = router;

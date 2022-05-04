@@ -128,12 +128,13 @@ function EditCourse() {
         })
     }
 
-    const Directional = (_id, action) => (e) => {
+    const Directional = (sectionID ,_id, action) => (e) => {
+        console.log(sectionID ,_id, action);
         axios({
             method: "post",
             data: {},
             withCredentials: true,
-            url: `${REACT_APP_SERVER}/me/stored/${course._id}/edit/${_id}/${action}`
+            url: `${REACT_APP_SERVER}/me/stored/${course._id}/edit/${sectionID}/${_id}/${action}`
         })
         .then(ketqua => {
             if(ketqua.data) {
@@ -229,12 +230,30 @@ function EditCourse() {
         })
     }
 
+    const deleteLive = (courseID, liveID) => {
+        console.log(courseID, liveID);
+        axios({
+            method: "post",
+            data: {},
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/livestream/${courseID}/${liveID}/deleteLive`
+        })
+        .then(ketqua => {
+            if (ketqua.data) {
+                refreshCourse()
+            } else {
+                alert("Lỗi hệ thống. Vui lòng thử lại!")
+            }
+        })
+    }
+
     return (
         <div className="container">
             <div className="row mt-4">
                 <h3 className="mb-0 col-sm-4"><b>Tùy chỉnh khóa học:</b></h3>
                 <div className="col-sm-8 d-flex justify-content-end">
-                    <Link to={`/courses/show/${course.slug}`} className="btn btn-primary btn-sm text-end ml-1" title="Thùng rác"><i className="fas fa-play"></i> Xem khóa học</Link>
+                    <Link to={`/livestream/${course._id}`} className="btn btn-warning btn-sm text-end ml-1" title="Livestream"><i className="fas fa-video"></i> Livestream</Link>
+                    <Link to={`/courses/show/${course.slug}`} className="btn btn-primary btn-sm text-end ml-1" title="Xem Khóa học"><i className="fas fa-play"></i> Xem khóa học</Link>
                     {/* <Link to={`/me/trash/${course._id}`} className="btn btn-primary btn-sm ml-1" title="Thùng rác"><i className="fas fa-trash-alt"></i> {countDel}</Link> */}
                     <button className="btn btn-danger btn-sm ml-1" title="Quay lại" onClick={() => window.history.back()}><i className="fas fa-chevron-left"></i> Quay lại</button>
                 </div>
@@ -280,10 +299,10 @@ function EditCourse() {
                                                                         video.description
                                                                     }</div>
                                                                 <div className="mb-3 ml-2 action text-center">
-                                                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "preview")}><i className="fas fa-angle-left"></i></button>
-                                                                    <Link to={`/me/stored/${course._id}/EditCourse/${video._id}/update`} state={{course: course, video: video}} className="btn btn-light mr-1"><i className="fas fa-cog"></i></Link>
-                                                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "delete")}><i className="fas fa-trash-alt"></i></button>
-                                                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "next")}><i className="fas fa-angle-right"></i></button>
+                                                                    <button className="btn btn-light mr-1" onClick={Directional(element._id, video._id, "preview")}><i className="fas fa-angle-left"></i></button>
+                                                                    <Link to={`/me/stored/${course._id}/EditCourse/${video._id}/update`} state={{course: course, section: element, video: video}} className="btn btn-light mr-1"><i className="fas fa-cog"></i></Link>
+                                                                    <button className="btn btn-light mr-1" onClick={Directional(element._id, video._id, "delete")}><i className="fas fa-trash-alt"></i></button>
+                                                                    <button className="btn btn-light mr-1" onClick={Directional(element._id, video._id, "next")}><i className="fas fa-angle-right"></i></button>
                                                                 </div>
                                                                 <div className="card-footer d-flex">
                                                                     <small className="text-muted time">{moment(video.updatedAt).fromNow()}</small>
@@ -299,10 +318,10 @@ function EditCourse() {
                                                 <FilePond
                                                     // files={files}
                                                     // onupdatefiles={setFiles}
-                                                    allowMultiple={false}
-                                                    maxFiles={1}
+                                                    // allowMultiple={true}
+                                                    // maxFiles={1}
                                                     // server={
-                                                    //     {url: `${REACT_APP_SERVER}/me/upload`,
+                                                    //     {url: `${REACT_APP_SERVER}/me/upload/${element._id}`,
                                                     //     revert: `/${videoID}`
                                                     //     }
                                                     // }
@@ -432,8 +451,8 @@ function EditCourse() {
                                         video.description
                                     }</div>
                                 <div className="mb-3 ml-2 action text-center">
-                                    <Link to={`/me/stored/${course._id}/EditCourse/${video._id}/update`} state={{course: course, video: video}} className="btn btn-light mr-1"><i className="fas fa-cog"></i></Link>
-                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "delete")}><i className="fas fa-trash-alt"></i></button>
+                                    <Link to={`/me/stored/${course._id}/EditCourse/${video._id}/update`} state={{course: course, section: {}, video: video}} className="btn btn-light mr-1"><i className="fas fa-cog"></i></Link>
+                                    <button className="btn btn-light mr-1" onClick={() => deleteLive(course._id, video._id)}><i className="fas fa-trash-alt"></i></button>
                                 </div>
                                 <div className="card-footer d-flex">
                                     <small className="text-muted time">{moment(video.updatedAt).fromNow()}</small>

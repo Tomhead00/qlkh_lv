@@ -49,6 +49,31 @@ class LiveStreamController {
             res.send(false)
         }
     }
+
+    //  post '/:_id/:liveID/deleteLive'
+    async deleteLive(req, res, next) {
+        try {
+            Course.updateOne(
+                { _id: req.params._id },
+                { $pull: { livestreams: req.params.liveID } },
+                { new: true, useFindAndModify: false },
+            ).catch(next);
+    
+            LiveStream.findByIdAndDelete({ _id: req.params.liveID })
+                .then((live) => {
+                    var filePath = `src/public/livestream/${live.liveID}`;
+                    var thumbnailPath = `src/public/img/thumbnail/${live.liveID.substring(0,live.liveID.lastIndexOf("."))}.png`;
+                    fs.unlinkSync(filePath);
+                    fs.unlinkSync(thumbnailPath);
+                    res.send(true)
+                })
+                .catch(next => {
+                    res.send(false)
+                });
+        } catch (err) {
+            res.send(false)
+        }
+    }
 }
 
 module.exports = new LiveStreamController();
