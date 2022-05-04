@@ -20,13 +20,13 @@ const Course = new Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'user',
         },
-        video: [
+        sections: [
             {
-                type: mongoose.Schema.Types.Number,
-                ref: 'Video',
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Section',
             },
         ],
-        livestream: [
+        livestreams: [
             {
                 type: mongoose.Schema.Types.Number,
                 ref: 'LiveStream',

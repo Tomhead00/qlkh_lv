@@ -6,10 +6,15 @@ router.get('/stored/courses', meController.storeCourses);
 router.get('/stored/:id/getMember', meController.getMember);
 router.get('/stored/deletedCount', meController.deletedCount);
 router.get('/trash/courses', meController.trashCourses);
+//edit section
+router.post('/stored/:id/addSection', meController.addSection);
+router.post('/stored/:id/updateSection', meController.updateSection);
+router.post('/stored/moveSection', meController.moveSection);
+router.post('/stored/deleteSection', meController.deleteSection);
 //edit video
 router.get('/stored/:id/editCourse', meController.edit);
 router.get('/stored/:id/editCourse/countDeleteVideo', meController.countDeleteVideo);
-router.put('/stored/:id', meController.storeVideo);
+router.put('/stored/:id/:sectionID', meController.storeVideo);
 // router.get('/stored/:id/edit/addvideo', meController.addVideo);
 router.post('/stored/:id/edit/:_id/:action', meController.actionVideo);
 // update video

@@ -14,7 +14,10 @@ function AddVideo() {
     // Khai báo
     const navigate = useNavigate()
     const {state} = useLocation()
-    const {course} = state
+    const course = state.course
+    const nameSection = state.name
+    const sectionID = state.sectionID
+    console.log(course, nameSection);
     const [name, setName] = useState('')
     const [time, setTime] = useState(0)
     const [description, setDescription] = useState('')
@@ -52,7 +55,6 @@ function AddVideo() {
             setTime(0)
             setVideoID('')
             $("#link").val('')
-
         })
     }, [videoID])
 
@@ -73,12 +75,13 @@ function AddVideo() {
             setVideoID('')
         }
     }
-    // console.log(name, description, videoID, time);
+
     const submit = () => {
         $("#addVideo").submit(() => {
             return false;
         })
         if(name !== '' && description !== '' && videoID !== '' && time !== '') {
+
             axios({
                 method: "put",
                 data: {
@@ -88,7 +91,7 @@ function AddVideo() {
                     time: time,
                 },
                 withCredentials: true,
-                url: `${REACT_APP_SERVER}/me/stored/${id}`
+                url: `${REACT_APP_SERVER}/me/stored/${course._id}/${sectionID}`
             })
             .then(ketqua => {
                 if(ketqua.data) {
@@ -110,7 +113,7 @@ function AddVideo() {
         <div className="container">
             <div className="mt-4">
                 <h3><b>Thêm video cho khóa học:</b></h3>
-                <h3 className="ml-3">{course.name}</h3>
+                <h3 className="ml-3">{course.name} | {nameSection}</h3>
 
                 <form className="mt-4 pl-5 pr-5 pb-5" id="addVideo" method="POST" action="/me/stored/{{course._id}}?_method=PUT">
                     <div className="form-group">

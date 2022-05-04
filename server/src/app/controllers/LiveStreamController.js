@@ -35,7 +35,7 @@ class LiveStreamController {
                     (live) => {
                         Course.findByIdAndUpdate(
                             req.params._id,
-                            { $addToSet: { livestream: live._id } },
+                            { $addToSet: { livestreams: live._id } },
                             { new: true, useFindAndModify: false },
                         ).then()
                         res.send(true)

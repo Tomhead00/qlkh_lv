@@ -1,4 +1,5 @@
 const Course = require('../models/Course');
+const Section = require('../models/Section');
 const Video = require('../models/Video');
 const { multipleMongooseToObject } = require('../../util/mongoose');
 const { mongooseToObject } = require('../../util/mongoose');
@@ -76,8 +77,6 @@ class MeController {
         } catch(err){}
     }
 
-    
-
     // GET /me/trash/Courses
     trashCourses(req, res, next) {
         try {
@@ -101,8 +100,16 @@ class MeController {
     async edit(req, res, next) {
         try {
             const course = await Course.findById(req.params.id)
-            .populate('video')
+            .populate({ 
+                modal: 'section', 
+                path: 'sections',
+                populate: {
+                    path: 'videos',
+                    modal: 'video',
+                },
+            })
             .populate({ modal: 'user', path: 'actor' })
+            .populate({ modal: 'livestream', path: 'livestreams' })
             if  (
                     req.session.passport.user.email == course.actor.email ||
                     req.session.passport.user.role == 'admin'
@@ -113,6 +120,74 @@ class MeController {
             res.send(false)
         }
     }
+
+    // POST /me/stored/:id/addSection
+    addSection(req, res, next) {
+        try {
+            var section = new Section(req.body)
+            section.save()
+                .then(section => {
+                    const course = Course.findByIdAndUpdate(
+                        req.params.id, 
+                        {$addToSet: {sections: section._id}},
+                    ).then()
+                    res.send(true)
+                })
+        } catch(err) {
+            res.send(false)
+        }
+    }
+
+    // POST /me/stored/:id/updateSection
+    updateSection(req, res, next) {
+        try {
+            Section.findByIdAndUpdate(
+                req.params.id,
+                {name: req.body.name},
+            ).then()
+            res.send(true)
+        } catch(err) {
+            res.send(false)
+        }
+    }
+
+    // POST /me/stored/moveSection
+    moveSection(req, res, next) {
+        // console.log(req.body);
+        Course.findById(req.body.courseID)
+            .then(course => {
+                var newArr = []
+                var newIndex
+                var index = course.sections.indexOf(req.body.sectionID)
+                switch(req.body.action) {
+                    case "down":
+                        if (index === course.sections.length-1) {
+                            newIndex = 0
+                        } else 
+                            newIndex = index + 1
+                        break;
+                      case "up":
+                        if (index === 0) {
+                            newIndex = course.sections.length-1
+                        } else 
+                            newIndex = index - 1
+                        break;
+                }
+                // console.log(index, newIndex);
+                newArr = array_move(course.sections, index, newIndex)
+                // console.log(newArr);
+                Course.findByIdAndUpdate(req.body.courseID, {sections: newArr}).then()
+            })
+        res.send(true)
+    }
+    // POST /me/stored/deleteSection
+    deleteSection(req, res, next) {
+        // console.log(req.body);
+        Course.findByIdAndUpdate(req.body.courseID, {$pull : {sections: req.body.sectionID}}).then()
+        Section.findByIdAndDelete(req.body.sectionID).then()
+        res.send(true)
+    }
+
     // GET /me/stored/:id/editCourse/countDeleteVideo
     async countDeleteVideo(req, res, next) {
         try {
@@ -149,6 +224,7 @@ class MeController {
     // }
 
     // POST /me/stored/:id/edit/:_id/:action
+    
     actionVideo(req, res, next) {
         // res.json(req.params);
         try {
@@ -293,7 +369,7 @@ class MeController {
         calculatorTimeCourse(req.params.id)
     }
 
-    // PUT /me/stored/:id
+    // PUT /me/stored/:id/:sectionID
     async storeVideo(req, res, next) {
         // res.json(req.body)
         try {
@@ -316,14 +392,14 @@ class MeController {
             video
                 .save()
                 .then(
-                    (video) =>
-                        Course.findByIdAndUpdate(
-                            req.params.id,
-                            { $addToSet: { video: video._id } },
+                    (video) => {
+                        Section.findByIdAndUpdate(
+                            req.params.sectionID,
+                            { $addToSet: { videos: video._id } },
                             { new: true, useFindAndModify: false },
-                        ),
-                    // console.log(video),
-                    res.send(true),
+                        ).then()
+                        res.send(true)
+                    }
                 )
                 .catch(next => {
                     res,send(false)

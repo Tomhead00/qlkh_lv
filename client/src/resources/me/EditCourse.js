@@ -13,13 +13,17 @@ function EditCourse() {
     const navigate = useNavigate()
     const [course, setCourse] = useState([]);
     const [video, setVideo] = useState([]);
+    const [livestream, setLivestream] = useState([]);
+    const [section, setSection] = useState([]);
+    const [typeSection, setTypeSection] = useState('');
     const [member, setMember] = useState([]);
     const [countDel, setCountDel] = useState(0);
+    const [updateNameSection, seUpdateNameSection] = useState('');
     const location = useLocation()
     
     // function
     document.title = "Tùy chỉnh khóa học"
-    const refreshVideo = (e) => {
+    const refreshCourse = (e) => {
         axios({
             method: "get",
             data: {},
@@ -28,29 +32,34 @@ function EditCourse() {
         })
         .then(ketqua => {
             if(ketqua.data) {
+            console.log(ketqua.data);
             setCourse(ketqua.data)
-            setVideo(ketqua.data.video)
+            setSection(ketqua.data.sections)
+            setLivestream(ketqua.data.livestreams)
+            ketqua.data.sections.map((Video) => {
+                setVideo([...video, Video])
+            })
             } else navigate("/me/stored/courses")
         })
     }
 
-    const refreshDeleteVideo = (e) => {
-        axios({
-            method: "get",
-            data: {},
-            withCredentials: true,
-            url: `${REACT_APP_SERVER + location.pathname}/countDeleteVideo`
-        })
-        .then(ketqua => {
-            if(typeof(ketqua.data) === "number") {
-                setCountDel(ketqua.data)
-            } else navigate("/me/stored/courses")
-        })
-    }
+    // const refreshDeleteVideo = (e) => {
+    //     axios({
+    //         method: "get",
+    //         data: {},
+    //         withCredentials: true,
+    //         url: `${REACT_APP_SERVER + location.pathname}/countDeleteVideo`
+    //     })
+    //     .then(ketqua => {
+    //         if(typeof(ketqua.data) === "number") {
+    //             setCountDel(ketqua.data)
+    //         } else navigate("/me/stored/courses")
+    //     })
+    // }
     
     useEffect(() => {
-        refreshVideo()
-        refreshDeleteVideo()
+        refreshCourse()
+        // refreshDeleteVideo()
         return () => {};
     }, [])
 
@@ -128,8 +137,92 @@ function EditCourse() {
         })
         .then(ketqua => {
             if(ketqua.data) {
-                refreshVideo()
-                refreshDeleteVideo()
+                refreshCourse()
+                // refreshDeleteVideo()
+            } else {
+                alert("Lỗi hệ thống. Vui lòng thử lại!")
+            }
+        })
+    }
+
+    const addSection = (nameSection) => {
+        if (nameSection !== '') {
+            axios({
+                method: "post",
+                data: {
+                    name: nameSection,
+                },
+                withCredentials: true,
+                url: `${REACT_APP_SERVER}/me/stored/${course._id}/addSection`
+            })
+            .then(ketqua => {
+                if (ketqua.data) {
+                    refreshCourse()
+                    setTypeSection("")
+                } else {
+                    alert("Lỗi hệ thống. Vui lòng thử lại!")
+                }
+            })
+        }
+    }
+    
+    const handleUpdateNameSection = (name) => {
+        seUpdateNameSection(name)
+    }
+
+    const updateNameSectionServer = (id, newName) => {
+        if (newName !== '') {
+            axios({
+                method: "post",
+                data: {
+                    name: newName,
+                },
+                withCredentials: true,
+                url: `${REACT_APP_SERVER}/me/stored/${id}/updateSection`
+            })
+            .then(ketqua => {
+                if (ketqua.data) {
+                    refreshCourse()
+                } else {
+                    alert("Lỗi hệ thống. Vui lòng thử lại!")
+                }
+            })
+        }
+    }
+
+    const moveSection = (courseID, sectionID, action) => {
+        axios({
+            method: "post",
+            data: {
+                courseID: courseID,
+                sectionID: sectionID,
+                action: action,
+            },
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/me/stored/moveSection`
+        })
+        .then(ketqua => {
+            if (ketqua.data) {
+                refreshCourse()
+            } else {
+                alert("Lỗi hệ thống. Vui lòng thử lại!")
+            }
+        })
+    }
+
+    const deleteSection = (courseID, sectionID) => {
+        axios({
+            method: "post",
+            data: {
+                courseID: courseID,
+                sectionID: sectionID,
+            },
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/me/stored/deleteSection`
+        })
+        .then(ketqua => {
+            if (ketqua.data) {
+                refreshCourse()
             } else {
                 alert("Lỗi hệ thống. Vui lòng thử lại!")
             }
@@ -142,150 +235,186 @@ function EditCourse() {
                 <h3 className="mb-0 col-sm-4"><b>Tùy chỉnh khóa học:</b></h3>
                 <div className="col-sm-8 d-flex justify-content-end">
                     <Link to={`/courses/show/${course.slug}`} className="btn btn-primary btn-sm text-end ml-1" title="Thùng rác"><i className="fas fa-play"></i> Xem khóa học</Link>
-                    <Link to={`/me/trash/${course._id}`} className="btn btn-primary btn-sm ml-1" title="Thùng rác"><i className="fas fa-trash-alt"></i> {countDel}</Link>
+                    {/* <Link to={`/me/trash/${course._id}`} className="btn btn-primary btn-sm ml-1" title="Thùng rác"><i className="fas fa-trash-alt"></i> {countDel}</Link> */}
                     <button className="btn btn-danger btn-sm ml-1" title="Quay lại" onClick={() => window.history.back()}><i className="fas fa-chevron-left"></i> Quay lại</button>
                 </div>
             </div>
             <div className="row">
-                <div className="accordion mt-4" id="accordionExample">
-                    <div className="accordion-item">
-                        <h2 className="accordion-header" id="headingOne">
-                        <button className="accordion-button" type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                            Accordion Item #1
-                        </button>
-                        </h2>
-                        <div id="collapseOne" className="accordion-collapse collapse show" aria-labelledby="headingOne" data-mdb-parent="#accordionExample">
-                            <div className="accordion-body">
-                                <div className="d-flex justify-content-end">
-                                    <button type="button" className="btn btn-primary btn-rounded btn-sm ml-2" title="Sửa"><i className="fas fa-edit"></i></button>
-                                    <button type="button" className="btn btn-primary btn-rounded btn-sm ml-2" title="Lên"><i className="fas fa-long-arrow-alt-up"></i></button>
-                                    <button type="button" className="btn btn-primary btn-rounded btn-sm ml-2" title="Xuống"><i className="fas fa-long-arrow-alt-down"></i></button>
-                                    <button type="button" className="btn btn-danger btn-rounded btn-sm ml-2">Xóa</button>
-                                </div>
-                                <h5><strong>Video: </strong></h5>
-                                <div className="col-sm-3 col-lg-3 card-deck">
-                                    <div className="card card-course-item">
-                                        <div className="card-body w-100 d-flex justify-content-center align-items-center addVideo" style={{height: "429.59px",  backgroundColor: "rgba(0,0,255,.1)"}}>
-                                            <Link to={`/me/stored/${course._id}/EditCourse/AddVideo`} state={{course: course}}><i className="fas fa-plus-circle fa-5x"></i></Link>
+                {section.map((element, index) => (
+                    <div className="accordion mt-4" id="accordionExample" key={index}>
+                        <div className="row">
+                            <div className="col-10">
+                                <div className="accordion-item">
+                                    <h2 className="accordion-header" id="headingOne">
+                                    <button className="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target={`#collapse${index}`} aria-expanded={`${index ? "false" : "true"}`} aria-controls="collapseOne">
+                                        <strong>{element.name}</strong>
+                                    </button>
+                                    </h2>
+                                    <div id={`collapse${index}`} className={`accordion-collapse collapse`} aria-labelledby="headingOne" data-mdb-parent="#accordionExample">
+                                        <div className="accordion-body">
+                                            <h5><strong>Videos: </strong></h5>
+                                            <div className="row">
+                                                <div className="col-sm-3 col-lg-3 card-deck mt-3">
+                                                    <div className="card card-course-item">
+                                                        <div className="card-body w-100 d-flex justify-content-center align-items-center addVideo" style={{height: "480px",  backgroundColor: "rgba(0,0,255,.1)"}}>
+                                                            <Link to={`/me/stored/${course._id}/EditCourse/AddVideo`} state={{course: course, name: element.name, sectionID: element._id}}><i className="fas fa-plus-circle fa-5x"></i></Link>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                {element.videos.map((video, index) => (
+                                                    <div className="col-sm-3 col-lg-3 card-deck mt-3" key={index}>
+                                                        <div className="card card-course-item fadeIn">
+                                                            <Link to="#">
+                                                                <img className="card-img-top" height={'219px'} src={(isValidHttpUrl(video.image)) ?
+                                                                    video.image : 
+                                                                    `${REACT_APP_SERVER}/${video.image}`
+                                                                }
+                                                                alt={video.image} />
+                                                            </Link>
+                                                            <div className="card-body">
+                                                                    <Link to="#">
+                                                                        <h5 className="card-title">{video.name}</h5>
+                                                                    </Link>
+                                                                    <div className="card-text mt mb-4">{
+                                                                        video.description
+                                                                    }</div>
+                                                                <div className="mb-3 ml-2 action text-center">
+                                                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "preview")}><i className="fas fa-angle-left"></i></button>
+                                                                    <Link to={`/me/stored/${course._id}/EditCourse/${video._id}/update`} state={{course: course, video: video}} className="btn btn-light mr-1"><i className="fas fa-cog"></i></Link>
+                                                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "delete")}><i className="fas fa-trash-alt"></i></button>
+                                                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "next")}><i className="fas fa-angle-right"></i></button>
+                                                                </div>
+                                                                <div className="card-footer d-flex">
+                                                                    <small className="text-muted time">{moment(video.updatedAt).fromNow()}</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <h5 className="mt-4"><strong>
+                                                Tài liệu:
+                                            </strong></h5>
+                                                <FilePond
+                                                    // files={files}
+                                                    // onupdatefiles={setFiles}
+                                                    allowMultiple={false}
+                                                    maxFiles={1}
+                                                    // server={
+                                                    //     {url: `${REACT_APP_SERVER}/me/upload`,
+                                                    //     revert: `/${videoID}`
+                                                    //     }
+                                                    // }
+                                                    // onprocessfile = {(err,file) => setVideoID(JSON.parse(file.serverId).filename)}
+                                                    name="file"
+                                                    labelIdle='Drag & Drop your files or <span className="filepond--label-action">Browse</span>'
+                                                />
+                                            <table className="table align-middle mt-4">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">#</th>
+                                                        <th scope="col">Tên file</th>
+                                                        <th scope="col">Xóa</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <th scope="row">1</th>
+                                                        <td>Sit</td>
+                                                        <td>
+                                                            <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
+                                                            <i className="fas fa-times" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th scope="row">2</th>
+                                                        <td>Adipisicing</td>
+                                                        <td>
+                                                            <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
+                                                            <i className="fas fa-times" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th scope="row">3</th>
+                                                        <td>Hic</td>
+                                                        <td>
+                                                            <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
+                                                            <i className="fas fa-times" />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 </div>
-                                <h5 className="mt-4"><strong>
-                                    Tài liệu:
-                                </strong></h5>
-                                    <FilePond
-                                        // files={files}
-                                        // onupdatefiles={setFiles}
-                                        allowMultiple={false}
-                                        maxFiles={1}
-                                        // server={
-                                        //     {url: `${REACT_APP_SERVER}/me/upload`,
-                                        //     revert: `/${videoID}`
-                                        //     }
-                                        // }
-                                        // onprocessfile = {(err,file) => setVideoID(JSON.parse(file.serverId).filename)}
-                                        name="file"
-                                        labelIdle='Drag & Drop your files or <span class="filepond--label-action">Browse</span>'
+                            </div>
+                            <div className="col-2 text-center mt-1">
+                                <button type="button" className="btn btn-success btn-rounded btn-sm ml-1" title="Lên" onClick={() => {moveSection(course._id, element._id, "up")}}>
+                                    <i className="fas fa-long-arrow-alt-up"></i>
+                                </button>
+                                <button type="button" className="btn btn-success btn-rounded btn-sm ml-1" title="Xuống" onClick={() => {moveSection(course._id, element._id, "down")}}>
+                                    <i className="fas fa-long-arrow-alt-down"></i>
+                                </button>
+                                <button 
+                                    type="button"
+                                    className="btn btn-primary btn-rounded btn-sm ml-1 dropdown-toggle" 
+                                    title="Sửa"
+                                    id={`dropdownMenuButton${index}`}
+                                    data-mdb-toggle="dropdown"
+                                    aria-expanded="false"
+                                    onClick={() => handleUpdateNameSection(element.name)}
+                                >
+                                    <i className="fas fa-edit"></i>
+                                </button>
+                                <ul className="dropdown-menu" aria-labelledby={`dropdownMenuButton${index}`}>
+                                    <input 
+                                        type="text" 
+                                        style={{width: "250px"}} 
+                                        value={updateNameSection} 
+                                        onChange={(e) => seUpdateNameSection(e.target.value)} 
+                                        onKeyPress={(e) => {
+                                            if(e.key === 'Enter') {
+                                                updateNameSectionServer(element._id, updateNameSection)
+                                            }
+                                        }}
                                     />
-                                <table className="table align-middle mt-4">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">#</th>
-                                            <th scope="col">Tên file</th>
-                                            <th scope="col">Xóa</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <th scope="row">1</th>
-                                            <td>Sit</td>
-                                            <td>
-                                                <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
-                                                <i className="fas fa-times" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">2</th>
-                                            <td>Adipisicing</td>
-                                            <td>
-                                                <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
-                                                <i className="fas fa-times" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th scope="row">3</th>
-                                            <td>Hic</td>
-                                            <td>
-                                                <button type="button" className="btn btn-link btn-sm px-3" data-ripple-color="dark">
-                                                <i className="fas fa-times" />
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div className="accordion-item">
-                        <h2 className="accordion-header" id="headingTwo">
-                        <button className="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                            Accordion Item #2
-                        </button>
-                        </h2>
-                        <div id="collapseTwo" className="accordion-collapse collapse" aria-labelledby="headingTwo" data-mdb-parent="#accordionExample">
-                            <div className="accordion-body">
-                                <strong>This is the first item's accordion body.</strong> It is hidden by default,
-                                until the collapse plugin adds the appropriate classes that we use to style each
-                                element. These classes control the overall appearance, as well as the showing and
-                                hiding via CSS transitions. You can modify any of this with custom CSS or
-                                overriding our default variables. It's also worth noting that just about any HTML
-                                can go within the <strong>.accordion-body</strong>, though the transition does
-                                limit overflow.
+                                </ul>
+                                <button type="button" 
+                                    className="btn btn-danger btn-rounded btn-sm ml-1" 
+                                    title="Xóa"
+                                    onClick={() => deleteSection(course._id, element._id)}
+                                >
+                                    <i className="far fa-trash-alt"></i>
+                                </button>
                             </div>
                         </div>
+                        
                     </div>
-                    <div className="accordion-item">
-                        <h2 className="accordion-header" id="headingThree">
-                        <button className="accordion-button collapsed" type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                            Accordion Item #3
-                        </button>
-                        </h2>
-                        <div id="collapseThree" className="accordion-collapse collapse" aria-labelledby="headingThree" data-mdb-parent="#accordionExample">
-                            <div className="accordion-body">
-                                <strong>This is the third item's accordion body.</strong> It is hidden by default,
-                                until the collapse plugin adds the appropriate classes that we use to style each
-                                element. These classes control the overall appearance, as well as the showing and
-                                hiding via CSS transitions. You can modify any of this with custom CSS or
-                                overriding our default variables. It's also worth noting that just about any HTML
-                                can go within the <strong>.accordion-body</strong>, though the transition does
-                                limit overflow.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                ))}
+                
                 <div className="input-group mt-3">
-                    <input type="text" className="form-control" placeholder="Thêm chương mới" aria-label="Thêm chương mới" aria-describedby="basic-addon2" />
+                    <input type="text" className="form-control" placeholder="Thêm chương mới" aria-label="Thêm chương mới" aria-describedby="basic-addon2" onChange={(e) => setTypeSection(e.target.value)} value={typeSection}/>
                     <div className="input-group-append">
-                        <button className="btn btn-secondary" type="button"><i className="fas fa-plus"></i></button>
-                        <button className="btn btn-danger" type="button"><i className="fas fa-times"></i></button>
+                        <button className="btn btn-secondary" type="button" onClick={() => addSection(typeSection)}><i className="fas fa-plus"></i></button>
+                        <button className="btn btn-danger" type="button" onClick={() => setTypeSection("")}><i className="fas fa-times"></i></button>
                     </div>
                 </div>
             </div>
             <div className="row">
             <h3 className="mb-0 mt-3"><b>Video Livestream:</b></h3>
 
-                <div className="col-sm-3 col-lg-3 card-deck mt-4">
+                {/* <div className="col-sm-3 col-lg-3 card-deck mt-4">
                     <div className="card card-course-item">
                         <div className="card-body w-100 d-flex justify-content-center align-items-center addVideo" style={{height: "429.59px",  backgroundColor: "rgba(0,0,255,.1)"}}>
                             <Link to={`/me/stored/${course._id}/EditCourse/AddVideo`} state={{course: course}}><i className="fas fa-plus-circle fa-5x"></i></Link>
                         </div>
                     </div>
-                </div>
-                {video.map((video, index) => (
+                </div> */}
+                {livestream.map((video, index) => (
                     <div className="col-sm-3 col-lg-3 card-deck mt-4" key={index}>
                         <div className="card card-course-item fadeIn">
                             <Link to="#">
@@ -300,14 +429,11 @@ function EditCourse() {
                                         <h5 className="card-title">{video.name}</h5>
                                     </Link>
                                     <div className="card-text mt mb-4">{
-                                        video.description.split('\n').map(
-                                            (str,index) => <div key={index}>{str}</div>)
+                                        video.description
                                     }</div>
-                                <div className="mb-3 ml-2 action">
-                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "preview")}><i className="fas fa-angle-left"></i></button>
+                                <div className="mb-3 ml-2 action text-center">
                                     <Link to={`/me/stored/${course._id}/EditCourse/${video._id}/update`} state={{course: course, video: video}} className="btn btn-light mr-1"><i className="fas fa-cog"></i></Link>
                                     <button className="btn btn-light mr-1" onClick={Directional(video._id, "delete")}><i className="fas fa-trash-alt"></i></button>
-                                    <button className="btn btn-light mr-1" onClick={Directional(video._id, "next")}><i className="fas fa-angle-right"></i></button>
                                 </div>
                                 <div className="card-footer d-flex">
                                     <small className="text-muted time">{moment(video.updatedAt).fromNow()}</small>
@@ -415,7 +541,7 @@ function EditCourse() {
                                                     {(!member.deleted) ? (<span className="badge badge-success rounded-pill">Active</span>) : (<span className="badge badge-danger rounded-pill">Block</span>)}
                                                 </td>
                                                 <td style={{width: '20%'}}>
-                                                    {progessBar(course.video,member._id)}
+                                                    {/* {progessBar(course.video,member._id)} */}
                                                 </td>
                                             </tr>
                                         )
