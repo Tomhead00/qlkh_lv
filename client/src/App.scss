@@ -455,3 +455,9 @@ a:hover {
 .playingVideo {
     background-color: gray;
 }
+
+// turnoff scroll modal
+.modal-open .modal {
+    overflow-x: hidden;
+    overflow-y: hidden;
+}

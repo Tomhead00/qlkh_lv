@@ -1,12 +1,15 @@
 const Course = require('../models/Course');
 const Comment = require('../models/Comment');
-const Video = require('../models/Video');
+const Video = require('../models/Video');;
+const LiveStream = require('../models/LiveStream');
+const Section = require('../models/Section');
+const Document = require('../models/Document');
 const { mongooseToObject } = require('../../util/mongoose');
 const { multipleMongooseToObject } = require('../../util/mongoose');
 const moment = require('moment');
 const { array } = require('joi');
 const { User } = require('../models/User');
-const { countDocuments } = require('../models/Course');
+const { countDocuments, populate } = require('../models/Course');
 const { json } = require('express');
 
 class CourseController {
@@ -33,14 +36,6 @@ class CourseController {
                     },
                 },
                 {
-                    $lookup: {
-                        from: 'videos', // collection to join
-                        localField: 'video', //field from the input documents
-                        foreignField: '_id', //field from the documents of the "from" collection
-                        as: 'video', // output array field
-                    },
-                },
-                {
                     $addFields: { studentCount: { $size: '$student' } },
                 },
                 {
@@ -50,8 +45,8 @@ class CourseController {
                     $sort: { updatedAt: -1 },
                 },
             ]).catch(next);
-            await Course
-            .populate(courses, { modal: 'user', path: 'actor' })
+            await Course.populate(courses, 
+                [{ modal: 'user', path: 'actor' }, { modal: 'section', path: 'sections', populate: { modal: 'video', path: 'videos' } }])
             .catch(next);
             res.send(courses);
         } else  {
@@ -75,14 +70,6 @@ class CourseController {
                     },
                 },
                 {
-                    $lookup: {
-                        from: 'videos', // collection to join
-                        localField: 'video', //field from the input documents
-                        foreignField: '_id', //field from the documents of the "from" collection
-                        as: 'video', // output array field
-                    },
-                },
-                {
                     $addFields: { studentCount: { $size: '$student' } },
                 },
                 {
@@ -92,10 +79,9 @@ class CourseController {
                     $sort: { updatedAt: -1 },
                 },
             ]).catch(next);
-            await Course.populate(coursesNew, {
-                modal: 'user',
-                path: 'actor',
-            }).catch(next);
+            await Course.populate(coursesNew, 
+                [{ modal: 'user', path: 'actor' }, { modal: 'section', path: 'sections', populate: { modal: 'video', path: 'videos' } }])
+            .catch(next);
             res.send(coursesNew);
         } else  {
             res.send([]);
@@ -118,14 +104,6 @@ class CourseController {
                     },
                 },
                 {
-                    $lookup: {
-                        from: 'videos', // collection to join
-                        localField: 'video', //field from the input documents
-                        foreignField: '_id', //field from the documents of the "from" collection
-                        as: 'video', // output array field
-                    },
-                },
-                {
                     $addFields: { studentCount: { $size: '$student' } },
                 },
                 {
@@ -135,9 +113,9 @@ class CourseController {
                     $sort: { studentCount: -1 },
                 },
             ]).catch(next);
-            await Course.populate(courseFA, { modal: 'user', path: 'actor' }).catch(
-                next,
-            );
+            await Course.populate(courseFA, 
+                [{ modal: 'user', path: 'actor' }, { modal: 'section', path: 'sections', populate: { modal: 'video', path: 'videos' } }])
+            .catch(next);
             res.send(courseFA);
         } else  {
             res.send([]);
@@ -166,14 +144,6 @@ class CourseController {
                     },
                 },
                 {
-                    $lookup: {
-                        from: 'videos', // collection to join
-                        localField: 'video', //field from the input documents
-                        foreignField: '_id', //field from the documents of the "from" collection
-                        as: 'video', // output array field
-                    },
-                },
-                {
                     $addFields: { studentCount: { $size: '$student' } },
                 },
                 {
@@ -183,10 +153,9 @@ class CourseController {
                     $sort: { updatedAt: -1 },
                 },
             ]).catch(next);
-            await Course.populate(coursesAnother, {
-                modal: 'user',
-                path: 'actor',
-            }).catch(next);
+            await Course.populate(coursesAnother, 
+                [{ modal: 'user', path: 'actor' }, { modal: 'section', path: 'sections', populate: { modal: 'video', path: 'videos' } }])
+            .catch(next);
             res.send(coursesAnother);
         } else  {
             res.send([]);
@@ -196,7 +165,9 @@ class CourseController {
     show(req, res, next) {
         try {
             Course.findOne({ slug: req.params.slug })
-            .populate('video')
+            .populate( 
+                [{ modal: 'user', path: 'actor' }, { modal: 'section', path: 'sections', populate: { modal: 'video', path: 'videos' } }]
+            )
             .then((course) => {
                 // res.json(course);
                 res.send(course);
@@ -306,8 +277,27 @@ class CourseController {
             .then((course) => {
                 // console.log(course);
                 if (course != null) {
-                    for (const _id of course.video) {
-                        Video.deleteOne({ _id: _id }).catch(next);
+                    for (var _id of course.sections) {
+                        Section.findByIdAndDelete({ _id }).then((sections) => {
+                            sections.videos.map(videoID => {
+                                Video.findByIdAndDelete(videoID)
+                                .then(video => {
+                                    if(video.videoID.length > 13) {
+                                        var filePath = `src/public/video/${video.videoID}`;
+                                        var thumbnailPath = `src/public/img/thumbnail/${video.videoID.substring(0,video.videoID.lastIndexOf("."))}.png`;
+                                        fs.unlinkSync(filePath);
+                                        fs.unlinkSync(thumbnailPath);
+                                    }
+                                })
+                            })
+                            sections.docs.map(docID => {
+                                Document.findByIdAndDelete(docID)
+                                .then(doc => {
+                                    var filePath = `src/public/docs/${doc.name}`;
+                                    fs.unlinkSync(filePath);
+                                })
+                            })
+                        })
                     }
                 }
             })
@@ -345,8 +335,27 @@ class CourseController {
                     Course.findOneDeleted({ _id: _id })
                         .then((course) => {
                             // console.log(course.video);
-                            for (const _id of course.video) {
-                                Video.deleteOne({ _id: _id }).catch(next);
+                            for (const _id of course.sections) {
+                                Section.findByIdAndDelete({ _id: _id }).then(sections => {
+                                    sections.videos.map(videoID => {
+                                        Video.findByIdAndDelete(videoID)
+                                        .then(video => {
+                                            if(video.videoID.length > 13) {
+                                                var filePath = `src/public/video/${video.videoID}`;
+                                                var thumbnailPath = `src/public/img/thumbnail/${video.videoID.substring(0,video.videoID.lastIndexOf("."))}.png`;
+                                                fs.unlinkSync(filePath);
+                                                fs.unlinkSync(thumbnailPath);
+                                            }
+                                        })
+                                    })
+                                    sections.docs.map(docID => {
+                                        Document.findByIdAndDelete(docID)
+                                        .then(doc => {
+                                            var filePath = `src/public/docs/${doc.name}`;
+                                            fs.unlinkSync(filePath);
+                                        })
+                                    })
+                                })
                             }
                         })
                         .catch(next);

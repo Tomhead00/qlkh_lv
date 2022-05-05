@@ -32,6 +32,10 @@ router.post(
 router.post('/upload', meController.upload);
 router.delete('/upload/:id', meController.deleteUpload);
 // upload document
-router.post('/upload/:sectionID', meController.upload);
-router.delete('/upload/:id/:sectionID', meController.deleteUpload);
+router.post('/upload/:sectionID', meController.uploadDocs);
+router.delete('/delete/:sectionID', meController.deleteUploadDocs);
 module.exports = router;
+// lockUser
+router.post('/lockUser', meController.lockUser);
+router.post('/unLockUser', meController.unLockUser);
+

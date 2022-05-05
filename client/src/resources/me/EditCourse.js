@@ -37,7 +37,7 @@ function EditCourse() {
         })
         .then(ketqua => {
             if(ketqua.data) {
-            console.log(ketqua.data);
+            // console.log(ketqua.data);
             setCourse(ketqua.data)
             setSection(ketqua.data.sections)
             setLivestream(ketqua.data.livestreams)
@@ -50,7 +50,7 @@ function EditCourse() {
         })
     }
 
-    console.log(video);
+    // console.log(video);
 
     // const refreshDeleteVideo = (e) => {
     //     axios({
@@ -71,17 +71,21 @@ function EditCourse() {
         return () => {};
     }, [])
 
+    const refreshMember = (e) => {
+        axios({
+            method: "get",
+            data: {},
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/me/stored/${course._id}/getMember`
+        })
+        .then(ketqua => {
+            setMember(ketqua.data)
+        })
+    }
+
     useEffect(() => {
         if (course._id) {
-            axios({
-                method: "get",
-                data: {},
-                withCredentials: true,
-                url: `${REACT_APP_SERVER}/me/stored/${course._id}/getMember`
-            })
-            .then(ketqua => {
-                setMember(ketqua.data)
-            })
+            refreshMember()
         }
     }, [course._id])
 
@@ -269,6 +273,46 @@ function EditCourse() {
         .then(ketqua => {
             if (ketqua.data) {
                 refreshCourse()
+            } else {
+                alert("Lỗi hệ thống. Vui lòng thử lại!")
+            }
+        })
+    }
+
+    const lockUser = (courseID, memberID) => {
+        // console.log(courseID, memberID);
+        axios({
+            method: "post",
+            data: {
+                courseID: courseID,
+                memberID: memberID,
+            },
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/me/lockUser`
+        })
+        .then(ketqua => {
+            if (ketqua.data) {
+                refreshMember()
+            } else {
+                alert("Lỗi hệ thống. Vui lòng thử lại!")
+            }
+        })
+    }
+
+    const unLockUser = (courseID, memberID) => {
+        // console.log(courseID, memberID);
+        axios({
+            method: "post",
+            data: {
+                courseID: courseID,
+                memberID: memberID,
+            },
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/me/unLockUser`
+        })
+        .then(ketqua => {
+            if (ketqua.data) {
+                refreshMember()
             } else {
                 alert("Lỗi hệ thống. Vui lòng thử lại!")
             }
@@ -546,6 +590,7 @@ function EditCourse() {
                                     <th scope="col">Email</th>
                                     <th scope="col">Trạng thái</th>
                                     <th scope="col">Tiến độ</th>
+                                    <th scope="col">Công cụ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -562,10 +607,21 @@ function EditCourse() {
                                                     />{member.username} {JSON.stringify(member) === JSON.stringify(course.actor) ? (<i className="fas fa-crown" style={{color: "#d6e600", fontSize: "15px"}}></i>) : null}</td>
                                                 <td>{member.email}</td>
                                                 <td>
-                                                    {(!member.deleted) ? (<span className="badge badge-success rounded-pill">Active</span>) : (<span className="badge badge-danger rounded-pill">Block</span>)}
+                                                    {(member.deleted || member.banned.includes(course._id)) ? (<span className="badge badge-danger rounded-pill">Block</span>) : (<span className="badge badge-success rounded-pill">Active</span>)}
                                                 </td>
                                                 <td style={{width: '20%'}}>
                                                     {progessBar(video, member._id)}
+                                                </td>
+                                                <td>
+                                                {(member.deleted || member._id === course.actor._id) ?
+                                                    null
+                                                :
+                                                    (member.banned.includes(course._id) ? 
+                                                        (<button className="btn btn-outline-success btn-rounded btn-sm" onClick={() => unLockUser(course._id, member._id)}><i className="fas fa-user-alt"></i></button>)
+                                                    :
+                                                        (<button className="btn btn-outline-danger btn-rounded btn-sm" onClick={() => lockUser(course._id, member._id)}><i className="fas fa-user-alt-slash"></i></button>)
+                                                    )   
+                                                }
                                                 </td>
                                             </tr>
                                         )

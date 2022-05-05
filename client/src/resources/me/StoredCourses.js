@@ -228,7 +228,7 @@ function StoredCourses() {
       <div className="container">
         <form name="container-form" method="POST" className="mt-4">
           <div>
-            <h3>Khóa học của tôi</h3>
+            <h3><strong>Khóa học của tôi</strong></h3>
 
             <div className="mt-4 mb-2 d-flex align-items-center">
               <div className="form-check">

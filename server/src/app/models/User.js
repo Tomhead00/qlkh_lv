@@ -44,6 +44,12 @@ const userSchema = new mongoose.Schema(
                 ref: 'Course',
             },
         ],
+        banned: [
+            {
+                type: mongoose.Schema.Types.Number,
+                ref: 'Course',
+            },
+        ],
     },
     {
         timestamps: true,

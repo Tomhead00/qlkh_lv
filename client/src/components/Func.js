@@ -48,6 +48,7 @@ export const progessBar = (listVideo, actor) => {
     )
 }
 
+// slugify everythings
 export const slugify = (string) => {
     const a = 'àáäâãåăæąçćčđďèéěėëêęğǵḧìíïîįłḿǹńňñòóöôœøṕŕřßşśšșťțùúüûǘůűūųẃẍÿýźžż·/_,:;'
     const b = 'aaaaaaaaacccddeeeeeeegghiiiiilmnnnnooooooprrsssssttuuuuuuuuuwxyyzzz------'
@@ -67,4 +68,15 @@ export const slugify = (string) => {
         .replace(/\-\-+/g, '-')
         .replace(/^-+/, '')
         .replace(/-+$/, '')
+}
+
+// check have video
+export const getAllVideo = (course) => {
+    var videos = []
+    course.sections.map((section) => {
+        section.videos.map((video) => {
+            videos = [...videos, video]
+        })
+    })
+    return videos
 }

@@ -2,11 +2,13 @@ const Course = require('../models/Course');
 const LiveStream = require('../models/LiveStream');
 const Section = require('../models/Section');
 const Video = require('../models/Video');
+const Document = require('../models/Document');
 const { multipleMongooseToObject } = require('../../util/mongoose');
 const { mongooseToObject } = require('../../util/mongoose');
 const { populate } = require('../models/Video');
 const { course } = require('./CourseController');
 const processFile = require("../middlewares/upload");
+const processFileDocs = require("../middlewares/uploadDocs");
 const { format } = require("util");
 // const { Storage } = require("@google-cloud/storage");
 const fs = require('fs');
@@ -105,10 +107,14 @@ class MeController {
             .populate({ 
                 modal: 'section', 
                 path: 'sections',
-                populate: {
+                populate: [{
                     path: 'videos',
                     modal: 'video',
                 },
+                {
+                    path: 'docs',
+                    modal: 'document',
+                }]
             })
             .populate({ modal: 'user', path: 'actor' })
             .populate({ modal: 'livestream', path: 'livestreams' })
@@ -186,7 +192,28 @@ class MeController {
     deleteSection(req, res, next) {
         // console.log(req.body);
         Course.findByIdAndUpdate(req.body.courseID, {$pull : {sections: req.body.sectionID}}).then()
-        Section.findByIdAndDelete(req.body.sectionID).then()
+        Section.findByIdAndDelete(req.body.sectionID)
+            .then(section => {
+                section.videos.map(videoID => {
+                    Video.findByIdAndDelete(videoID)
+                    .then(video => {
+                        if(video.videoID.length > 13) {
+                            var filePath = `src/public/video/${video.videoID}`;
+                            var thumbnailPath = `src/public/img/thumbnail/${video.videoID.substring(0,video.videoID.lastIndexOf("."))}.png`;
+                            fs.unlinkSync(filePath);
+                            fs.unlinkSync(thumbnailPath);
+                        }
+                    })
+                })
+                section.docs.map(docID => {
+                    Document.findByIdAndDelete(docID)
+                    .then(doc => {
+                        var filePath = `src/public/docs/${doc.name}`;
+                        fs.unlinkSync(filePath);
+                    })
+                })
+            })
+        calculatorTimeCourse(req.body.courseID)
         res.send(true)
     }
 
@@ -536,18 +563,87 @@ class MeController {
             });
         }
     }
-        // get /me/stored/:id/getMember
-        async getMember(req, res, next) {
-            try {
-                User.findWithDeleted({joined: req.params.id})
-                .then((users) => {
-                    res.send(users)
+
+    // POST me/upload/:sectionID
+    async uploadDocs(req, res, next) {
+        try {
+            await processFileDocs(req, res);
+            if (req.file) {
+                const doc = new Document({name: req.file.filename, size: req.file.size})
+                doc.save()
+                .then(document => {
+                    Section.findByIdAndUpdate(req.params.sectionID, {$addToSet: {docs: document._id}})
+                    .then()
                 })
-                .catch(next)
-            } catch (err) {
-                res.send([])
+                res.send(req.file)
             }
+        } catch (err) {
+            res.send({
+            message: `Could not upload the file: ${err}`,
+            });
         }
+    }
+
+    // DELETE me/delete/:sectionID
+    async deleteUploadDocs(req, res, next) {
+        // console.log(req.body);
+        try {
+            Document.deleteOne({_id: req.body.docID}).then()
+            Section.findByIdAndUpdate({_id: req.body.sectionID}, {$pull: {docs: req.body.docID}})
+                .then()
+            var filePath = `src/public/docs/${req.body.docName}`;
+            await fs.unlinkSync(filePath);
+            res.send(true)
+        } catch (error) {
+            console.error('there was an error:', error.message);
+            res.send(false)
+        }
+    }
+
+    // get /me/stored/:id/getMember
+    async getMember(req, res, next) {
+        try {
+            User.findWithDeleted({$or: [{joined: req.params.id}, {banned: req.params.id}]})
+            .then((users) => {
+                res.send(users)
+            })
+            .catch(next)
+        } catch (err) {
+            res.send([])
+        }
+    }
+
+    // POST /me/lockUser/
+    async lockUser(req, res, next) {
+        // console.log(req.body);
+        try {
+            User.findByIdAndUpdate({_id: req.body.memberID},
+                {$pull: {joined: req.body.courseID}},
+            ).then()
+            User.findByIdAndUpdate({_id: req.body.memberID},
+                {$addToSet: {banned: req.body.courseID}}
+            ).then()
+            res.send(true)
+        } catch (err) {
+            res.send(false)
+        }
+    }
+
+    // POST /me/lockUser/
+    async unLockUser(req, res, next) {
+        // console.log(req.body);
+        try {
+            User.findByIdAndUpdate({_id: req.body.memberID},
+                {$pull: {banned: req.body.courseID}},
+            ).then()
+            User.findByIdAndUpdate({_id: req.body.memberID},
+                {$addToSet: {joined: req.body.courseID}}
+            ).then()
+            res.send(true)
+        } catch (err) {
+            res.send(false)
+        }
+    }
 }
 
 module.exports = new MeController();
