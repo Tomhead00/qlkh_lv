@@ -378,41 +378,45 @@ class CourseController {
     // POST /courses/checkThamgia
     async checkThamgia(req, res, next) {
         await User.findById({ _id: req.session.passport.user._id })
-            .populate({ modal: 'course', path: 'joined' })
+            .populate([{ modal: 'course', path: 'joined' }, { modal: 'course', path: 'banned' }])
             .then((user) => {
-                // console.log(user);
-                var check = 0;
-                user.joined.forEach(function (element, index) {
-                    // Do your thing, then:
+                var check = true
+                user.joined.map((element) => {
                     if (element.slug == req.body.slug) {
-                        return (check = 1);
+                        return check = false
                     }
                 });
-                res.send(check.toString());
+                user.banned.map((element) => {
+                    if (element.slug == req.body.slug) {
+                        return check = 'banned'
+                    }
+                });
+                res.send(check)
             })
             .catch(next);
     }
 
     // POST /courses/thamGia
     async thamGia(req, res, next) {
-        const course = await Course.find({ slug: req.params.slug })
-        // console.log(course);
-        // console.log(course[0]._id);
-        // const id = course[0]._id
         try {
-            // console.log(req.session.passport.user.joined);
-            User.findOneAndUpdate(
-                { _id: req.session.passport.user._id},
-                { $addToSet: { joined: course[0]._id } },
-                { new: true, useFindAndModify: false },
-            )
-                .then(() => {
-                    res.send("true");
-                })
-                .catch(next => {
-                    res.send("false");
-                });
-        }catch (UnhandledPromiseRejectionWarning) {
+            Course.find({ slug: req.params.slug })
+            .then(course => {
+                User.findById({ _id: req.session.passport.user._id})
+                    .then((user) => {
+                        if (user.banned.includes(course[0]._id))
+                            res.send("false");
+                        else {
+                            User.findByIdAndUpdate({ _id: req.session.passport.user._id},
+                                { $addToSet: { joined: course[0]._id } },
+                                { new: true, useFindAndModify: false },
+                            ).then(user => res.send(true))
+                        }
+                    })
+                    .catch(next => {
+                        res.send("false");
+                    });
+            })
+        } catch (err) {
             res.send("false");
         }
     }

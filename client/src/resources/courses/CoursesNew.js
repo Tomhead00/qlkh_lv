@@ -40,7 +40,9 @@ function CoursesNew() {
         })
         .then(ketqua => {
             // console.log(ketqua.data);
-            if (ketqua.data === 0) {
+            if (ketqua.data === 'banned') {
+                alert("Bạn đã bị chặn và không thể tham gia khóa học này!")
+            } else if (ketqua.data) {
                 window.$("#ques-course-model").modal("toggle");
                 $("#btn-thamgia-course").on('click', function thamGia() {
                     axios({
@@ -50,14 +52,15 @@ function CoursesNew() {
                     })
                     .then(ketqua => {
                         if(ketqua.data) {
-                            console.log(ketqua.data)
+                            // console.log(ketqua.data)
                             window.$("#ques-course-model").modal("toggle");
                             navigate(`/courses/show/${string}`)
+                        } else {
+                            alert("Bạn đã bị chặn và không thể tham gia khóa học này!")
                         }
                     })
                 })
-            }
-            else {
+            } else {
                 navigate(`/courses/show/${string}`)
             }
         })
