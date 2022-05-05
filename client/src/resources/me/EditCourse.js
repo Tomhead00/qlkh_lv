@@ -261,7 +261,7 @@ function EditCourse() {
     }
 
     const deleteDocs = (sectionID, docName, docID) => {
-        console.log(sectionID, docName, docID);
+        // console.log(sectionID, docName, docID);
         axios({
             method: "delete",
             data: {
@@ -413,7 +413,9 @@ function EditCourse() {
                                                     <tbody key={index}>
                                                         <tr>
                                                             <th scope="row">{index+1}</th>
-                                                            <td>{doc.name}</td>
+                                                            <td>
+                                                                <a style={{color: "black"}} target={"_blank"} href={`${REACT_APP_SERVER}/docs/${doc.name}`}>{doc.name}</a>
+                                                            </td>
                                                             <td>{prettyBytes(doc.size)}</td>
                                                             <td>
                                                                 <button type="button" onClick={() => deleteDocs(element._id, doc.name, doc._id)} className="btn btn-link btn-sm px-3" data-ripple-color="dark">

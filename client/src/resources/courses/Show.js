@@ -19,10 +19,11 @@ function Show() {
     const [click, setClick] = useState({
         id: null
     });
-    const [course, setCourse] = useState([]);
+    const [course, setCourse] = useState({});
     const [comment, setComment] = useState([]);
     const [videoID, setvideoID] = useState('')
     const [duration, setDuration] = useState(null)
+
     const params = useParams()
     const {slug} = params
     const opts = {
@@ -30,23 +31,7 @@ function Show() {
         width: '100%',
     };
     const continueView = useRef()
-
-    useEffect(() => {
-        // console.log(continueView.current.children);
-        var i = continueView.current.children.length
-        // console.log(i);
-        try {
-            while(continueView.current.children[i-1].className.includes("lockCourse")) {
-                // console.log(i, videoID)
-                if(!videoID) {
-                    continueView.current.children[i-2].click()
-                }
-                i--
-            }
-        } catch (err) {}
-    })
-
-
+    
     // function
     document.title = slug
 
@@ -92,40 +77,30 @@ function Show() {
         else $("#btnViewMore").html('Xem thêm <i class="fas fa-caret-down"></i>');
     }
 
-    const unlockVideoByID = (_id) =>  {
-        // console.log(_id);
-        axios({
-            method: "post",
-            data: {
-                _id: _id
-            },
-            withCredentials: true,
-            url: `${REACT_APP_SERVER}/courses/unlockVideo`
-        })
-        .then(async ketqua => {
-            if(ketqua.data) {
-                refreshCourse()
-            }
-        })
-    };
+    // const unlockVideoByID = (_id) =>  {
+    //     // console.log(_id);
+    //     axios({
+    //         method: "post",
+    //         data: {
+    //             _id: _id
+    //         },
+    //         withCredentials: true,
+    //         url: `${REACT_APP_SERVER}/courses/unlockVideo`
+    //     })
+    //     .then(async ketqua => {
+    //         if(ketqua.data) {
+    //             refreshCourse()
+    //         }
+    //     })
+    // };
 
-    const iconControlVideo = (className, classnameIcon, index) => {
-        return (
-            <div className={classnameIcon}>
-                {className.includes("lockCourse") ?
-                    (
-                        <i className="fas fa-lock"></i>
-                    ) : ((index === click.id) ? (<i className="fas fa-play" style={{color: "#8a038c"}}></i>) : true)
-                }
-            </div>
-            )
-    }
 
     const clickVideo = (videoID, className, index) => (e) => {
-        // console.log(videoID);
+        console.log(videoID);
+        // setvideoID(videoID)
         if (!className.includes("lockCourse")) {
-            setvideoID(videoID)
-            refreshComment(videoID) 
+            // setvideoID(videoID)
+            refreshComment(videoID)
             setClick({
                 ...click,
                 id: index
@@ -133,77 +108,26 @@ function Show() {
         }
     }
     // console.log(click);
-    
-    const ListVideo = () => {
-        let className = "row pb-3 pt-1 course lockCourse"
-        let classnameIcon = "col-sm-1 imgCenter status text-center"
-        return (!isEmpty(course.video) ? course.video.map((video, index) => {
-            if(user) {
-                if (!index) {
-                    if(!firstTime.current) {
-                        unlockVideoByID(video._id)
-                        firstTime.current = 1
-                    }
-                    className =  className.replace('lockCourse', 'readyCourse');
-                } else if (video.unlock.includes(user._id)) {
-                    className =  className.replace('lockCourse', 'readyCourse');
-                } else {
-                    className =  className.replace('readyCourse', 'lockCourse');
-                }
-                return (
-                    <div className={className} key={index}
-                        style={index === click.id ? {backgroundColor: "hsl(240, 0%, 75%)"}:null} 
-                        onClick={clickVideo(video.videoID, className, index)}
-                    >
-                            {iconControlVideo(className, classnameIcon, index)}
-                        <div className="col-sm-3 imgCenter">
-                            {/* <img src={`http://img.youtube.com/vi/${video.videoID}/default.jpg`} alt={video.name} className="img-responsive center-block d-block mx-auto" /> */}
-                            <img className="img-responsive center-block d-block mx-auto" width={'120px'} height={'90px'} src={(isValidHttpUrl(video.image)) ?
-                                    `http://img.youtube.com/vi/${video.videoID}/default.jpg` : 
-                                    `${REACT_APP_SERVER}/${video.image}`
-                                }
-                                alt={video.image} 
-                            />
-                        </div>
-                        <div className="col-sm-8 pl-0">
-                            <h5 className="mb-1 text2line"><b>{video.name}</b></h5>
-                            <p className="mb-0 text2line mt">{video.description}</p>
-                            <p className="mb-0 text2line mt id" style={{display: "none"}}>{video._id}</p>
-                            <small className="text-muted time">{moment.utc(video.time*1000).format('HH:mm:ss')} | {moment(video.updatedAt).fromNow()}</small>
-                        </div>
-                    </div>
-                )
-            }
-            return true
-        }) 
-        :
-        (
-            <div className="row mt-3 mb-3">
-                <h5 className="mb-0 text-center">Không có video nào cho khóa học này!</h5>
-                <Link to="/courses" className="mb-0 text-center"><i className="fas fa-arrow-left"></i> Quay lại</Link>
-            </div>
-        ))
-    }
 
-    const unlockVideoNextByID = (e) => {
-        var _id = $(selectList[click.id+1]).find(".mb-0.text2line.mt.id").text();
-        // console.log(_id, videoID);
-        if (_id) {
-            axios({
-                method: "post",
-                data: {
-                    _id: _id
-                },
-                withCredentials: true,
-                url: `${REACT_APP_SERVER}/courses/unlockVideo`
-            })
-            .then(async ketqua => {
-                if(ketqua.data) {
-                    refreshCourse()
-                }
-            })
-        }
-    }
+    // const unlockVideoNextByID = (e) => {
+    //     var _id = $(selectList[click.id+1]).find(".mb-0.text2line.mt.id").text();
+    //     // console.log(_id, videoID);
+    //     if (_id) {
+    //         axios({
+    //             method: "post",
+    //             data: {
+    //                 _id: _id
+    //             },
+    //             withCredentials: true,
+    //             url: `${REACT_APP_SERVER}/courses/unlockVideo`
+    //         })
+    //         .then(async ketqua => {
+    //             if(ketqua.data) {
+    //                 refreshCourse()
+    //             }
+    //         })
+    //     }
+    // }
     // Comment
     // useEffect(() => {
     //     const commentInt = setInterval(() => {
@@ -214,7 +138,6 @@ function Show() {
     // }, [videoID])
 
     const refreshComment = (videoID) => {
-        // console.log(videoID);
         axios({
             method: "post",
             data: {
@@ -225,7 +148,6 @@ function Show() {
         })
         .then(async ketqua => {
             if(ketqua.data) {
-                // console.log(ketqua.data);
                 setComment(ketqua.data)
             }
         })
@@ -263,69 +185,166 @@ function Show() {
         setMessage("")
     }
 
-    const watchVideo = (e) => {
-        // console.log(startInt);
-        if(!startInt.current) {
-            startInt.current = setInterval(() => {
-                if (e.target.getCurrentTime() >= 2/3*e.target.getDuration()) {
-                    // console.log('aa');
-                    unlockVideoNextByID()
-                    clearInterval(startInt.current)
-                    startInt.current = null
-                }
-                else if (!e.target.getCurrentTime()) {
-                    // console.log("bb");
-                    clearInterval(startInt.current)
-                    startInt.current = null
-                } 
-                // else {
-                //     console.log(e.target.getCurrentTime(), e.target.getDuration())
-                // }
-            }, 2000)
-        }
-    }
+    // const watchVideo = (e) => {
+    //     // console.log(startInt);
+    //     if(!startInt.current) {
+    //         startInt.current = setInterval(() => {
+    //             if (e.target.getCurrentTime() >= 2/3*e.target.getDuration()) {
+    //                 // console.log('aa');
+    //                 unlockVideoNextByID()
+    //                 clearInterval(startInt.current)
+    //                 startInt.current = null
+    //             }
+    //             else if (!e.target.getCurrentTime()) {
+    //                 // console.log("bb");
+    //                 clearInterval(startInt.current)
+    //                 startInt.current = null
+    //             } 
+    //             // else {
+    //             //     console.log(e.target.getCurrentTime(), e.target.getDuration())
+    //             // }
+    //         }, 2000)
+    //     }
+    // }
 
-    const watchVideoRP = (process) => {
-        clearInterval(startInt.current)
-        startInt.current = null
-        // console.log(startInt, process.playedSeconds, duration);
-        if (process.playedSeconds >= 2/3*duration) {
-            unlockVideoNextByID()
-        }
-    }
+    // const watchVideoRP = (process) => {
+    //     clearInterval(startInt.current)
+    //     startInt.current = null
+    //     // console.log(startInt, process.playedSeconds, duration);
+    //     if (process.playedSeconds >= 2/3*duration) {
+    //         unlockVideoNextByID()
+    //     }
+    // }
 
-    const progess = (listVideo, actor) => {
-        let unlocked = 0
-        listVideo.forEach(video => {
-            if (video.unlock.includes(actor)) {
-                unlocked++
-            }
-        })
-        // console.log(listVideo.length, unlocked);
-        return (unlocked / listVideo.length)
-    }
+    // const progess = (listVideo, actor) => {
+    //     let unlocked = 0
+    //     listVideo.forEach(video => {
+    //         if (video.unlock.includes(actor)) {
+    //             unlocked++
+    //         }
+    //     })
+    //     // console.log(listVideo.length, unlocked);
+    //     return (unlocked / listVideo.length)
+    // }
 
     // console.log(Object.keys(course).length !== 0 ? progess(course.video, course.actor) : "0%");
+
+    const ListVideo = () => {
+        let className = "row pb-3 pt-1 course"
+        let classnameIcon = "col-sm-1 imgCenter status text-center"
+        return (
+            <div className="accordion" id="accordionPanelsStayOpenExample">
+                {!isEmpty(course.sections) ? 
+                    course.sections.map((section, index) => (
+                        <div className="accordion-item" key={index}>
+                            <h2 className="accordion-header" id="headingOne">
+                            <button className="accordion-button collapsed " type="button" data-mdb-toggle="collapse" data-mdb-target={`#collapse${index}`} aria-expanded={`${index ? "false" : "true"}`} aria-controls="collapseOne">
+                                <strong>{section.name}</strong>
+                            </button>
+                            </h2>
+                            <div id={`collapse${index}`} className={`accordion-collapse collapse`} aria-labelledby="headingOne" data-mdb-parent="#accordionExample">
+                                <div className="accordion-body">
+                                    {section.videos.map((video,index) => (
+                                        <div className={video._id === course.sections[0].videos[0]._id ? `${className}`:`${className} lockCourse`} key={index}
+                                            style={index === click.id ? {backgroundColor: "hsl(240, 0%, 75%)"}:null} 
+                                            onClick={() => clickVideo(video.videoID, className, index)}
+                                        >
+                                            <div className={classnameIcon}>
+                                                {video._id !== course.sections[0].videos[0]._id  ?
+                                                    (
+                                                        <i className="fas fa-lock"></i>
+                                                    ) : ((index === click.id) ? (<i className="fas fa-play" style={{color: "#8a038c"}}></i>) : true)
+                                                }
+                                            </div>
+                                            <div className="col-sm-3 imgCenter">
+                                                {/* <img src={`http://img.youtube.com/vi/${video.videoID}/default.jpg`} alt={video.name} className="img-responsive center-block d-block mx-auto" /> */}
+                                                <img className="img-responsive center-block d-block mx-auto" width={'120px'} height={'90px'} src={(isValidHttpUrl(video.image)) ?
+                                                        `http://img.youtube.com/vi/${video.videoID}/default.jpg` : 
+                                                        `${REACT_APP_SERVER}/${video.image}`
+                                                    }
+                                                    alt={video.image} 
+                                                />
+                                            </div>
+                                            <div className="col-sm-8 pl-0">
+                                                <h5 className="mb-1 text2line"><b>{video.name}</b></h5>
+                                                <p className="mb-0 text2line mt">{video.description}</p>
+                                                <p className="mb-0 text2line mt id" style={{display: "none"}}>{video._id}</p>
+                                                <small className="text-muted time">{moment.utc(video.time*1000).format('HH:mm:ss')} | {moment(video.updatedAt).fromNow()}</small>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {section.docs.map((doc,index) => (
+                                        <div key={index} className = "row p-1" style={{backgroundColor: "#E0E0E0"}}>
+                                            <div className="col-sm-1 text-center">
+                                                <i className="far fa-file"></i>
+                                            </div>
+                                            <div className="col-sm-11 pl-0">
+                                                {/* <h5 className="mb-1 text2line"><b>{doc.name}</b></h5> */}
+                                                <a style={{color: "black"}} target={"_blank"} href={`${REACT_APP_SERVER}/docs/${doc.name}`}>{doc.name}</a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                :
+                    (
+                        <div className="row mt-3 mb-3">
+                            <h5 className="mb-0 text-center">Không có nội dung nào trong khóa học này (^.^)!</h5>
+                            <Link to="/courses" className="mb-0 text-center"><i className="fas fa-arrow-left"></i> Quay lại</Link>
+                        </div>
+                    )
+                }
+                
+                {/* LiveStream */}
+                <p className="mt-3 ml-3"><strong>{Object.keys(course).length > 0 && course.livestreams.length ? "Livestream:" : ""}</strong></p>
+                {Object.keys(course).length > 0 && course.livestreams.map((live, index) => {
+                    return (
+                        <div className={"row pt-2 pb-2 mt-3 ml-2 mr-2"} key={index}
+                            style={{backgroundColor: "hsl(240, 0%, 92%)"}} 
+                            onClick={clickVideo(live.liveID, className, index)}
+                        >
+                            <div className="col-sm-3 imgCenter">
+                                <img 
+                                    className="img-responsive center-block d-block mx-auto" 
+                                    width={'120px'} 
+                                    height={'90px'} 
+                                    src={
+                                        `${REACT_APP_SERVER}/${live.image}`
+                                    }
+                                    alt={live.image} 
+                                />
+                            </div>
+                            <div className="col-sm-8 pl-0">
+                                <h5 className="mb-1 text2line"><b>{live.name}</b></h5>
+                                <p className="mb-0 text2line mt">{live.description}</p>                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+        )
+    }
 
     return (
         <div className="mt-3 ml-4 mr-4">
             <div className="row">
                 <div className="col-xl-8">
                     {(videoID.length < 13) ? 
-                        <YouTube
-                        videoId={videoID}                  // defaults -> null
-                        id="player"                      // defaults -> null
-                        className="player"               // defaults -> null
-                        opts={opts}                       // defaults -> {}
-                        onPlay={watchVideo}                     // defaults -> noop
-                        />
+                            <YouTube
+                            videoId={videoID}                  // defaults -> null
+                            id="player"                      // defaults -> null
+                            className="player"               // defaults -> null
+                            opts={opts}                       // defaults -> {}
+                            // onPlay={watchVideo}                     // defaults -> noop
+                            />
                         :
-                        <ReactPlayer width={'100%'} height={'35%'}
-                        url={`${REACT_APP_SERVER}/video/${videoID}`}
-                        onProgress={(process) => watchVideoRP(process)}
-                        onDuration={(duration) => setDuration(duration)}
-                        controls
-                        />
+                            <ReactPlayer width={'100%'} height={'35%'}
+                            url={`${REACT_APP_SERVER}/video/${videoID}`}
+                            // onProgress={(process) => watchVideoRP(process)}
+                            onDuration={(duration) => setDuration(duration)}
+                            controls
+                            />
                     }
 
                     <div className="mt-2" style={{color: "black"}}>
@@ -393,11 +412,13 @@ function Show() {
                             <div
                                 className={'progress-bar progress-bar-striped progress-bar-animated'}
                                 role="progressbar"
-                                style={{width: `${Object.keys(course).length != 0 ? progess(course.video, user._id)*100 : "0" }%`}}
-                                aria-valuenow={Object.keys(course).length !== 0 ? progess(course.video, user._id)*100 : "0"}
+                                // style={{width: `${Object.keys(course).length != 0 ? progess(course.video, user._id)*100 : "0" }%`}}
+                                // aria-valuenow={Object.keys(course).length !== 0 ? progess(course.video, user._id)*100 : "0"}
                                 aria-valuemin="0"
                                 aria-valuemax="100"
-                            >{Object.keys(course).length !== 0 ? progess(course.video, user._id)*100 : "0"}%</div>
+                            >
+                                {/* {Object.keys(course).length !== 0 ? progess(course.video, user._id)*100 : "0"}% */}
+                            </div>
                         </div>
                         <div className="list-group-item list-group-item-dark" aria-current="true">
                             <div className="d-flex w-100 justify-content-between">
@@ -431,7 +452,7 @@ function Show() {
                                 </div>
                             </div>
                         </div>
-                        <div className="list-group-item list-group-item-action" ref={continueView}>
+                        <div className="list-group-item list-group-item-action p-0" ref={continueView}>
                             {
                                 <ListVideo />
                             }
