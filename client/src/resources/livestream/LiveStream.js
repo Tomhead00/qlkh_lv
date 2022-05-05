@@ -104,6 +104,31 @@ function LiveStream () {
         })
     }, [])
 
+    const check = async (arrID, ID) => {
+        if (arrID.includes(ID)) {
+            return false
+        }
+        return true
+    }
+
+    useEffect(async () =>{
+        if (user.user && course) {
+            if (params.host) {
+                var vari = await check(user.user.banned, course._id)
+                if (vari) {
+                    watcher(params.host)
+                } else 
+                navi(`/courses`)
+            } else {
+                console.log();
+                if (user.user._id === course.actor) {
+                    start()
+                    setIsBroadcaster(true)
+                }
+            }
+        }
+    }, [user, course])
+
     useEffect(() => {
         if (isBroadcaster) {
             setListUser([...listUser, {
@@ -116,23 +141,12 @@ function LiveStream () {
                 userID: user.user._id,
                 banned: false,
             }])
-        }
+        } 
     }, [isBroadcaster, user])
 
     useEffect(() => {
         listComment.current.scrollTop = listComment.current.scrollHeight
     }, [messages])
-
-    useEffect(() =>{
-        if (user.user && course) {
-            if (params.host) {
-                watcher(params.host)
-            } else {
-                start()
-                setIsBroadcaster(true)
-            }
-        }
-    }, [user, course])
 
     useEffect(() => {
         if (params.host && name) {

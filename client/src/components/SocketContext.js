@@ -309,13 +309,14 @@ const ContextProvider = ({ children }) => {
             peerConnections[id].close();
             delete peerConnections[id];
             setListUser(pre => {
-                let listBans
+                // let listBans
                 let newList = pre.filter(user => user.socketID != id);
-                setListBan(prev => {
-                    listBans = prev
-                    return prev
-                })
-                socket.emit("joinLive", newList, listBans)
+                // setListBan(prev => {
+                //     listBans = prev
+                //     console.log(listBans);
+                //     return prev
+                // })
+                socket.emit("joinLive", newList, listBan)
                 return newList
             })
         });

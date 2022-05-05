@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import moment from "moment"
 import {isValidHttpUrl, progessBar} from '../../components/Func'
 import {FilePond, registerPlugin} from 'react-filepond'
@@ -24,6 +24,7 @@ function EditCourse() {
     const [updateNameSection, seUpdateNameSection] = useState('');
     const [modal, setModal] = useState({});
     const location = useLocation()
+    const localModal = useRef()
 
     
     // function
@@ -235,6 +236,7 @@ function EditCourse() {
         .then(ketqua => {
             if (ketqua.data) {
                 refreshCourse()
+                localModal.current.click()
             } else {
                 alert("Lỗi hệ thống. Vui lòng thử lại!")
             }
@@ -633,11 +635,11 @@ function EditCourse() {
                 </div>
             <div style={{height: "500px"}}></div>
 
-            <div className="modal fade" id="exampleModal2" tabIndex={-1} aria-labelledby="exampleModalLabel2" aria-hidden="true">
+            <div className="modal fade" id="exampleModal2" tabIndex={-1} aria-labelledby="exampleModalLabel2" ref={localModal} aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title" id="exampleModalLabel">Modal title</h5>
+                            <h5 className="modal-title" id="exampleModalLabel"><strong>Thông báo</strong></h5>
                             <button type="button" className="btn-close" data-mdb-dismiss="modal" aria-label="Close" />
                         </div>
                         <div className="modal-body">
