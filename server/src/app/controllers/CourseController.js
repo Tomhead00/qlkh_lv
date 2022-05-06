@@ -166,7 +166,11 @@ class CourseController {
         try {
             Course.findOne({ slug: req.params.slug })
             .populate( 
-                [{ modal: 'user', path: 'actor' }, { modal: 'section', path: 'sections', populate: { modal: 'video', path: 'videos' } }]
+                [
+                    { modal: 'user', path: 'actor' }, 
+                    { modal: 'livestream', path: 'livestreams' }, 
+                    { modal: 'section', path: 'sections', populate: [{ modal: 'video', path: 'videos'}, { modal: 'document', path: 'docs'}] }
+                ]
             )
             .then((course) => {
                 // res.json(course);

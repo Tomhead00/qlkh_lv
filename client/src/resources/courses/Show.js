@@ -1,12 +1,11 @@
-import {Link, useParams } from "react-router-dom"
+import {Link, useNavigate, useParams } from "react-router-dom"
 import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect, useRef } from "react"
-import {isValidHttpUrl, isEmpty} from "../../components/Func"
+import {isValidHttpUrl, isEmpty, getAllVideo} from "../../components/Func"
 import moment from "moment"
 import YouTube from 'react-youtube';
 import ReactPlayer from 'react-player'
-
 const {REACT_APP_SERVER} = process.env
 
 function Show() {
@@ -16,9 +15,7 @@ function Show() {
     const selectList = $(".course");
     const [message, setMessage] = useState('');
     const [user, setUser] = useState([]);
-    const [click, setClick] = useState({
-        id: null
-    });
+    const [click, setClick] = useState({});
     const [course, setCourse] = useState({});
     const [comment, setComment] = useState([]);
     const [videoID, setvideoID] = useState('')
@@ -31,6 +28,9 @@ function Show() {
         width: '100%',
     };
     const continueView = useRef()
+    const navigate = useNavigate()
+    var className = "row pb-3 pt-1 course"
+    var classnameIcon = "col-sm-1 imgCenter status text-center"
     
     // function
     document.title = slug
@@ -50,11 +50,33 @@ function Show() {
         })
     }
 
+    const unLockVideo = (videoID) => {
+        axios({
+            method: "post",
+            data: {
+                _id: videoID
+            },
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/courses/unlockVideo`
+        })
+        .then(async ketqua => {
+            if(ketqua.data) {
+                refreshCourse()
+            }
+        })
+    }
+
     useEffect(() => {
         axios({
             method: "post",
             withCredentials: true,
             url: `${REACT_APP_SERVER}/courses/thamGia/${slug}`
+        })
+        .then(ketqua => {
+            if (!ketqua.data) {
+                alert("Bạn không thể tham gia khóa học này do đã bị chặn bởi người khởi tạo!")
+                navigate("/courses")
+            }
         })
         axios({
             method: "get",
@@ -68,7 +90,13 @@ function Show() {
         })
         refreshCourse()
     },[slug])
-    // console.log(user);
+
+    useEffect(() => {
+        console.log(course);
+        if(Object.keys(course).length && course.sections.length) {
+            unLockVideo(course.sections[0].videos[0]._id)
+        }
+    }, [course])
 
     const viewMore = (e) => {
         $("#viewMore").toggle()
@@ -77,57 +105,6 @@ function Show() {
         else $("#btnViewMore").html('Xem thêm <i class="fas fa-caret-down"></i>');
     }
 
-    // const unlockVideoByID = (_id) =>  {
-    //     // console.log(_id);
-    //     axios({
-    //         method: "post",
-    //         data: {
-    //             _id: _id
-    //         },
-    //         withCredentials: true,
-    //         url: `${REACT_APP_SERVER}/courses/unlockVideo`
-    //     })
-    //     .then(async ketqua => {
-    //         if(ketqua.data) {
-    //             refreshCourse()
-    //         }
-    //     })
-    // };
-
-
-    const clickVideo = (videoID, className, index) => (e) => {
-        console.log(videoID);
-        // setvideoID(videoID)
-        if (!className.includes("lockCourse")) {
-            // setvideoID(videoID)
-            refreshComment(videoID)
-            setClick({
-                ...click,
-                id: index
-            })
-        }
-    }
-    // console.log(click);
-
-    // const unlockVideoNextByID = (e) => {
-    //     var _id = $(selectList[click.id+1]).find(".mb-0.text2line.mt.id").text();
-    //     // console.log(_id, videoID);
-    //     if (_id) {
-    //         axios({
-    //             method: "post",
-    //             data: {
-    //                 _id: _id
-    //             },
-    //             withCredentials: true,
-    //             url: `${REACT_APP_SERVER}/courses/unlockVideo`
-    //         })
-    //         .then(async ketqua => {
-    //             if(ketqua.data) {
-    //                 refreshCourse()
-    //             }
-    //         })
-    //     }
-    // }
     // Comment
     // useEffect(() => {
     //     const commentInt = setInterval(() => {
@@ -160,7 +137,6 @@ function Show() {
         $(".comments").submit(() => {
             return false;
         })
-        // console.log(comment);
         if (message !== '') {
             axios({
                 method: "post",
@@ -173,7 +149,6 @@ function Show() {
             })
             .then(async ketqua => {
                 if(ketqua.data) {
-                    // console.log(ketqua.data);
                     setMessage("")
                     refreshComment(videoID)
                 }
@@ -216,114 +191,30 @@ function Show() {
     //     }
     // }
 
-    // const progess = (listVideo, actor) => {
-    //     let unlocked = 0
-    //     listVideo.forEach(video => {
-    //         if (video.unlock.includes(actor)) {
-    //             unlocked++
-    //         }
-    //     })
-    //     // console.log(listVideo.length, unlocked);
-    //     return (unlocked / listVideo.length)
-    // }
+    const progess = (listVideo, actor) => {
+        let unlocked = 0
+        listVideo.forEach(video => {
+            if (video.unlock.includes(actor)) {
+                unlocked++
+            }
+        })
+        return Math.round((unlocked / listVideo.length) * 100) / 100
+    }
 
-    // console.log(Object.keys(course).length !== 0 ? progess(course.video, course.actor) : "0%");
+    const clickVideo = (sectionID, video, className) => (e) => {
+        // console.log(videoID, sectionID, videoId, className);
+        if (!className.includes("lockCourse")) {
+            setvideoID(video.videoID)
+            refreshComment(video.videoID)
+            setClick(video)
+        }
+    }
 
-    const ListVideo = () => {
-        let className = "row pb-3 pt-1 course"
-        let classnameIcon = "col-sm-1 imgCenter status text-center"
-        return (
-            <div className="accordion" id="accordionPanelsStayOpenExample">
-                {!isEmpty(course.sections) ? 
-                    course.sections.map((section, index) => (
-                        <div className="accordion-item" key={index}>
-                            <h2 className="accordion-header" id="headingOne">
-                            <button className="accordion-button collapsed " type="button" data-mdb-toggle="collapse" data-mdb-target={`#collapse${index}`} aria-expanded={`${index ? "false" : "true"}`} aria-controls="collapseOne">
-                                <strong>{section.name}</strong>
-                            </button>
-                            </h2>
-                            <div id={`collapse${index}`} className={`accordion-collapse collapse`} aria-labelledby="headingOne" data-mdb-parent="#accordionExample">
-                                <div className="accordion-body">
-                                    {section.videos.map((video,index) => (
-                                        <div className={video._id === course.sections[0].videos[0]._id ? `${className}`:`${className} lockCourse`} key={index}
-                                            style={index === click.id ? {backgroundColor: "hsl(240, 0%, 75%)"}:null} 
-                                            onClick={() => clickVideo(video.videoID, className, index)}
-                                        >
-                                            <div className={classnameIcon}>
-                                                {video._id !== course.sections[0].videos[0]._id  ?
-                                                    (
-                                                        <i className="fas fa-lock"></i>
-                                                    ) : ((index === click.id) ? (<i className="fas fa-play" style={{color: "#8a038c"}}></i>) : true)
-                                                }
-                                            </div>
-                                            <div className="col-sm-3 imgCenter">
-                                                {/* <img src={`http://img.youtube.com/vi/${video.videoID}/default.jpg`} alt={video.name} className="img-responsive center-block d-block mx-auto" /> */}
-                                                <img className="img-responsive center-block d-block mx-auto" width={'120px'} height={'90px'} src={(isValidHttpUrl(video.image)) ?
-                                                        `http://img.youtube.com/vi/${video.videoID}/default.jpg` : 
-                                                        `${REACT_APP_SERVER}/${video.image}`
-                                                    }
-                                                    alt={video.image} 
-                                                />
-                                            </div>
-                                            <div className="col-sm-8 pl-0">
-                                                <h5 className="mb-1 text2line"><b>{video.name}</b></h5>
-                                                <p className="mb-0 text2line mt">{video.description}</p>
-                                                <p className="mb-0 text2line mt id" style={{display: "none"}}>{video._id}</p>
-                                                <small className="text-muted time">{moment.utc(video.time*1000).format('HH:mm:ss')} | {moment(video.updatedAt).fromNow()}</small>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {section.docs.map((doc,index) => (
-                                        <div key={index} className = "row p-1" style={{backgroundColor: "#E0E0E0"}}>
-                                            <div className="col-sm-1 text-center">
-                                                <i className="far fa-file"></i>
-                                            </div>
-                                            <div className="col-sm-11 pl-0">
-                                                {/* <h5 className="mb-1 text2line"><b>{doc.name}</b></h5> */}
-                                                <a style={{color: "black"}} target={"_blank"} href={`${REACT_APP_SERVER}/docs/${doc.name}`}>{doc.name}</a>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                :
-                    (
-                        <div className="row mt-3 mb-3">
-                            <h5 className="mb-0 text-center">Không có nội dung nào trong khóa học này (^.^)!</h5>
-                            <Link to="/courses" className="mb-0 text-center"><i className="fas fa-arrow-left"></i> Quay lại</Link>
-                        </div>
-                    )
-                }
-                
-                {/* LiveStream */}
-                <p className="mt-3 ml-3"><strong>{Object.keys(course).length > 0 && course.livestreams.length ? "Livestream:" : ""}</strong></p>
-                {Object.keys(course).length > 0 && course.livestreams.map((live, index) => {
-                    return (
-                        <div className={"row pt-2 pb-2 mt-3 ml-2 mr-2"} key={index}
-                            style={{backgroundColor: "hsl(240, 0%, 92%)"}} 
-                            onClick={clickVideo(live.liveID, className, index)}
-                        >
-                            <div className="col-sm-3 imgCenter">
-                                <img 
-                                    className="img-responsive center-block d-block mx-auto" 
-                                    width={'120px'} 
-                                    height={'90px'} 
-                                    src={
-                                        `${REACT_APP_SERVER}/${live.image}`
-                                    }
-                                    alt={live.image} 
-                                />
-                            </div>
-                            <div className="col-sm-8 pl-0">
-                                <h5 className="mb-1 text2line"><b>{live.name}</b></h5>
-                                <p className="mb-0 text2line mt">{live.description}</p>                            </div>
-                        </div>
-                    )
-                })}
-            </div>
-        )
+    const setClass = (videoID, videoUnlock) => {
+        if (videoUnlock.includes(user._id)) {
+            return `${className} readyCourse`
+        } else
+        return `${className} lockCourse`
     }
 
     return (
@@ -348,8 +239,8 @@ function Show() {
                     }
 
                     <div className="mt-2" style={{color: "black"}}>
-                        <h3><b className="title">{!isEmpty(course.video) ? (course.video[click.id] ? course.video[click.id].name : true) : "N/A"}</b></h3>
-                        <p className="description mb-4">{!isEmpty(course.video) ? (course.video[click.id] ? course.video[click.id].description : true) : "N/A"}</p>
+                        <h3><b className="title">{!isEmpty(click) ? (click.name) : "N/A"}</b></h3>
+                        <p className="description mb-4">{!isEmpty(click) ? (click.description): "N/A"}</p>
                     </div>
                     <div className="row">
                         <div className="page-header">
@@ -412,12 +303,12 @@ function Show() {
                             <div
                                 className={'progress-bar progress-bar-striped progress-bar-animated'}
                                 role="progressbar"
-                                // style={{width: `${Object.keys(course).length != 0 ? progess(course.video, user._id)*100 : "0" }%`}}
-                                // aria-valuenow={Object.keys(course).length !== 0 ? progess(course.video, user._id)*100 : "0"}
+                                style={{width: `${Object.keys(course).length ? progess(getAllVideo(course), user._id)*100 : "0" }%`}}
+                                aria-valuenow={Object.keys(course).length ? progess(getAllVideo(course), user._id)*100 : "0"}
                                 aria-valuemin="0"
                                 aria-valuemax="100"
                             >
-                                {/* {Object.keys(course).length !== 0 ? progess(course.video, user._id)*100 : "0"}% */}
+                                {Object.keys(course).length !== 0 ? progess(getAllVideo(course), user._id)*100 : "0"}%
                             </div>
                         </div>
                         <div className="list-group-item list-group-item-dark" aria-current="true">
@@ -432,6 +323,7 @@ function Show() {
                                         : course.description}
                                 </div>
                             </div>
+                            {Object.keys(course).length && <p className="m-0 p-0"><i><small><i className="far fa-clock"> </i> {`(${moment.utc(course.time*1000).format('HH:mm:ss')})`} {` - ${getAllVideo(course).length} video`}</small></i></p>}
                             <div className="row">
                                 <Link to="#" className="link-primary text-end" id="btnViewMore" onClick={viewMore}>Xem thêm <i className="fas fa-caret-down"></i></Link>
                                 <div className="viewMore" id="viewMore" style={{display: "none"}}>
@@ -453,9 +345,97 @@ function Show() {
                             </div>
                         </div>
                         <div className="list-group-item list-group-item-action p-0" ref={continueView}>
-                            {
-                                <ListVideo />
-                            }
+                            <div className="accordion" id="accordionPanelsStayOpenExample">
+                                {!isEmpty(course.sections) ? 
+                                    course.sections.map((section, index) => (
+                                        <div className="accordion-item" key={index}>
+                                            <h2 className="accordion-header" id="headingOne">
+                                            <button className="accordion-button collapsed " type="button" data-mdb-toggle="collapse" data-mdb-target={`#collapse${index}`} aria-expanded={`${index ? "false" : "true"}`} aria-controls="collapseOne">
+                                                <strong>{section.name} {` (${section.videos.length})`}</strong>
+                                            </button>
+                                            </h2>
+                                            <div id={`collapse${index}`} className={`accordion-collapse collapse`} aria-labelledby="headingOne" data-mdb-parent="#accordionExample">
+                                                <div className="accordion-body">
+                                                    {section.videos.map((video,index) => (
+                                                        // <div className={video._id === course.sections[0].videos[0]._id ? `${className} readyCourse`:`${className} lockCourse`} key={index}
+                                                        <div className={setClass(video._id, video.unlock)} key={index}
+                                                            style={video._id === click._id ? {backgroundColor: "hsl(240, 0%, 75%)"}:null} 
+                                                            onClick={clickVideo(section._id, video, setClass(video._id, video.unlock))}
+                                                        >
+                                                            <div className={classnameIcon}>
+                                                                {video.unlock.includes(user._id) ?
+                                                                    (video._id === click._id ? (<i className="fas fa-play" style={{color: "#8a038c"}}></i>) : null) :(<i className="fas fa-lock"></i>) 
+                                                                }
+                                                            </div>
+                                                            <div className="col-sm-3 imgCenter">
+                                                                {/* <img src={`http://img.youtube.com/vi/${video.videoID}/default.jpg`} alt={video.name} className="img-responsive center-block d-block mx-auto" /> */}
+                                                                <img className="img-responsive center-block d-block mx-auto" width={'120px'} height={'90px'} src={(isValidHttpUrl(video.image)) ?
+                                                                        `http://img.youtube.com/vi/${video.videoID}/default.jpg` : 
+                                                                        `${REACT_APP_SERVER}/${video.image}`
+                                                                    }
+                                                                    alt={video.image} 
+                                                                />
+                                                            </div>
+                                                            <div className="col-sm-8 pl-0">
+                                                                <h5 className="mb-1 text2line"><b>{video.name}</b></h5>
+                                                                <p className="mb-0 text2line mt">{video.description}</p>
+                                                                <p className="mb-0 text2line mt id" style={{display: "none"}}>{video._id}</p>
+                                                                <small className="text-muted time">{moment.utc(video.time*1000).format('HH:mm:ss')} | {moment(video.updatedAt).fromNow()}</small>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {section.docs.map((doc,index) => (
+                                                        <div key={index} className = "row p-1" style={{backgroundColor: "hsl(240, 0%, 95%)"}}>
+                                                            <div className="col-sm-1 text-center p-0">
+                                                                <i className="fas fa-angle-right"></i> &nbsp;
+                                                                <i className="far fa-file"></i>
+                                                            </div>
+                                                            <div className="col-sm-11 pl-0" style={{whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden"}}>
+                                                                {/* <h5 className="mb-1 text2line"><b>{doc.name}</b></h5> */}
+                                                                <a style={{color: "black"}} target={"_blank"} href={`${REACT_APP_SERVER}/docs/${doc.name}`} title={doc.name}>{doc.name} </a>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                                :
+                                    (
+                                        <div className="row mt-3 mb-3">
+                                            <h5 className="mb-0 text-center">Không có nội dung nào trong khóa học này (^.^)!</h5>
+                                            <Link to="/courses" className="mb-0 text-center"><i className="fas fa-arrow-left"></i> Quay lại</Link>
+                                        </div>
+                                    )
+                                }
+                                
+                                {/* LiveStream */}
+                                <p className="mt-3 ml-3"><strong>{Object.keys(course).length > 0 && course.livestreams.length ? "Livestream:" : ""}</strong></p>
+                                {Object.keys(course).length > 0 && course.livestreams.map((live, index) => {
+                                    return (
+                                        <div className={"row pt-2 pb-2 mt-3 ml-2 mr-2"} key={index}
+                                            style={{backgroundColor: "hsl(240, 0%, 92%)"}} 
+                                            onClick={clickVideo(live.liveID, null, live._id)}
+                                        >
+                                            <div className="col-sm-3 imgCenter">
+                                                <img 
+                                                    className="img-responsive center-block d-block mx-auto" 
+                                                    width={'120px'} 
+                                                    height={'90px'} 
+                                                    src={
+                                                        `${REACT_APP_SERVER}/${live.image}`
+                                                    }
+                                                    alt={live.image} 
+                                                />
+                                            </div>
+                                            <div className="col-sm-8 pl-0">
+                                                <h5 className="mb-1 text2line"><b>{live.name}</b></h5>
+                                                <p className="mb-0 text2line mt">{live.description}</p>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>

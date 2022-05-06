@@ -180,7 +180,7 @@ function Courses() {
                                             </Link>
 
                                             <div className="card-body">
-                                                <Link to={`/courses/show/${cjoin.slug}`} onClick={navi(`${cjoin.slug}`)}>
+                                                <Link to={`/courses/show/${cjoin.slug}`} onClick={navi(`${cjoin.slug}`, cjoin)}>
                                                     <h5 className="card-title">{cjoin.name}</h5>
                                                 </Link>
                                                 <div className="card-text mt mb-3">{
@@ -346,7 +346,7 @@ function Courses() {
                         <div className="row">
                             <div className="col-6">
                                 <h5><b>Nội dung khóa học:</b></h5>
-                                <p className="m-0 p-0"><i><small>Tổng thời lượng: {`(${moment.utc(choice.time*1000).format('HH:mm:ss')})`} {Object.keys(choice).length ? ` - ${getAllVideo(choice).length} video`: null}</small></i></p>
+                                {Object.keys(choice).length && <p className="m-0 p-0"><i><small>Tổng thời lượng: {`(${moment.utc(choice.time*1000).format('HH:mm:ss')})`} {` - ${getAllVideo(choice).length} video`}</small></i></p>}
                                 <div className="accordion mt-3" id="accordionPanelsStayOpenExample">
                                     {Object.keys(choice).length && Object.keys(choice.sections).length ? 
                                         choice.sections.map((element, index) => (
