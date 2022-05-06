@@ -19,7 +19,7 @@ function AddVideo() {
     const course = state.course
     const nameSection = state.name
     const sectionID = state.sectionID
-    console.log(course, nameSection);
+    // console.log(course, nameSection);
     const [name, setName] = useState('')
     const [time, setTime] = useState(0)
     const [description, setDescription] = useState('')

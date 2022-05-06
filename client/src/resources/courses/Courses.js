@@ -346,7 +346,7 @@ function Courses() {
                         <div className="row">
                             <div className="col-6">
                                 <h5><b>Nội dung khóa học:</b></h5>
-                                {Object.keys(choice).length && <p className="m-0 p-0"><i><small>Tổng thời lượng: {`(${moment.utc(choice.time*1000).format('HH:mm:ss')})`} {` - ${getAllVideo(choice).length} video`}</small></i></p>}
+                                {Object.keys(choice).length && <p className="m-0 p-0"><i><small>Tổng thời lượng: {`(${moment.utc(choice.time*1000).format('HH:mm:ss')})`} {` - ${getAllVideo(choice).length} bài học`}</small></i></p>}
                                 <div className="accordion mt-3" id="accordionPanelsStayOpenExample">
                                     {Object.keys(choice).length && Object.keys(choice.sections).length ? 
                                         choice.sections.map((element, index) => (

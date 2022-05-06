@@ -11,8 +11,6 @@ const {REACT_APP_SERVER} = process.env
 function Show() {
     // Khai bao
     const startInt = useRef(null)
-    const firstTime = useRef(null)
-    const selectList = $(".course");
     const [message, setMessage] = useState('');
     const [user, setUser] = useState([]);
     const [click, setClick] = useState({});
@@ -20,6 +18,7 @@ function Show() {
     const [comment, setComment] = useState([]);
     const [videoID, setvideoID] = useState('')
     const [duration, setDuration] = useState(null)
+    const [listAllVideo, setListAllVideo] = useState([])
 
     const params = useParams()
     const {slug} = params
@@ -92,9 +91,9 @@ function Show() {
     },[slug])
 
     useEffect(() => {
-        console.log(course);
-        if(Object.keys(course).length && course.sections.length) {
+        if(Object.keys(course).length && course.sections.length && !course.sections[0].videos.includes(user._id)) {
             unLockVideo(course.sections[0].videos[0]._id)
+            setListAllVideo(getAllVideo(course))
         }
     }, [course])
 
@@ -106,13 +105,13 @@ function Show() {
     }
 
     // Comment
-    // useEffect(() => {
-    //     const commentInt = setInterval(() => {
-    //         // console.log("Hello");
-    //         refreshComment(videoID)
-    //     }, 2000)
-    //     return () => clearInterval(commentInt);
-    // }, [videoID])
+    useEffect(() => {
+        const commentInt = setInterval(() => {
+            // console.log("Hello");
+            refreshComment(videoID)
+        }, 2000)
+        return () => clearInterval(commentInt);
+    }, [videoID])
 
     const refreshComment = (videoID) => {
         axios({
@@ -160,36 +159,41 @@ function Show() {
         setMessage("")
     }
 
-    // const watchVideo = (e) => {
-    //     // console.log(startInt);
-    //     if(!startInt.current) {
-    //         startInt.current = setInterval(() => {
-    //             if (e.target.getCurrentTime() >= 2/3*e.target.getDuration()) {
-    //                 // console.log('aa');
-    //                 unlockVideoNextByID()
-    //                 clearInterval(startInt.current)
-    //                 startInt.current = null
-    //             }
-    //             else if (!e.target.getCurrentTime()) {
-    //                 // console.log("bb");
-    //                 clearInterval(startInt.current)
-    //                 startInt.current = null
-    //             } 
-    //             // else {
-    //             //     console.log(e.target.getCurrentTime(), e.target.getDuration())
-    //             // }
-    //         }, 2000)
-    //     }
-    // }
+    const watchVideo = (e) => {
+        // console.log(startInt);
+        if(!startInt.current) {
+            startInt.current = setInterval(() => {
+                if (e.target.getCurrentTime() >= 2/3*e.target.getDuration()) {
+                    // console.log(e.target.j.i.videoId, e);
+                    var indexNextVideo = listAllVideo.findIndex(x => x.videoID === e.target.j.i.videoId) + 1;
+                    if (indexNextVideo < listAllVideo.length) {
+                        unLockVideo(listAllVideo[indexNextVideo]._id)
+                    }
+                    clearInterval(startInt.current)
+                    startInt.current = null
+                }
+                else if (!e.target.getCurrentTime()) {
+                    // console.log("bb");
+                    clearInterval(startInt.current)
+                    startInt.current = null
+                } 
+                // else {
+                //     console.log(e.target.getCurrentTime(), e.target.getDuration())
+                // }
+            }, 2000)
+        }
+    }
 
-    // const watchVideoRP = (process) => {
-    //     clearInterval(startInt.current)
-    //     startInt.current = null
-    //     // console.log(startInt, process.playedSeconds, duration);
-    //     if (process.playedSeconds >= 2/3*duration) {
-    //         unlockVideoNextByID()
-    //     }
-    // }
+    const watchVideoRP = (process) => {
+        clearInterval(startInt.current)
+        startInt.current = null
+        if (process.playedSeconds >= 2/3*duration) {
+            var indexNextVideo = listAllVideo.findIndex(x => x.videoID === click.videoID) + 1;
+            if (indexNextVideo < listAllVideo.length && !listAllVideo[indexNextVideo].unlock.includes(user._id)) {
+                unLockVideo(listAllVideo[indexNextVideo]._id)
+            }
+        }
+    }
 
     const progess = (listVideo, actor) => {
         let unlocked = 0
@@ -202,8 +206,13 @@ function Show() {
     }
 
     const clickVideo = (sectionID, video, className) => (e) => {
-        // console.log(videoID, sectionID, videoId, className);
-        if (!className.includes("lockCourse")) {
+        // console.log(sectionID, video, className);
+        if (!className) {
+            setvideoID(video.liveID)
+            refreshComment(video.liveID)
+            setClick(video)
+
+        } else if (!className.includes("lockCourse")) {
             setvideoID(video.videoID)
             refreshComment(video.videoID)
             setClick(video)
@@ -227,13 +236,16 @@ function Show() {
                             id="player"                      // defaults -> null
                             className="player"               // defaults -> null
                             opts={opts}                       // defaults -> {}
-                            // onPlay={watchVideo}                     // defaults -> noop
+                            onPlay={watchVideo}                     // defaults -> noop
                             />
                         :
-                            <ReactPlayer width={'100%'} height={'35%'}
-                            url={`${REACT_APP_SERVER}/video/${videoID}`}
-                            // onProgress={(process) => watchVideoRP(process)}
-                            onDuration={(duration) => setDuration(duration)}
+                            <ReactPlayer width={'100%'} height={'60%'}
+                            url={`${REACT_APP_SERVER}/${click.time ? ("video/" + videoID) : ("livestream/" + videoID)}`}
+                            onProgress={(process) => {
+                                if(click.time)
+                                    watchVideoRP(process)
+                            }}
+                            onDuration={(duration) => {setDuration(duration)}}
                             controls
                             />
                     }
@@ -242,59 +254,62 @@ function Show() {
                         <h3><b className="title">{!isEmpty(click) ? (click.name) : "N/A"}</b></h3>
                         <p className="description mb-4">{!isEmpty(click) ? (click.description): "N/A"}</p>
                     </div>
-                    <div className="row">
-                        <div className="page-header">
-                            <h4><small id="totalComment" className="pull-right mb-4">{comment.length} comments</small> <b>Bình luận</b> </h4>
-                        </div>
+                    {click.time ? (
+                        <div className="row">
+                            <div className="page-header">
+                                <h4><small id="totalComment" className="pull-right mb-4">{comment.length} bình luận</small> <b>Bình luận</b> </h4>
+                            </div>
 
-                        <form className="border-0 comments" style={{backgroundColor: "#f8f9fa"}}>
-                            <div className="d-flex flex-start w-100">
-                                <img
-                                    className="rounded-circle shadow-1-strong me-3"
-                                    src={isValidHttpUrl(user.image) ? user.image : `${REACT_APP_SERVER + user.image}`}
-                                    alt="avatar"
-                                    width="40"
-                                    height="40"
-                                />
-                                <div className="w-100">
-                                    <textarea
-                                    className="form-control"
-                                    id="textAreaExample"
-                                    rows="3"
-                                    style={{background: "#fff"}}
-                                    required
-                                    value={message} onChange={postCmt}
-                                    placeholder="Comment"></textarea>
+                            <form className="border-0 comments" style={{backgroundColor: "#f8f9fa"}}>
+                                <div className="d-flex flex-start w-100">
+                                    <img
+                                        className="rounded-circle shadow-1-strong me-3"
+                                        src={isValidHttpUrl(user.image) ? user.image : `${REACT_APP_SERVER + user.image}`}
+                                        alt="avatar"
+                                        width="40"
+                                        height="40"
+                                    />
+                                    <div className="w-100">
+                                        <textarea
+                                        className="form-control"
+                                        id="textAreaExample"
+                                        rows="3"
+                                        style={{background: "#fff"}}
+                                        required
+                                        value={message} onChange={postCmt}
+                                        placeholder="Comment"></textarea>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="float-end mt-2 pt-1">
-                                <button type="submit" className="btn btn-primary btn-sm" onClick={subCmt}>Post comment</button>
-                                <button type="reset" className="btn btn-outline-primary btn-sm" onClick={cancelCmt}>Cancel</button>
-                            </div>
-                        </form>
+                                <div className="float-end mt-2 pt-1">
+                                    <button type="submit" className="btn btn-primary btn-sm" onClick={subCmt}>Post comment</button>
+                                    <button type="reset" className="btn btn-outline-primary btn-sm" onClick={cancelCmt}>Cancel</button>
+                                </div>
+                            </form>
 
-                        <div className="comments-list" id="comments-list">
-                            {/* Comment here */}
-                            <div>
-                                {comment.map((element, index) => (
-                                    <div className="media" key={index}>
-                                        <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={isValidHttpUrl(element.actor.image) ? element.actor.image : `${REACT_APP_SERVER + element.actor.image}`} alt='' width="40" height="40" />
-                                        <div className='media-body mt-2 mb-2 pt-2 pb-2'>
-                                            <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5>
-                                            <div className='mb-0'>
-                                                <div>{
-                                                    element.content.split('\n').map(
-                                                        (str,index) => <div key={index}>{str}</div>)
-                                                }</div>
+                            <div className="comments-list" id="comments-list">
+                                {/* Comment here */}
+                                <div>
+                                    {comment.map((element, index) => (
+                                        <div className="media" key={index}>
+                                            <img className='align-self-center mr-3 rounded-circle shadow-1-strong me-3' src={isValidHttpUrl(element.actor.image) ? element.actor.image : `${REACT_APP_SERVER + element.actor.image}`} alt='' width="40" height="40" />
+                                            <div className='media-body mt-2 mb-2 pt-2 pb-2'>
+                                                <h5 className='mt-0 mb-0'><b>{element.actor.username}</b> <small className="timeComments">{moment(element.createdAt).fromNow()}</small></h5>
+                                                <div className='mb-0'>
+                                                    <div>{
+                                                        element.content.split('\n').map(
+                                                            (str,index) => <div key={index}>{str}</div>)
+                                                    }</div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="mb-5 pb-5"></div>
-                    </div>
+                            <div className="mb-5 pb-5"></div>
+                        </div>
+                    ) : null
+                    }
 
                 </div>
                 <div className="col-xl-4">
@@ -303,12 +318,12 @@ function Show() {
                             <div
                                 className={'progress-bar progress-bar-striped progress-bar-animated'}
                                 role="progressbar"
-                                style={{width: `${Object.keys(course).length ? progess(getAllVideo(course), user._id)*100 : "0" }%`}}
-                                aria-valuenow={Object.keys(course).length ? progess(getAllVideo(course), user._id)*100 : "0"}
+                                style={{width: `${Object.keys(course).length ? progess(listAllVideo, user._id)*100 : "0" }%`}}
+                                aria-valuenow={Object.keys(course).length ? progess(listAllVideo, user._id)*100 : "0"}
                                 aria-valuemin="0"
                                 aria-valuemax="100"
                             >
-                                {Object.keys(course).length !== 0 ? progess(getAllVideo(course), user._id)*100 : "0"}%
+                                {Object.keys(course).length !== 0 ? progess(listAllVideo, user._id)*100 : "0"}%
                             </div>
                         </div>
                         <div className="list-group-item list-group-item-dark" aria-current="true">
@@ -323,7 +338,7 @@ function Show() {
                                         : course.description}
                                 </div>
                             </div>
-                            {Object.keys(course).length && <p className="m-0 p-0"><i><small><i className="far fa-clock"> </i> {`(${moment.utc(course.time*1000).format('HH:mm:ss')})`} {` - ${getAllVideo(course).length} video`}</small></i></p>}
+                            {Object.keys(course).length && <p className="m-0 p-0"><i><small><i className="far fa-clock"> </i> {`(${moment.utc(course.time*1000).format('HH:mm:ss')})`} {` - ${listAllVideo.length} bài học`}</small></i></p>}
                             <div className="row">
                                 <Link to="#" className="link-primary text-end" id="btnViewMore" onClick={viewMore}>Xem thêm <i className="fas fa-caret-down"></i></Link>
                                 <div className="viewMore" id="viewMore" style={{display: "none"}}>
@@ -411,12 +426,19 @@ function Show() {
                                 
                                 {/* LiveStream */}
                                 <p className="mt-3 ml-3"><strong>{Object.keys(course).length > 0 && course.livestreams.length ? "Livestream:" : ""}</strong></p>
+                                
                                 {Object.keys(course).length > 0 && course.livestreams.map((live, index) => {
                                     return (
-                                        <div className={"row pt-2 pb-2 mt-3 ml-2 mr-2"} key={index}
-                                            style={{backgroundColor: "hsl(240, 0%, 92%)"}} 
-                                            onClick={clickVideo(live.liveID, null, live._id)}
+                                        <div className={"row pt-2 pb-2 mt-3 ml-2 mr-2 readyCourse"} key={index}
+                                            style={live._id === click._id ? {backgroundColor: "hsl(240, 0%, 75%)"}:null} 
+                                            onClick={clickVideo(null, live, null)}
                                         >
+                                            <div className={classnameIcon}>
+                                                {
+                                                    (live._id === click._id ? (<i className="fas fa-play" style={{color: "#8a038c"}}></i>) : null)
+                                                }
+                                            </div>
+
                                             <div className="col-sm-3 imgCenter">
                                                 <img 
                                                     className="img-responsive center-block d-block mx-auto" 
