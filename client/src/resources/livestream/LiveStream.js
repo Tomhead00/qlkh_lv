@@ -120,7 +120,6 @@ function LiveStream () {
                 } else 
                 navi(`/courses`)
             } else {
-                console.log();
                 if (user.user._id === course.actor) {
                     start()
                     setIsBroadcaster(true)
@@ -171,6 +170,22 @@ function LiveStream () {
         if(name) {
             await broadcaster()
             navi(`/livestream/${params.id}/${me}`)
+            axios({
+                method: "post",
+                data: {
+                    courseID: course._id,
+                    link: `/livestream/${params.id}/${me}`,
+                    subject: `${user.user.username} đang phát trực tiếp`,
+                    content: `${name}`,
+                },
+                withCredentials: true,
+                url: `${REACT_APP_SERVER}/account/addNotification`
+            })
+            .then(ketqua => {
+                console.log(ketqua.data);
+            })
+
+
             $("#registerLive").toggle()
             $("#inforLive").toggle()
             if (record) {
@@ -458,9 +473,9 @@ function LiveStream () {
                         <i className="fas fa-ellipsis-v"></i>                    
                     </Link>
                     {/* Thoat */}
-                    <Link className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} role="button" to={`/me/stored/courses`}>
+                    <a className="btn btn-light btn-lg btn-floating m-2" style={{backgroundColor: "#c61118"}} role="button" href={`/me/stored/courses`}>
                         <i className="fas fa-lg fa-sign-out-alt fa-rotate-180" style={{color: "white"}}></i>
-                    </Link>
+                    </a>
                 </div>
             </div>
         </div>

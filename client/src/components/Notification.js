@@ -1,105 +1,88 @@
 import {Link} from 'react-router-dom'
 import axios from "axios"
-import { useState, useLayoutEffect } from 'react'
+import { useState, useLayoutEffect, useEffect } from 'react'
+import moment from "moment"
 import {isValidHttpUrl} from './Func'
 
 const {REACT_APP_SERVER} = process.env
 
 function Notification({user}) {
-    // console.log(user);
-    const handlemodal = () => {
-        document.getElementById("infor").click();
-    }
+    const [notification, setNotification] = useState([])
 
-    const logOut = () => {
+    const refeshNotification = () => {
         axios({
             method: "post",
+            data: {
+                userID: user._id,
+            },
             withCredentials: true,
-            url: `${REACT_APP_SERVER}/account/logout`
+            url: `${REACT_APP_SERVER}/account/showNotification`
         })
         .then(ketqua => {
-            // setUser(ketqua.data)
             // console.log(ketqua.data);
+            setNotification(ketqua.data)
         })
-        document.getElementById("exampleModal").click();
-        window.location.reload();
+    }
+
+    useEffect(() => {
+        refeshNotification()
+        const start = setInterval(() => {
+            refeshNotification()
+        }, 3000)
+        return () => clearInterval(start)
+    }, [])
+
+    // show list unseen
+    const search = (myArray) => {
+        var newArr = []
+        for (var i=0; i < myArray.length; i++) {
+            if (myArray[i].seen === false) {
+                newArr = [...newArr, myArray[i]]
+            }
+        }
+        return newArr
+    }
+    
+    const seen = (id) => {
+        axios({
+            method: "post",
+            data: {
+                notificationID: id,
+            },
+            withCredentials: true,
+            url: `${REACT_APP_SERVER}/account/seenNotification`
+        })
     }
 
     return (
         <div>
             <a href="/#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <span><i className="fas text-white fa-bell"></i></span>
-                <span className="badge">3</span>
+                <span className="badge">
+                    {search(notification).length ? (search(notification).length > 99 ? 99 : search(notification).length) : ''}
+                </span>
             </a>
-            <div className="dropdown-menu dropdown-menu-right" style={{width: '450px'}} aria-labelledby="navbarDropdown">
+            <div className="dropdown-menu dropdown-menu-right" style={{width: '400px'}} aria-labelledby="navbarDropdown">
                 <div className="list-group">
                     <h5 className='ml-3 mt-2 mb-2'><b>Thông báo</b></h5>
-                    <a href="#" className="list-group-item list-group-item-action" aria-current="true">
-                        <div className="d-flex w-100 justify-content-between">
-                        <h5 className="mb-1">List group item heading</h5>
-                        <small>3 days ago</small>
-                        </div>
-                        <p className="mb-1">
-                        Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus
-                        varius blandit.
-                        </p>
-                        <small>Donec id elit non mi porta.</small>
-                    </a>
-                    <a href="#" className="list-group-item list-group-item-action">
-                        <div className="d-flex w-100 justify-content-between">
-                        <h5 className="mb-1">List group item heading</h5>
-                        <small className="text-muted">3 days ago</small>
-                        </div>
-                        <p className="mb-1">
-                        Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus
-                        varius blandit.
-                        </p>
-                        <small className="text-muted">Donec id elit non mi porta.</small>
-                    </a>
-                    <a href="#" className="list-group-item list-group-item-action">
-                        <div className="d-flex w-100 justify-content-between">
-                        <h5 className="mb-1">List group item heading</h5>
-                        <small className="text-muted">3 days ago</small>
-                        </div>
-                        <p className="mb-1">
-                        Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus
-                        varius blandit.
-                        </p>
-                        <small className="text-muted">Donec id elit non mi porta.</small>
-                    </a>
-                    <a href="#" className="list-group-item list-group-item-action">
-                        <div className="d-flex w-100 justify-content-between">
-                        <h5 className="mb-1">List group item heading</h5>
-                        <small className="text-muted">3 days ago</small>
-                        </div>
-                        <p className="mb-1">
-                        Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus
-                        varius blandit.
-                        </p>
-                        <small className="text-muted">Donec id elit non mi porta.</small>
-                    </a>
-                    <a href="#" className="list-group-item list-group-item-action">
-                        <div className="d-flex w-100 justify-content-between">
-                        <h5 className="mb-1">List group item heading</h5>
-                        <small className="text-muted">3 days ago</small>
-                        </div>
-                        <p className="mb-1">
-                        Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus
-                        varius blandit.
-                        </p>
-                        <small className="text-muted">Donec id elit non mi porta.</small>
-                    </a>
-                    <a href="#" className="list-group-item list-group-item-action">
-                        <div className="d-flex w-100 justify-content-between">
-                        <h5 className="mb-1">List group item heading</h5>
-                        <small className="text-muted">3 days ago</small>
-                        </div>
-                        <p className="mb-1">
-                        Donec id elit non mi porta gravida at eget metus. Maecenas sed diam eget risus
-                        varius blandit.
-                        </p>
-                        <small className="text-muted">Donec id elit non mi porta.</small>
-                    </a>
+                    {notification.map((notification, index) => (
+                        <a 
+                            href={notification.link} 
+                            className="list-group-item list-group-item-action" 
+                            aria-current="true" 
+                            key={index}
+                            style={!notification.seen ? ({backgroundColor: "hsl(240, 0%, 90%)"}) : null}
+                            onClick={() => {seen(notification._id)}}
+                        >
+                            <div className="d-flex w-100 justify-content-between">
+                            <h6 className="mb-1"><b>{`${notification.subject} trên khóa học:  ${notification.courseID.name}`}</b></h6>
+                            </div>
+                            <p className="mb-1">
+                                "{notification.content}"
+                            </p>
+                            <small>{moment(notification.createdAt).fromNow()}</small>
+                        </a>
+                    ))}
                 </div>
                 {/* <Link className="dropdown-item" to="#" data-toggle="modal" data-target="#infor">Thông tin tài khoản</Link>
                 <div className="dropdown-divider"></div>

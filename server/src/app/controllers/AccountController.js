@@ -6,6 +6,9 @@ const sendEmail = require('../../util/sendEmail');
 const crypto = require('crypto');
 const { mongooseToObject } = require('../../util/mongoose');
 const { multipleMongooseToObject } = require('../../util/mongoose');
+const Course = require('../models/Course');
+const Notification = require('../models/Notification');
+const { populate } = require('../models/Course');
 fs = require('fs');
 
 class AccountController {
@@ -217,6 +220,42 @@ class AccountController {
         user.save();
         // req.session.passport.user = user;
         res.send('Cập nhật mật khẩu thành công!');
+    }
+
+    // POST /addNotification
+    addNotification(req, res, next) {
+        // console.log(req.body);
+        User.find({joined: req.body.courseID})
+        .then(users => {
+            users.map((user,index) => {
+                var notification = new Notification({
+                    link: req.body.link,
+                    content: req.body.content,
+                    subject: req.body.subject,
+                    actor: user._id,
+                    courseID: req.body.courseID,
+                })
+                notification.save()
+            })
+        })
+    }
+
+    // POST /showNotification
+    showNotification(req, res, next) {
+        // console.log(req.body);
+        Notification.find({actor: req.body.userID})
+        .populate({modal: "Course", path: "courseID"})
+        .limit(20).sort('-createdAt')
+        .then(notification => {
+            res.json(notification)
+        })
+    }
+
+    // POST /seenNotification
+    seenNotification(req, res, next) {
+        // console.log(req.body);
+        Notification.findByIdAndUpdate(req.body.notificationID, {seen: true})
+        .then()
     }
 }
 

@@ -21,4 +21,9 @@ router.get('/getUser', accountController.getUser);
 router.get('/:slug', accountController.show);
 router.get('/', accountController.show);
 
+// Notification
+router.post('/addNotification', accountController.addNotification);
+router.post('/showNotification', accountController.showNotification);
+router.post('/seenNotification', accountController.seenNotification);
+
 module.exports = router;
