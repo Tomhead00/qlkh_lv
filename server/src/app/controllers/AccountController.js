@@ -237,6 +237,7 @@ class AccountController {
                 })
                 notification.save()
             })
+            res.send(true)
         })
     }
 
@@ -255,7 +256,7 @@ class AccountController {
     seenNotification(req, res, next) {
         // console.log(req.body);
         Notification.findByIdAndUpdate(req.body.notificationID, {seen: true})
-        .then()
+        .then(() => res.send(true))
     }
 }
 

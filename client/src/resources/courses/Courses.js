@@ -79,7 +79,7 @@ function Courses() {
                     // name.replace(/\n/g, "<br/>");
                     var regex = new RegExp(e.target.value, "gi");
                     if (!/[`~.<>;':"/[\]|{}()=_+-]/.test(e.target.value)) {
-                        var name = element.name.replace(regex, "<span class='highlight'>"+regex.exec(element.description)+"</span>");
+                        var name = element.name.replace(regex, "<span class='highlight'>"+regex.exec(element.name)+"</span>");
                         var mieuta = element.description.replace(regex, "<span class='highlight'>"+regex.exec(element.description)+"</span>");
                     }
                     allSearch += (`

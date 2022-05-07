@@ -1,36 +1,34 @@
-import {Link} from 'react-router-dom'
 import axios from "axios"
-import { useState, useLayoutEffect, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import moment from "moment"
-import {isValidHttpUrl} from './Func'
 
 const {REACT_APP_SERVER} = process.env
 
 function Notification({user}) {
     const [notification, setNotification] = useState([])
 
-    const refeshNotification = () => {
-        axios({
-            method: "post",
-            data: {
-                userID: user._id,
-            },
-            withCredentials: true,
-            url: `${REACT_APP_SERVER}/account/showNotification`
-        })
-        .then(ketqua => {
-            // console.log(ketqua.data);
-            setNotification(ketqua.data)
-        })
-    }
+
 
     useEffect(() => {
+        const refeshNotification = () => {
+            axios({
+                method: "post",
+                data: {
+                    userID: user._id,
+                },
+                withCredentials: true,
+                url: `${REACT_APP_SERVER}/account/showNotification`
+            })
+            .then(ketqua => {
+                setNotification(ketqua.data)
+            })
+        }
         refeshNotification()
         const start = setInterval(() => {
             refeshNotification()
         }, 3000)
         return () => clearInterval(start)
-    }, [])
+    }, [user._id])
 
     // show list unseen
     const search = (myArray) => {

@@ -1,12 +1,11 @@
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom"
-import $, { data } from 'jquery'
+import { Link, useNavigate, useParams } from "react-router-dom"
+import $ from 'jquery'
 import axios from "axios"
 import { useState, useEffect, useRef, useContext } from "react"
 import moment from "moment"
 import VideoPlayer from '../../components/VideoPlayer'
 import { SocketContext } from '../../components/SocketContext'
 import {makeStyles} from '@material-ui/core/styles'
-import { ListSubheader } from "@material-ui/core"
 import {isValidHttpUrl} from "../../components/Func"
 import prettyBytes from 'pretty-bytes';
 import Switch from "react-switch";
@@ -181,11 +180,7 @@ function LiveStream () {
                 withCredentials: true,
                 url: `${REACT_APP_SERVER}/account/addNotification`
             })
-            .then(ketqua => {
-                console.log(ketqua.data);
-            })
-
-
+            .then(ketqua => {})
             $("#registerLive").toggle()
             $("#inforLive").toggle()
             if (record) {

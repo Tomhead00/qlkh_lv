@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, createContext, useReducer } from "react"
+import { useState, useEffect, useRef, createContext } from "react"
 import { io } from 'socket.io-client'
 import axios from "axios"
 import moment from "moment"
@@ -12,7 +12,7 @@ const SocketContext = createContext()
 const socket = io.connect(REACT_APP_SERVER);
 
 const peerConnections = {};
-var duration;
+// var duration;
 const config = {
   iceServers: [
     {
@@ -145,7 +145,7 @@ const ContextProvider = ({ children }) => {
             // console.log(connectionRef.current);
             for (const [key, value] of Object.entries(peerConnections)) {
                 var sender = value.getSenders().find(function(s) {
-                    return s.track.kind == cam.kind;
+                    return s.track.kind === cam.kind;
                 });
                 sender.replaceTrack(cam);
             }
@@ -162,7 +162,7 @@ const ContextProvider = ({ children }) => {
         if(peerConnections) {
             for (const [key, value] of Object.entries(peerConnections)) {
                 var sender = value.getSenders().find(function(s) {
-                    return s.track.kind == mic.kind;
+                    return s.track.kind === mic.kind;
                 });
                 sender.replaceTrack(mic);
             }
@@ -177,12 +177,12 @@ const ContextProvider = ({ children }) => {
     }
 
     const startRecord = () => {
-        var startTime = Date.now();
+        // var startTime = Date.now();
         mediaRecorder.current = new MediaRecorder(stream, {
             audioBitsPerSecond : 128000,
             videoBitsPerSecond : 2500000,
             // videoBitsPerSecond : 783216000,
-            mimeType : 'video/webm\;codecs=vp9'
+            mimeType : 'video/webm;codecs=vp9'
         });
         // console.log(mediaRecorder.current);
         mediaRecorder.current.ondataavailable = (e) => {
@@ -197,7 +197,8 @@ const ContextProvider = ({ children }) => {
             // console.log(window.URL.createObjectURL(new Blob(blobContainer)))
         }
         mediaRecorder.current.onstop = () => {
-            duration = Date.now() - startTime;
+            // duration = Date.now() - startTime;
+            alert("Bản ghi đã kết thúc!")
             setRecord(false)
         };
         mediaRecorder.current.start()
@@ -206,7 +207,7 @@ const ContextProvider = ({ children }) => {
 
     const download = async (dataToModal) => {
         console.log(blobContainer[dataToModal]);
-        var buggyBlob = new Blob([blobContainer[dataToModal].data], { type: 'video/webm\;codecs=vp9' });
+        var buggyBlob = new Blob([blobContainer[dataToModal].data], { type: 'video/webm;codecs=vp9' });
         // const fixedBlob = await ysFixWebmDuration(buggyBlob, duration);
         FileSaver.saveAs(buggyBlob, blobContainer[dataToModal].liveID);
     };
@@ -232,7 +233,7 @@ const ContextProvider = ({ children }) => {
     const upload = (dataToModal, id) => {
         // console.log(element, name, description);
         var formData = new FormData()
-        formData.append('blobFile', new Blob([blobContainer[dataToModal].data], { type: 'video/webm\;codecs=vp9' }), blobContainer[dataToModal].liveID)
+        formData.append('blobFile', new Blob([blobContainer[dataToModal].data], { type: 'video/webm;codecs=vp9' }), blobContainer[dataToModal].liveID)
         formData.append('name', name)
         formData.append('description', description)
         formData.append('liveID', blobContainer[dataToModal].liveID)
@@ -310,7 +311,7 @@ const ContextProvider = ({ children }) => {
             delete peerConnections[id];
             setListUser(pre => {
                 // let listBans
-                let newList = pre.filter(user => user.socketID != id);
+                let newList = pre.filter(user => user.socketID !== id);
                 // setListBan(prev => {
                 //     listBans = prev
                 //     console.log(listBans);
@@ -322,7 +323,7 @@ const ContextProvider = ({ children }) => {
         });
 
         socket.on("mess", (id, newMessage) => {
-            if (socket.id != id)
+            if (socket.id !== id)
                 setMessages((prevMessages) => [...prevMessages, newMessage])
         });
 
@@ -358,6 +359,7 @@ const ContextProvider = ({ children }) => {
                         element.banned = false
                     else 
                         element.banned = checked
+                    return true
                 })
                 var listUsers
                 setListUser(prev => {
@@ -449,7 +451,7 @@ const ContextProvider = ({ children }) => {
         });
 
         socket.on("mess", (id, newMessage) => {
-            if (socket.id != id)
+            if (socket.id !== id)
                 setMessages((prevMessages) => [...prevMessages, newMessage])
         });
 
@@ -497,9 +499,7 @@ const ContextProvider = ({ children }) => {
             broadcaster,
             watcher,
             isBroadcaster,
-            setIsBroadcaster,
-            name, 
-            setName, 
+            setIsBroadcaster, 
             course, 
             setCourse, 
             description, 
