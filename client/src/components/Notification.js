@@ -34,7 +34,7 @@ function Notification({user}) {
     const search = (myArray) => {
         var newArr = []
         for (var i=0; i < myArray.length; i++) {
-            if (myArray[i].seen === false) {
+            if (myArray[i].seen === false && myArray[i].courseID) {
                 newArr = [...newArr, myArray[i]]
             }
         }
@@ -63,24 +63,27 @@ function Notification({user}) {
             <div className="dropdown-menu dropdown-menu-right" style={{width: '400px'}} aria-labelledby="navbarDropdown">
                 <div className="list-group">
                     <h5 className='ml-3 mt-2 mb-2'><b>Thông báo</b></h5>
-                    {notification.map((notification, index) => (
-                        <a 
-                            href={notification.link} 
-                            className="list-group-item list-group-item-action" 
-                            aria-current="true" 
-                            key={index}
-                            style={!notification.seen ? ({backgroundColor: "hsl(240, 0%, 90%)"}) : null}
-                            onClick={() => {seen(notification._id)}}
-                        >
-                            <div className="d-flex w-100 justify-content-between">
-                            <h6 className="mb-1"><b>{`${notification.subject} trên khóa học:  ${notification.courseID.name}`}</b></h6>
-                            </div>
-                            <p className="mb-1">
-                                "{notification.content}"
-                            </p>
-                            <small>{moment(notification.createdAt).fromNow()}</small>
-                        </a>
-                    ))}
+                    {notification.map((notification, index) => 
+                        { if(notification.courseID) {
+                            return (<a 
+                                href={notification.link} 
+                                className="list-group-item list-group-item-action" 
+                                aria-current="true" 
+                                key={index}
+                                style={!notification.seen ? ({backgroundColor: "hsl(240, 0%, 90%)"}) : null}
+                                onClick={() => {seen(notification._id)}}
+                            >
+                                <div className="d-flex w-100 justify-content-between">
+                                <h6 className="mb-1"><b>{`${notification.subject} trên khóa học:  ${notification.courseID.name}`}</b></h6>
+                                </div>
+                                <p className="mb-1">
+                                    "{notification.content}"
+                                </p>
+                                <small>{moment(notification.createdAt).fromNow()}</small>
+                            </a>)
+
+                        }}
+                    )}
                 </div>
                 {/* <Link className="dropdown-item" to="#" data-toggle="modal" data-target="#infor">Thông tin tài khoản</Link>
                 <div className="dropdown-divider"></div>

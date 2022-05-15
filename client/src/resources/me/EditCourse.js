@@ -141,7 +141,7 @@ function EditCourse() {
     }
 
     const Directional = (sectionID ,_id, action) => (e) => {
-        console.log(sectionID ,_id, action);
+        // console.log(sectionID ,_id, action);
         axios({
             method: "post",
             data: {},

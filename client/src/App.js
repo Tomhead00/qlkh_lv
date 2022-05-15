@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import './App.scss';
 import {Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from "axios"
 
 import Nav from './components/nav/Nav'
@@ -46,7 +46,7 @@ function App() {
 
   return (
     <div className="App">
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+      <nav className="navbar navbar-expand-md navbar-dark bg-dark">
         <Nav user={user}/>
       </nav>
 

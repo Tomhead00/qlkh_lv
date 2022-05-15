@@ -27,7 +27,7 @@ function Home() {
 
   return (
     <div className="Home">
-      <nav className="navbar navbar-expand-lg navbar-dark">
+      <nav className="navbar navbar-expand-md navbar-dark">
         <Nav user={user}/>
       </nav>
 

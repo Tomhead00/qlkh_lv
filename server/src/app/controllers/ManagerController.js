@@ -66,9 +66,6 @@ class ManagerController {
             Course.find({ actor: req.params.id })
             .then((courses) => {
                 for (const course of courses) {
-                    for (const _id of course.video) {
-                        Video.delete({ _id: _id }).catch(next);
-                    }
                     Course.delete({ _id: course._id }).catch(next);
                 }
             })
@@ -88,9 +85,6 @@ class ManagerController {
             Course.findDeleted({ actor: req.params.id })
             .then((courses) => {
                 for (const course of courses) {
-                    for (const _id of course.video) {
-                        Video.restore({ _id: _id }).catch(next);
-                    }
                     Course.restore({ _id: course._id }).catch(next);
                 }
             })
@@ -113,9 +107,41 @@ class ManagerController {
         try {
             Course.find({ actor: req.params.id })
             .then((courses) => {
+                console.log(courses);
                 for (const course of courses) {
-                    for (const _id of course.video) {
-                        Video.deleteOne({ _id: _id }).catch(next);
+                    console.log(course);
+                    if (course != null) {
+                        for (var _id of course.sections) {
+                            Section.findByIdAndDelete({ _id }).then((sections) => {
+                                sections.videos.map(videoID => {
+                                    Video.findByIdAndDelete(videoID)
+                                    .then(video => {
+                                        if(video.videoID.length > 13) {
+                                            var filePath = `src/public/video/${video.videoID}`;
+                                            var thumbnailPath = `src/public/img/thumbnail/${video.videoID.substring(0,video.videoID.lastIndexOf("."))}.png`;
+                                            fs.unlinkSync(filePath);
+                                            fs.unlinkSync(thumbnailPath);
+                                        }
+                                    })
+                                })
+                                sections.docs.map(docID => {
+                                    Document.findByIdAndDelete(docID)
+                                    .then(doc => {
+                                        var filePath = `src/public/docs/${doc.name}`;
+                                        fs.unlinkSync(filePath);
+                                    })
+                                })
+                            })
+                        }
+                        course.livestreams.map((id, index) => {
+                            LiveStream.findByIdAndDelete(id)
+                            .then(videoLive => {
+                                var filePath = `src/public/livestream/${videoLive.liveID}`;
+                                var thumbnailPath = `src/public/img/thumbnail/${videoLive.liveID.substring(0,videoLive.liveID.lastIndexOf("."))}.png`;
+                                fs.unlinkSync(filePath);
+                                fs.unlinkSync(thumbnailPath);
+                            })
+                        })
                     }
                     Course.deleteOne({ _id: course._id }).catch(next);
                 }

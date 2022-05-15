@@ -303,6 +303,15 @@ class CourseController {
                             })
                         })
                     }
+                    course.livestreams.map((id, index) => {
+                        LiveStream.findByIdAndDelete(id)
+                        .then(videoLive => {
+                            var filePath = `src/public/livestream/${videoLive.liveID}`;
+                            var thumbnailPath = `src/public/img/thumbnail/${videoLive.liveID.substring(0,videoLive.liveID.lastIndexOf("."))}.png`;
+                            fs.unlinkSync(filePath);
+                            fs.unlinkSync(thumbnailPath);
+                        })
+                    })
                 }
             })
             .catch(next);
@@ -361,6 +370,15 @@ class CourseController {
                                     })
                                 })
                             }
+                            course.livestreams.map((id, index) => {
+                                LiveStream.findByIdAndDelete(id)
+                                .then(videoLive => {
+                                    var filePath = `src/public/livestream/${videoLive.liveID}`;
+                                    var thumbnailPath = `src/public/img/thumbnail/${videoLive.liveID.substring(0,videoLive.liveID.lastIndexOf("."))}.png`;
+                                    fs.unlinkSync(filePath);
+                                    fs.unlinkSync(thumbnailPath);
+                                })
+                            })
                         })
                         .catch(next);
 

@@ -74,7 +74,7 @@ function Show() {
         .then(ketqua => {
             if (!ketqua.data) {
                 alert("Bạn không thể tham gia khóa học này do đã bị chặn bởi người khởi tạo!")
-                navigate("/courses")
+                // navigate("/courses")
             }
         })
         axios({
@@ -91,7 +91,8 @@ function Show() {
     },[slug])
 
     useEffect(() => {
-        if(Object.keys(course).length && course.sections.length && !course.sections[0].videos.includes(user._id)) {
+        if(Object.keys(course).length && course.sections.length &&course.sections[0].videos.length && !course.sections[0].videos.includes(user._id)) {
+            // console.log(Object.keys(course).length, course.sections.length, !course.sections[0].videos.includes(user._id));
             unLockVideo(course.sections[0].videos[0]._id)
             setListAllVideo(getAllVideo(course))
         }

@@ -101,11 +101,11 @@ function Itemnav({user}) {
                                     <img src={isValidHttpUrl(user.image) ? user.image : `${REACT_APP_SERVER + user.image}`} alt="image" width="236" height="236" />
                                 </div>
                                 <div className="col-md-8 ml-auto pt-5">
-                                    <h5>Tên tài khoản: <span className="userName">{user.username}</span></h5>
-                                    <h5>Email: <span className="email">{user.email}</span></h5>
-                                    <h5>Giới tính: <span className="gioiTinh">{user.gender}</span></h5>
-                                    <h5>SĐT: <span className="sdt">{user.phone}</span></h5>
-                                    <h5>Địa chỉ: <span className="diaChi">{user.address}</span></h5>
+                                    <h5><strong>Tên tài khoản: </strong><span className="userName">{user.username}</span></h5>
+                                    <h5><strong>Email: </strong><span className="email">{user.email}</span></h5>
+                                    <h5><strong>Giới tính: </strong><span className="gioiTinh">{user.gender}</span></h5>
+                                    <h5><strong>SĐT: </strong><span className="sdt">{user.phone}</span></h5>
+                                    <h5><strong>Địa chỉ: </strong><span className="diaChi">{user.address}</span></h5>
                                 </div>
                             </div>
                         </div>
