@@ -1,6 +1,9 @@
 const Course = require('../models/Course');
 const { User } = require('../models/User');
 const Comment = require('../models/Comment');
+const LiveStream = require('../models/LiveStream');
+const Section = require('../models/Section');
+const Document = require('../models/Document');
 const Video = require('../models/Video');
 const { multipleMongooseToObject } = require('../../util/mongoose');
 
@@ -105,11 +108,9 @@ class ManagerController {
     // DELETE /:id
     async delete(req, res, next) {
         try {
-            Course.find({ actor: req.params.id })
+            Course.findDeleted({ actor: req.params.id })
             .then((courses) => {
-                console.log(courses);
                 for (const course of courses) {
-                    console.log(course);
                     if (course != null) {
                         for (var _id of course.sections) {
                             Section.findByIdAndDelete({ _id }).then((sections) => {
