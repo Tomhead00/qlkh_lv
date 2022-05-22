@@ -162,11 +162,25 @@ class ManagerController {
     }
 
     // POST /:id/down
+    // async down(req, res, next) {
+    //     User.countDocuments({role: 'admin'})
+    //     .then(async count => {
+    //         // console.log(count);
+    //         if(count > 1) {
+    //             await User.updateOne({ _id: req.params.id }, { role: 'member' });
+    //             res.send(true);
+    //         } else {
+    //             res.send(false)
+    //         }
+    //     })
+    // }
+
     async down(req, res, next) {
+        var user = await User.findById(req.params.id)
         User.countDocuments({role: 'admin'})
         .then(async count => {
             // console.log(count);
-            if(count > 1) {
+            if(count > 1 && user.email !== "admin@gmail.com") {
                 await User.updateOne({ _id: req.params.id }, { role: 'member' });
                 res.send(true);
             } else {
